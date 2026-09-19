@@ -3,20 +3,19 @@
  *
  * ## The key
  *
- * Every write here needs `ARCADE_OPERATOR_PRIVATE_KEY`, read from the environment and never
- * from an argument, a prompt or a file this repository tracks. It is never logged, never
- * included in an error message, and never written to the seed store. Only the derived address
- * is ever printed, so a pasted transcript cannot leak the key.
+ * Signing material is resolved by `signer.ts` — preferably from an encrypted keystore the
+ * operator created themselves with `cast wallet import`, falling back to a raw env key for
+ * testnet. Whichever path is used, the key is never logged, never included in an error
+ * message, and never written to the seed store. Only the derived address is printed, so a
+ * pasted transcript cannot leak it.
  *
- * Put it in `.env.local`, which is gitignored. For anything holding real value, use a signer
- * that never exposes a raw key to a Node process at all — a hardware wallet or a remote
- * signer behind `forge script --ledger` / a KMS. This CLI is honest about being the
- * convenient option, not the safe one.
+ * For a mainnet deployment, prefer a hardware wallet over both: `forge script --ledger` keeps
+ * the key on the device, where no software here can reach it.
  */
 
 import {createPublicClient, createWalletClient, http, type Address, type Chain} from 'viem'
-import {privateKeyToAccount} from 'viem/accounts'
 import {defineChain} from 'viem'
+import {resolveSigner} from './signer'
 
 export const ARC_MAINNET_ID = 5042
 export const ARC_TESTNET_ID = 5042002
@@ -41,9 +40,11 @@ export type OperatorContext = {
   network: Network
   chain: Chain
   publicClient: ReturnType<typeof createPublicClient>
-  /** Present only when a key is configured. Reads work without one. */
+  /** Present only when a signer is configured. Reads work without one. */
   walletClient: ReturnType<typeof createWalletClient> | null
   account: Address | null
+  /** How the signer was resolved, for the banner. Never contains key material. */
+  signerSource: string | null
   contracts: {
     machineManager: Address
     prizeVault: Address
@@ -76,7 +77,9 @@ function requireAddress(name: string): Address {
  * `requireSigner: false` is used by read-only subcommands so an operator can inspect state
  * without putting a key anywhere near the process.
  */
-export function loadContext({requireSigner = true}: {requireSigner?: boolean} = {}): OperatorContext {
+export async function loadContext({
+  requireSigner = true,
+}: {requireSigner?: boolean} = {}): Promise<OperatorContext> {
   const raw = process.env.NEXT_PUBLIC_ARCADE_MODE?.toLowerCase()
   if (raw !== 'mainnet' && raw !== 'testnet') {
     throw new ConfigError(
@@ -97,23 +100,23 @@ export function loadContext({requireSigner = true}: {requireSigner?: boolean} = 
 
   const publicClient = createPublicClient({chain, transport: http(rpc, {retryCount: 3})})
 
-  const key = process.env.ARCADE_OPERATOR_PRIVATE_KEY
   let walletClient: OperatorContext['walletClient'] = null
   let account: Address | null = null
+  let signerSource: string | null = null
 
-  if (key) {
-    if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {
-      // Deliberately does not echo the value.
-      throw new ConfigError(
-        'ARCADE_OPERATOR_PRIVATE_KEY is set but is not a 0x-prefixed 32-byte hex key.',
-      )
-    }
-    const signer = privateKeyToAccount(key as `0x${string}`)
-    account = signer.address
-    walletClient = createWalletClient({account: signer, chain, transport: http(rpc)})
+  const signer = await resolveSigner()
+  if (signer) {
+    account = signer.account.address
+    signerSource = signer.source
+    walletClient = createWalletClient({account: signer.account, chain, transport: http(rpc)})
   } else if (requireSigner) {
     throw new ConfigError(
-      'ARCADE_OPERATOR_PRIVATE_KEY is not set. This command sends transactions and needs a signer.',
+      'This command sends transactions and needs a signer. Configure one of:\n' +
+        '  ARCADE_OPERATOR_ACCOUNT    a name under ~/.foundry/keystores (recommended)\n' +
+        '  ARCADE_OPERATOR_KEYSTORE   a path to a keystore JSON file\n' +
+        '  ARCADE_OPERATOR_PRIVATE_KEY  raw hex — testnet and throwaway keys only\n\n' +
+        'Create a keystore without the key ever touching disk in plaintext:\n' +
+        '  cast wallet import arcade-operator --interactive',
     )
   }
 
@@ -123,6 +126,7 @@ export function loadContext({requireSigner = true}: {requireSigner?: boolean} = 
     publicClient,
     walletClient,
     account,
+    signerSource,
     contracts: {
       machineManager: requireAddress('NEXT_PUBLIC_ARCADE_MACHINE_MANAGER'),
       prizeVault: requireAddress('NEXT_PUBLIC_ARCADE_PRIZE_VAULT'),

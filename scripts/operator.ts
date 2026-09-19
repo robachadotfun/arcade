@@ -48,6 +48,7 @@ import {
   ConfigError,
   type OperatorContext,
 } from './operator/context'
+import {SignerError} from './operator/signer'
 import {
   byIndex,
   commitmentFor,
@@ -92,11 +93,12 @@ async function send(
 // ─────────────────────────────────────────────────────────────────────── status
 
 async function status(): Promise<void> {
-  const ctx = loadContext({requireSigner: false})
+  const ctx = await loadContext({requireSigner: false})
   await assertChain(ctx)
 
   heading(`Arcade on ${ctx.chain.name} (chain ${ctx.chain.id})`)
   log(`  signer              ${ctx.account ?? 'none configured (read-only)'}`)
+  if (ctx.signerSource) log(`                      via ${ctx.signerSource}`)
   log(`  machine manager     ${ctx.contracts.machineManager}`)
   log(`  randomness          ${ctx.contracts.randomness}`)
 
@@ -209,7 +211,7 @@ async function commitments(countArg: string | undefined): Promise<void> {
     fail('Usage: pnpm operator commitments <count>   (1–500 per batch)')
   }
 
-  const ctx = loadContext()
+  const ctx = await loadContext()
   await assertChain(ctx)
 
   const store = loadStore(ctx.chain.id, ctx.contracts.randomness)
@@ -280,7 +282,7 @@ async function bond(amountArg: string | undefined): Promise<void> {
   if (!amountArg) fail('Usage: pnpm operator bond <usdc>')
   const value = parseUnits(amountArg, NATIVE_USDC_DECIMALS)
 
-  const ctx = loadContext()
+  const ctx = await loadContext()
   await assertChain(ctx)
 
   await send(ctx, `depositBond(${amountArg} USDC)`, () =>
@@ -298,7 +300,7 @@ async function bond(amountArg: string | undefined): Promise<void> {
 // ────────────────────────────────────────────────────────────── register tokens
 
 async function registerTokens(): Promise<void> {
-  const ctx = loadContext()
+  const ctx = await loadContext()
   await assertChain(ctx)
 
   heading(`Registering ${REWARD_ASSETS.length} verified reward assets`)
@@ -358,7 +360,7 @@ async function fund(symbolArg: string | undefined, amountArg: string | undefined
     fail(`Unknown reward asset "${symbolArg}". Known: ${REWARD_ASSETS.map((a) => a.symbol).join(', ')}`)
   }
 
-  const ctx = loadContext()
+  const ctx = await loadContext()
   await assertChain(ctx)
 
   const amount = parseUnits(amountArg, asset.decimals)
@@ -423,7 +425,7 @@ async function fund(symbolArg: string | undefined, amountArg: string | undefined
 // ──────────────────────────────────────────────────────────────────── machines
 
 async function machines(): Promise<void> {
-  const ctx = loadContext()
+  const ctx = await loadContext()
   await assertChain(ctx)
 
   const mapping: string[] = []
@@ -539,7 +541,7 @@ async function publishTable(
  * effect: a request that is no longer Pending is skipped.
  */
 async function reveal(): Promise<void> {
-  const ctx = loadContext()
+  const ctx = await loadContext()
   await assertChain(ctx)
 
   const store = loadStore(ctx.chain.id, ctx.contracts.randomness)
@@ -562,7 +564,7 @@ async function reveal(): Promise<void> {
 
   heading('Reveal daemon')
   log(`  randomness   ${ctx.contracts.randomness}`)
-  log(`  signer       ${ctx.account}`)
+  log(`  signer       ${ctx.account}  (${ctx.signerSource})`)
   log(`  delay        ${delay} blocks    window ${window} blocks`)
   log(`  seed store   ${store.entries.filter((e) => e.index !== null && e.revealedFor === null).length} unrevealed pairs`)
   log('\n  Watching. Ctrl-C to stop — spins requested while this is down may expire.\n')
@@ -706,6 +708,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-  if (err instanceof ConfigError) fail(err.message)
+  if (err instanceof ConfigError || err instanceof SignerError) fail(err.message)
   fail(err instanceof Error ? (err.stack ?? err.message) : String(err))
 })

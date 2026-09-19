@@ -232,12 +232,17 @@ spin expires and is refunded with the operator bond slashed.
 remaining blocker and ends with a plain answer to "can a spin happen right now?".
 
 ```bash
+# 0. Set up a signer. The key is read with echo off — it does not reach your shell
+#    history, your scrollback, or any file in this repository.
+cast wallet import arcade-operator --interactive
+
 # 1. Deploy. ARCADE_ADMIN should be a multisig for anything holding real value.
 cd contracts
-forge script script/Deploy.s.sol:Deploy --rpc-url $ARC_MAINNET_RPC_URL --broadcast --verify
+forge script script/Deploy.s.sol:Deploy --rpc-url $ARC_MAINNET_RPC_URL \
+  --account arcade-operator --broadcast --verify
 
 # 2. Put the five printed addresses in .env.local, plus NEXT_PUBLIC_ARCADE_MODE
-#    and ARCADE_OPERATOR_PRIVATE_KEY.
+#    and ARCADE_OPERATOR_ACCOUNT=arcade-operator.
 
 # 3. Bring the stack up.
 pnpm operator commitments 500      # publish randomness commitments, ahead of demand
@@ -254,6 +259,25 @@ pnpm operator reveal
 
 Reward inventory has to be acquired on the open market first — nothing here mints it, and
 `fund` refuses rather than partially depositing if the signer's balance is short.
+
+### Signing
+
+The operator CLI resolves a signer in this order:
+
+| Variable | Notes |
+| --- | --- |
+| `ARCADE_OPERATOR_KEYSTORE` | Path to a Web3 Secret Storage v3 JSON file |
+| `ARCADE_OPERATOR_ACCOUNT` | A name under `~/.foundry/keystores` — **recommended** |
+| `ARCADE_OPERATOR_PRIVATE_KEY` | Raw hex. Testnet and throwaway keys only |
+
+With a keystore, the password is prompted for with echo disabled and the decrypted key
+exists only in process memory for the life of one command. `ARCADE_OPERATOR_PASSWORD` exists
+for unattended `reveal` runs; it puts a secret back in the environment, so it belongs in a
+process manager's secret store rather than a shell profile.
+
+**For mainnet, prefer a hardware wallet.** `forge script --ledger` keeps the key on the
+device, where nothing in this repository can reach it. A raw key in an environment variable
+is readable by every process that inherits the environment and sits in plaintext on disk.
 
 ### The seed store
 
