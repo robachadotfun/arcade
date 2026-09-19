@@ -180,7 +180,6 @@ export const PRIVACY: LegalDocument = {
         'your acknowledgement of the entry notice',
         'session spend and spin counters used for the responsible-play limits',
         'a self-exclusion date, if you set one',
-        'demo-mode spin history, when running in demo mode',
         'your wallet connection state',
       ],
     },

@@ -9,12 +9,12 @@ import {ButtonLink, DataRow, Label, Pill, SectionHead, ExternalLink} from '@/com
 import {
   MACHINES,
   assetsOnMachine,
-  demoConfigFingerprint,
   machineBySlug,
   rarityOdds,
   tierOdds,
   totalWeight,
 } from '@/config/machines'
+import {OnchainConfigHash, OnchainVersionLabel} from '@/components/OnchainConfigHash'
 import {resolveMode} from '@/config/mode'
 import {explorerUrl, ARC_MAINNET_ID} from '@/config/network'
 import {formatDecimalAmount, formatPercent} from '@/lib/format'
@@ -49,7 +49,7 @@ export default async function MachineDetailPage({params}: {params: Promise<{slug
   const assets = assetsOnMachine(machine)
   const odds = rarityOdds(machine)
   const tiers = tierOdds(machine)
-  const chainId = status.kind === 'ready' && status.chainId ? status.chainId : ARC_MAINNET_ID
+  const chainId = status.kind === 'ready' ? status.chainId : ARC_MAINNET_ID
   const contracts = status.kind === 'ready' ? status.contracts : null
 
   // Worst-case liability per token, shown in token units. No price data is involved, which
@@ -226,16 +226,13 @@ export default async function MachineDetailPage({params}: {params: Promise<{slug
           <dl className="mt-4 divide-y divide-hairline-faint border-y border-hairline-faint">
             <DataRow label="Machine" value={machine.name} />
             <DataRow label="Spin price" value={`${machine.spinPriceUsdc}.00 USDC`} />
-            <DataRow label="Config fingerprint" value={demoConfigFingerprint(machine)} mono />
+            <DataRow label="Config hash" value={<OnchainConfigHash machine={machine} />} />
             <DataRow
               label="Onchain id"
               value={machine.onchainId === null ? 'Not deployed' : `#${machine.onchainId}`}
             />
-            <DataRow
-              label="Version source"
-              value={status.mode === 'demo' ? 'Development config' : 'Machine manager contract'}
-            />
-            {contracts && status.mode !== 'demo' ? (
+            <DataRow label="Version" value={<OnchainVersionLabel machine={machine} />} />
+            {contracts ? (
               <DataRow
                 label="Contract"
                 value={
@@ -249,14 +246,11 @@ export default async function MachineDetailPage({params}: {params: Promise<{slug
             ) : null}
           </dl>
 
-          {status.mode === 'demo' ? (
-            <p className="mt-5 text-[0.8125rem] leading-relaxed text-ink-faint">
-              The fingerprint above is a deterministic hash of this development configuration,
-              prefixed <code className="font-mono">demo-</code> so it cannot be mistaken for an
-              onchain config hash. A deployed machine publishes a real keccak256 hash covering
-              its id, version, price and full reward table.
-            </p>
-          ) : null}
+          <p className="mt-5 text-[0.8125rem] leading-relaxed text-ink-faint">
+            The config hash is read from the machine manager. It is a keccak256 over this
+            machine&apos;s id, version, spin price, effective block and full reward table, sealed
+            by <code className="font-mono">publishVersion</code> and immutable thereafter.
+          </p>
         </div>
 
         <div>

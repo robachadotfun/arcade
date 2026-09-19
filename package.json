@@ -2,7 +2,7 @@
   "name": "arcade",
   "version": "0.1.0",
   "private": true,
-  "description": "Arcade — an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
+  "description": "Arcade \u2014 an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
   "packageManager": "pnpm@12.4.2",
   "engines": {
     "node": ">=22"
@@ -26,7 +26,8 @@
     "export:abis": "tsx scripts/export-abis.ts",
     "fetch:logos": "tsx scripts/fetch-token-logos.ts",
     "optimize:images": "tsx scripts/optimize-images.ts",
-    "assets": "pnpm fetch:media && pnpm fetch:logos && pnpm generate:art && pnpm optimize:images"
+    "assets": "pnpm fetch:media && pnpm fetch:logos && pnpm generate:art && pnpm optimize:images",
+    "operator": "tsx scripts/operator.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.103.1",

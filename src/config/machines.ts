@@ -3,15 +3,23 @@ import {assetByAddress, type RewardAsset} from './rewards'
 /**
  * Machine templates and the reward tables that define their economics.
  *
- * ## These are DEMO CONFIGURATIONS
+ * ## This file is the proposal; the chain is the truth
  *
- * The weights and reward bands below exist so a fresh checkout has coherent, honest
- * numbers to render and so the EV calculator has something to chew on. They are **not**
- * production economics. In testnet or mainnet mode the UI reads machines, versions and
- * reward tables from `ArcadeMachineManager` onchain, and these values are ignored.
+ * The weights and reward bands below are what an operator intends to publish. They are the
+ * input to `scripts/setup-arcade.ts`, which calls `publishVersion` to seal them onchain.
+ * Once sealed, the contract's own `configHash` is the authoritative identity of a reward
+ * table, and it is what the UI displays and what a player verifies against — never this file.
  *
- * A production reward table is published by `publishVersion`, which seals it immutably and
- * records a config hash. That hash — not this file — is what a player verifies against.
+ * If these values and the chain ever disagree, the chain is right and this file is stale.
+ * Nothing here is used to decide an outcome, compute a payout or render a result: the spin
+ * path reads the table from `ArcadeMachineManager`.
+ *
+ * ## Onchain ids
+ *
+ * `onchainId` is resolved from `NEXT_PUBLIC_ARCADE_MACHINE_IDS` (`slug:id`, comma separated),
+ * which the setup script prints after it creates the machines. It is env-driven rather than
+ * edited into this file so that deploying does not require a source change and a rebuild of
+ * the repository itself.
  */
 
 export type Rarity = 'common' | 'rare' | 'ultra' | 'jackpot'
@@ -32,7 +40,10 @@ export type RewardTierConfig = {
 
 export type MachineConfig = {
   slug: string
-  /** Onchain machine id, once deployed. Null until a machine is created. */
+  /**
+   * Onchain machine id. Null until the machine has been created onchain and its id mapped
+   * in `NEXT_PUBLIC_ARCADE_MACHINE_IDS`. A machine with no id cannot be spun.
+   */
   onchainId: number | null
   name: string
   tagline: string
@@ -57,7 +68,29 @@ const ARCT = '0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52' as const
 const ARCX10 = '0x12ce1f970722ca6e08364b60099b3d25c09b5434' as const
 const ARCBAT = '0xbe0cad585ea2d13de2f4e36376be755c0afd8b97' as const
 
-export const MACHINES: MachineConfig[] = [
+/**
+ * Parses `NEXT_PUBLIC_ARCADE_MACHINE_IDS`, e.g. `genesis:1,velocity:2,blue-chip:3`.
+ *
+ * An unparseable entry is skipped rather than defaulted: a wrong machine id would point
+ * players at the wrong reward table, which is far worse than a machine that reports itself
+ * as not yet deployed.
+ */
+function parseMachineIds(raw: string | undefined): Map<string, number> {
+  const ids = new Map<string, number>()
+  if (!raw) return ids
+  for (const entry of raw.split(',')) {
+    const [slug, value] = entry.split(':')
+    if (!slug || !value) continue
+    const id = Number.parseInt(value.trim(), 10)
+    if (!Number.isInteger(id) || id < 0) continue
+    ids.set(slug.trim(), id)
+  }
+  return ids
+}
+
+const MACHINE_IDS = parseMachineIds(process.env.NEXT_PUBLIC_ARCADE_MACHINE_IDS)
+
+const MACHINE_TEMPLATES: MachineConfig[] = [
   {
     slug: 'genesis',
     onchainId: null,
@@ -142,6 +175,12 @@ export const MACHINES: MachineConfig[] = [
   },
 ]
 
+/** Machines with their onchain ids resolved from the environment. */
+export const MACHINES: MachineConfig[] = MACHINE_TEMPLATES.map((machine) => ({
+  ...machine,
+  onchainId: MACHINE_IDS.get(machine.slug) ?? machine.onchainId,
+}))
+
 export function machineBySlug(slug: string): MachineConfig | undefined {
   return MACHINES.find((m) => m.slug === slug)
 }
@@ -179,28 +218,6 @@ export function tierOdds(machine: MachineConfig) {
     asset: assetByAddress(tier.token),
     probability: total === 0 ? 0 : tier.weight / total,
   }))
-}
-
-/**
- * A stable config fingerprint for the demo tables.
- *
- * In a live mode the authoritative hash is the `configHash` that `publishVersion` computed
- * onchain. This is only so demo mode can show a real, reproducible identifier rather than
- * a made-up one.
- */
-export function demoConfigFingerprint(machine: MachineConfig): string {
-  const canonical = JSON.stringify({
-    slug: machine.slug,
-    price: machine.spinPriceUsdc,
-    tiers: machine.tiers.map((t) => [t.token, t.weight, t.rarity, t.minAmount, t.maxAmount]),
-  })
-  // FNV-1a — deterministic, dependency-free, and clearly labelled as a demo fingerprint.
-  let hash = 0x811c9dc5
-  for (let i = 0; i < canonical.length; i += 1) {
-    hash ^= canonical.charCodeAt(i)
-    hash = Math.imul(hash, 0x01000193) >>> 0
-  }
-  return `demo-${hash.toString(16).padStart(8, '0')}`
 }
 
 export const RARITY_LABEL: Record<Rarity, string> = {

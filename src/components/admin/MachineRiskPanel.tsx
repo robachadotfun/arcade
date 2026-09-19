@@ -5,9 +5,10 @@ import {useReadContracts} from 'wagmi'
 import {formatUnits} from 'viem'
 import {prizeVaultAbi} from '@/abi'
 import {Label, SectionHead, Pill, DataRow, Button} from '../ui/Primitives'
-import {MACHINES, demoConfigFingerprint, totalWeight, type MachineConfig} from '@/config/machines'
+import {MACHINES, totalWeight, type MachineConfig} from '@/config/machines'
 import {REWARD_ASSETS} from '@/config/rewards'
-import {resolveMode, isLiveMode} from '@/config/mode'
+import {resolveMode} from '@/config/mode'
+import {OnchainConfigHash} from '../OnchainConfigHash'
 import {
   evaluateMachine,
   SAFETY,
@@ -44,7 +45,7 @@ export function MachineRiskPanel() {
 
   // Live vault inventory, when contracts are configured.
   const inventoryQueries = useMemo(() => {
-    if (!contracts || !isLiveMode(status.mode)) return []
+    if (!contracts) return []
     return REWARD_ASSETS.map(
       (asset) =>
         ({
@@ -54,7 +55,7 @@ export function MachineRiskPanel() {
           args: [asset.address],
         }) as const,
     )
-  }, [contracts, status.mode])
+  }, [contracts])
 
   const {data: inventoryData} = useReadContracts({
     contracts: inventoryQueries,
@@ -166,7 +167,7 @@ function MachineCard({
         <div className="flex flex-wrap items-baseline gap-3">
           <h3 className="font-display text-[1.375rem] leading-none text-ink">{machine.name}</h3>
           <span className="font-mono text-[0.75rem] text-ink-faint">
-            {demoConfigFingerprint(machine)}
+            <OnchainConfigHash machine={machine} />
           </span>
         </div>
         <Pill tone={RISK_TONE[economics.risk]}>{RISK_LABEL[economics.risk]}</Pill>

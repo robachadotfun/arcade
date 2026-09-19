@@ -8,7 +8,7 @@ import {ActivityPreview} from '@/components/ActivityPreview'
 import {FaqAccordion} from '@/components/FaqAccordion'
 import {machineBySlug, rarityOdds, LIVE_MACHINES, assetsOnMachine} from '@/config/machines'
 import {REWARD_ASSETS, VERIFICATION_META} from '@/config/rewards'
-import {resolveMode, MODE_DESCRIPTION} from '@/config/mode'
+import {resolveMode, MODE_DESCRIPTION, modeLabel} from '@/config/mode'
 import {TokenGlyph} from '@/components/OrbitMachine'
 import {ArcadeArt, MACHINE_ART} from '@/components/ArcadeArt'
 import {EditorialImage} from '@/components/EditorialImage'
@@ -37,8 +37,8 @@ export default function HomePage() {
         <div className="shell relative grid items-center gap-14 pt-16 pb-20 lg:grid-cols-[1.18fr_0.82fr] lg:gap-12 lg:pt-24 lg:pb-32">
           <div>
             <div className="flex items-center gap-3">
-              <Dot tone={status.mode === 'demo' ? 'warn' : 'live'} pulse />
-              <Label>{status.mode === 'demo' ? 'Demo mode' : 'Arc Mainnet'}</Label>
+              <Dot tone={status.kind === 'ready' ? 'live' : 'stop'} pulse={status.kind === 'ready'} />
+              <Label>{modeLabel(status.mode)}</Label>
             </div>
 
             <h1 className="mt-7 text-mega text-ink">
@@ -94,7 +94,7 @@ export default function HomePage() {
           <TickerItem
             label="Active machines"
             value={formatCount(LIVE_MACHINES.length)}
-            note={status.mode === 'demo' ? 'Demo configuration' : 'Live onchain'}
+            note={status.kind === 'ready' ? 'Live onchain' : 'Awaiting deployment'}
           />
         </div>
       </section>
@@ -201,9 +201,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-baseline justify-between gap-4">
                   <Label>{genesis.name} — rarity distribution</Label>
-                  <Pill tone="neutral">
-                    {status.mode === 'demo' ? 'Demo config' : 'Live config'}
-                  </Pill>
+                  <Pill tone="neutral">Published onchain</Pill>
                 </div>
                 <OddsRail odds={odds} height={12} className="mt-5" />
 
@@ -417,7 +415,9 @@ export default function HomePage() {
               One spin. One onchain outcome.
             </h2>
             <p className="mx-auto mt-7 max-w-[42ch] text-lede text-ink-muted">
-              {MODE_DESCRIPTION[status.mode]}
+              {status.kind === 'ready'
+                ? MODE_DESCRIPTION[status.mode]
+                : 'Arcade is not connected to a deployment yet, so no spin can be offered.'}
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <ButtonLink href="/play" size="lg" className="min-w-[11rem]">

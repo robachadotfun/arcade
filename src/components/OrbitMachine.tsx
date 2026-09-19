@@ -14,11 +14,10 @@ import type {RewardAsset} from '@/config/rewards'
  * ## The rule that matters
  *
  * **This component never decides anything.** It takes a `settledIndex` prop and animates
- * toward it. In live modes that index is derived from the random word revealed onchain,
- * which is fixed before the animation starts and is recomputable by anyone from published
- * data. The animation is a presentation of a result that already exists — it cannot
- * influence, delay or reinterpret it. In demo mode the caller draws an index from
- * `crypto.getRandomValues` and labels the outcome as simulated.
+ * toward it. That index is derived from the random word revealed onchain, which is fixed
+ * before the animation starts and is recomputable by anyone from published data. The
+ * animation is a presentation of a result that already exists — it cannot influence, delay or
+ * reinterpret it, and with `settledIndex` null it has no result to present and simply turns.
  *
  * Motion is CSS/rAF driven with `prefers-reduced-motion` honoured: with motion reduced the
  * orbit is static and the outcome is presented directly, losing nothing but the flourish.

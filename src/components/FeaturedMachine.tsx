@@ -3,14 +3,8 @@ import {OddsRail, RarityTag} from './OddsRail'
 import {TokenGlyph} from './OrbitMachine'
 import {StaticOrbit} from './StaticOrbit'
 import {ButtonLink, Label, Pill} from './ui/Primitives'
-import {
-  assetsOnMachine,
-  demoConfigFingerprint,
-  rarityOdds,
-  tierOdds,
-  type MachineConfig,
-} from '@/config/machines'
-import {resolveMode} from '@/config/mode'
+import {assetsOnMachine, rarityOdds, tierOdds, type MachineConfig} from '@/config/machines'
+import {OnchainConfigHash} from './OnchainConfigHash'
 import {formatDecimalAmount, formatPercent} from '@/lib/format'
 
 /**
@@ -22,11 +16,9 @@ import {formatDecimalAmount, formatPercent} from '@/lib/format'
  * shop window, and it says so rather than pretending to be playable.
  */
 export function FeaturedMachine({machine}: {machine: MachineConfig}) {
-  const status = resolveMode()
   const assets = assetsOnMachine(machine)
   const odds = rarityOdds(machine)
   const tiers = tierOdds(machine)
-  const isDemo = status.mode === 'demo'
 
   return (
     <div>
@@ -39,8 +31,8 @@ export function FeaturedMachine({machine}: {machine: MachineConfig}) {
           <h2 className="text-title text-ink">{machine.name}</h2>
           <p className="mt-3 text-lede text-ink-muted">{machine.tagline}</p>
         </div>
-        <Pill tone={isDemo ? 'warn' : 'live'}>
-          {isDemo ? 'Demo configuration' : `Version hash ${demoConfigFingerprint(machine)}`}
+        <Pill tone="live">
+          Config <OnchainConfigHash machine={machine} className="ml-1" />
         </Pill>
       </div>
 

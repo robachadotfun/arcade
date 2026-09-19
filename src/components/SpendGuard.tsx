@@ -10,7 +10,6 @@ import {
   limitMessage,
   type SessionUsage,
 } from '@/config/compliance'
-import {resolveMode, isLiveMode} from '@/config/mode'
 import {useIsMounted, useLocalStorageValue, safeGetItem, safeSetItem} from '@/hooks/useClientState'
 import type {SpinPhase} from '@/hooks/useSpin'
 
@@ -53,7 +52,6 @@ export function SpendGuard({
   phase: SpinPhase
   onBlockedChange: (message: string | null) => void
 }) {
-  const status = resolveMode()
   const mounted = useIsMounted()
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -127,7 +125,6 @@ export function SpendGuard({
     setDialogOpen(false)
   }
 
-  if (!isLiveMode(status.mode)) return null
   if (!mounted) return null
 
   const spendPct =

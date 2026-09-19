@@ -1,7 +1,7 @@
 'use client'
 
 import {Label, SectionHead, DataRow, Pill} from '../ui/Primitives'
-import {resolveMode, MODE_LABEL} from '@/config/mode'
+import {resolveMode, modeLabel} from '@/config/mode'
 import {MACHINES, LIVE_MACHINES} from '@/config/machines'
 import {REWARD_ASSETS, VERIFICATION_META} from '@/config/rewards'
 import {useActivity} from '@/hooks/useActivity'
@@ -10,7 +10,7 @@ import {formatCount} from '@/lib/format'
 /** Operator overview. Every number is live, configured, or explicitly marked unavailable. */
 export function AdminOverview() {
   const status = resolveMode()
-  const {records, loading, error, simulated} = useActivity({limit: 100})
+  const {records, loading, error} = useActivity({limit: 100})
 
   const settled = records.filter((r) => r.status === 'settled').length
   const pending = records.filter((r) => r.status === 'pending').length
@@ -21,7 +21,7 @@ export function AdminOverview() {
       <SectionHead eyebrow="Overview" title="Current state" />
 
       <div className="mt-10 grid gap-8 border-y border-hairline py-8 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Mode" value={MODE_LABEL[status.mode]} />
+        <Stat label="Network" value={modeLabel(status.mode)} />
         <Stat label="Machines live" value={`${LIVE_MACHINES.length} / ${MACHINES.length}`} />
         <Stat label="Reward assets" value={formatCount(REWARD_ASSETS.length)} />
         <Stat
@@ -46,11 +46,6 @@ export function AdminOverview() {
                 <DataRow label="Pending" value={String(pending)} mono />
                 <DataRow label="Refunded" value={String(refunded)} mono />
               </dl>
-              {simulated ? (
-                <p className="mt-3 text-[0.8125rem] text-signal-warn">
-                  Demo mode: these are local simulations from this browser, not chain state.
-                </p>
-              ) : null}
               {pending > 0 ? (
                 <p className="mt-3 max-w-[54ch] text-[0.8125rem] leading-relaxed text-ink-muted">
                   Pending spins are waiting on a reveal. If any sits past its window, anyone can
@@ -67,12 +62,10 @@ export function AdminOverview() {
             <DataRow
               label="Contracts"
               value={
-                status.kind === 'ready' && status.mode !== 'demo' ? (
+                status.kind === 'ready' ? (
                   <Pill tone="live">Configured</Pill>
-                ) : status.kind === 'misconfigured' ? (
-                  <Pill tone="stop">Missing addresses</Pill>
                 ) : (
-                  <Pill tone="warn">Demo — none needed</Pill>
+                  <Pill tone="stop">Missing configuration</Pill>
                 )
               }
             />
@@ -89,8 +82,8 @@ export function AdminOverview() {
           </dl>
           {status.kind === 'misconfigured' ? (
             <p className="mt-3 max-w-[54ch] text-[0.8125rem] leading-relaxed text-signal-stop">
-              Missing: {status.missing.join(', ')}. Arcade refuses to offer spins in this state
-              rather than silently simulating them.
+              Missing: {status.missing.join(', ')}. Arcade refuses to offer spins in this state.
+              There is no simulated mode to fall back to.
             </p>
           ) : null}
         </div>

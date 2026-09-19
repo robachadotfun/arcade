@@ -3,7 +3,7 @@ import Link from 'next/link'
 import {SectionHead, Label, DataRow, Pill, ExternalLink} from '@/components/ui/Primitives'
 import {MediaCredits, EditorialImage} from '@/components/EditorialImage'
 import {ArcadeArt} from '@/components/ArcadeArt'
-import {resolveMode, MODE_LABEL} from '@/config/mode'
+import {resolveMode, modeLabel} from '@/config/mode'
 import {explorerUrl, ARC_MAINNET_ID, ARC_CONTRACTS, arcMainnet, arcTestnet} from '@/config/network'
 
 export const metadata: Metadata = {
@@ -55,9 +55,9 @@ const ROLES = [
 
 export default function ContractsPage() {
   const status = resolveMode()
-  const chainId = status.kind === 'ready' && status.chainId ? status.chainId : ARC_MAINNET_ID
+  const chainId = status.kind === 'ready' ? status.chainId : ARC_MAINNET_ID
   const contracts = status.kind === 'ready' ? status.contracts : null
-  const deployed = contracts !== null && status.mode !== 'demo'
+  const deployed = contracts !== null
 
   return (
     <div className="relative iso-grid">
@@ -84,7 +84,7 @@ export default function ContractsPage() {
       <section className="mt-14">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <Label>Deployed addresses</Label>
-          <Pill tone={deployed ? 'live' : 'warn'}>{MODE_LABEL[status.mode]}</Pill>
+          <Pill tone={deployed ? 'live' : 'warn'}>{modeLabel(status.mode)}</Pill>
         </div>
 
         {deployed && contracts ? (
@@ -112,9 +112,8 @@ export default function ContractsPage() {
         ) : (
           <div className="mt-5 max-w-[46rem] border border-hairline bg-paper-deep/50 p-6">
             <p className="text-[0.9375rem] leading-relaxed text-ink-soft">
-              Nothing is deployed for this build. Arcade is running in{' '}
-              {MODE_LABEL[status.mode].toLowerCase()}, so there are no addresses to publish — and
-              this page shows that rather than filling the table with placeholders that look real.
+              Nothing is deployed for this build, so there are no addresses to publish — and this
+              page shows that rather than filling the table with placeholders that look real.
             </p>
             <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
               Deploy with{' '}

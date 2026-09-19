@@ -28,3 +28,6 @@ public/generated/*.png
 
 # local reports
 /reports/
+
+# Randomness pre-images. Losing these forces refunds; leaking them reveals outcomes early.
+scripts/data/seeds/

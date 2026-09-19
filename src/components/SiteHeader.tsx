@@ -6,7 +6,7 @@ import {useState} from 'react'
 import {ArcadeLogo} from './ArcadeMark'
 import {WalletButton} from './WalletButton'
 import {Dot, Label} from './ui/Primitives'
-import {MODE_LABEL, resolveMode} from '@/config/mode'
+import {MODE_LABEL, modeLabel, resolveMode} from '@/config/mode'
 
 const NAV = [
   {href: '/play', label: 'Play'},
@@ -101,7 +101,7 @@ export function SiteHeader() {
             })}
           </ul>
           <div className="shell pb-4">
-            <Label>{MODE_LABEL[status.mode]}</Label>
+            <Label>{modeLabel(status.mode)}</Label>
           </div>
         </nav>
       ) : null}
@@ -125,13 +125,10 @@ function NetworkIndicator() {
     )
   }
 
-  const tone = status.mode === 'demo' ? 'warn' : 'live'
   return (
     <span className="hidden items-center gap-1.5 sm:flex">
-      <Dot tone={tone} pulse={status.mode !== 'demo'} />
-      <span className={`micro ${tone === 'warn' ? 'text-signal-warn' : 'text-signal-live'}`}>
-        {status.mode === 'demo' ? 'Demo mode' : MODE_LABEL[status.mode]}
-      </span>
+      <Dot tone="live" pulse />
+      <span className="micro text-signal-live">{MODE_LABEL[status.mode]}</span>
     </span>
   )
 }

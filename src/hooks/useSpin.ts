@@ -10,13 +10,11 @@ import {
 } from 'wagmi'
 import {parseUnits, formatUnits, type Hex} from 'viem'
 import {arcadeMachineManagerAbi} from '@/abi'
-import {resolveMode, isLiveMode, type ArcadeContracts} from '@/config/mode'
+import {resolveMode, type ArcadeContracts} from '@/config/mode'
 import {expectedChain} from '@/config/wagmi'
 import {NATIVE_USDC_DECIMALS} from '@/config/network'
-import {RARITY_LABEL, type MachineConfig, type Rarity} from '@/config/machines'
+import {type MachineConfig, type Rarity} from '@/config/machines'
 import {assetByAddress, type RewardAsset} from '@/config/rewards'
-import {drawDemoOutcome, type DemoOutcome} from '@/lib/demoOutcome'
-import {recordDemoActivity} from '@/lib/activity'
 import {useLocalStorageValue, safeSetItem, safeRemoveItem} from './useClientState'
 
 /**
@@ -24,16 +22,13 @@ import {useLocalStorageValue, safeSetItem, safeRemoveItem} from './useClientStat
  *
  * ## Invariants this hook is responsible for
  *
- * 1. **The outcome is never decided here in a live mode.** `requestSpin` sends a
- *    transaction; the result is read back from contract storage once randomness is revealed.
- *    The UI animates toward a result it was told about and cannot reach `revealed` without
- *    one.
- * 2. **A demo outcome can never be mistaken for a real one.** Demo results carry
- *    `simulated: true` all the way to the screen, and this hook throws rather than fabricate
- *    one in a live mode.
- * 3. **No infinite spinners.** Every waiting phase has a deadline; on expiry the hook moves
+ * 1. **The outcome is never decided here.** `requestSpin` sends a transaction; the result is
+ *    read back from contract storage once randomness is revealed. The UI animates toward a
+ *    result it was told about and cannot reach `revealed` without one. There is no branch in
+ *    this hook — or anywhere else — that can produce an outcome without the chain.
+ * 2. **No infinite spinners.** Every waiting phase has a deadline; on expiry the hook moves
  *    to an error phase carrying a recovery action.
- * 4. **Refreshing mid-spin does not lose the spin.** The pending spin id lives in local
+ * 3. **Refreshing mid-spin does not lose the spin.** The pending spin id lives in local
  *    storage, which is the single source of truth — read as a snapshot rather than
  *    duplicated into component state, so the two can never disagree.
  *
@@ -66,7 +61,6 @@ type ActivePhase = Extract<
 >
 
 export type SpinOutcome = {
-  simulated: boolean
   spinId: string
   asset: RewardAsset | undefined
   rarity: Rarity
@@ -245,10 +239,10 @@ function deriveRestingState(
       phase: 'blocked',
       error: {
         code: 'not-configured',
-        title: `${status.mode} mode is not configured`,
-        detail: `Arcade is set to ${status.mode} but these contract addresses are missing: ${status.missing.join(', ')}.`,
+        title: 'Arcade is not connected to a deployment',
+        detail: `Missing configuration: ${status.missing.join(', ')}.`,
         recovery:
-          'Arcade will not simulate a spin while a live mode is selected. Set the addresses, or switch NEXT_PUBLIC_ARCADE_MODE to demo.',
+          'Arcade has no simulated mode to fall back to, and will not invent an outcome. Deploy the contracts and set these variables.',
         retryable: false,
       },
     }
@@ -266,9 +260,6 @@ function deriveRestingState(
       },
     }
   }
-
-  // Demo mode needs no wallet at all.
-  if (status.mode === 'demo') return {phase: 'ready', error: null}
 
   if (!isConnected) return {phase: 'needs-wallet', error: null}
   if (chainId !== expectedChain.id) return {phase: 'wrong-network', error: null}
@@ -291,8 +282,7 @@ export function useSpin(machine: MachineConfig) {
   const deadlineRef = useRef<number | null>(null)
 
   // Primitives pulled out of `status` so every dependency list below is statically checkable.
-  const mode = status.mode
-  const live = isLiveMode(mode)
+  const configured = status.kind === 'ready'
   const contracts: ArcadeContracts | null = status.kind === 'ready' ? status.contracts : null
   const managerAddress = contracts?.machineManager
   const machineId = machine.onchainId
@@ -301,7 +291,7 @@ export function useSpin(machine: MachineConfig) {
 
   const {data: balance} = useBalance({
     address,
-    query: {enabled: Boolean(address) && live, refetchInterval: 20_000},
+    query: {enabled: Boolean(address) && configured, refetchInterval: 20_000},
   })
 
   const receipt = useWaitForTransactionReceipt({
@@ -357,7 +347,7 @@ export function useSpin(machine: MachineConfig) {
   const receiptFailed = receiptMissingSpinId && activePhase === 'pending-tx'
   // A spin recovered from storage is in flight whatever this session happens to think.
   const resumed =
-    live && Boolean(pendingSpinId) && activePhase !== 'revealed' && activePhase !== 'error'
+    configured && Boolean(pendingSpinId) && activePhase !== 'revealed' && activePhase !== 'error'
 
   const phase: SpinPhase = receiptFailed
     ? 'error'
@@ -399,7 +389,6 @@ export function useSpin(machine: MachineConfig) {
 
       const asset = assetByAddress(spin.rewardToken)
       setOutcome({
-        simulated: false,
         spinId,
         asset,
         // The rarity band travels on the SpinSettled event; the stored record holds the token
@@ -489,65 +478,23 @@ export function useSpin(machine: MachineConfig) {
     }
   }, [phase, pendingSpinId, publicClient, managerAddress, writeContractAsync])
 
-  // ------------------------------------------------------------------ demo spin
+  // ------------------------------------------------------------------ the spin
   //
-  // These handlers are deliberately plain functions. The React Compiler memoises them
-  // automatically, and hand-written useCallback wrappers here only produced dependency
-  // lists that disagreed with the inferred ones — which disables the compiler for the
-  // whole hook and makes things slower, not faster.
-  function runDemoSpin() {
-    // Guard: unreachable in a live mode, and an exception rather than a silent fallback so a
-    // regression cannot quietly start presenting fabricated outcomes as real ones.
-    if (isLiveMode(mode)) {
-      throw new Error('runDemoSpin called in a live mode — refusing to fabricate an outcome.')
-    }
-
-    setActiveError(null)
-    setOutcome(null)
-    setActivePhase('pending-tx')
-
-    window.setTimeout(() => setActivePhase('awaiting-randomness'), 600)
-    window.setTimeout(() => setActivePhase('settling'), 1300)
-    window.setTimeout(() => {
-      const drawn: DemoOutcome = drawDemoOutcome(machine)
-      setOutcome({
-        simulated: true,
-        spinId: drawn.demoSpinId,
-        asset: drawn.asset,
-        rarity: drawn.rarity,
-        amount: drawn.amount.toString(),
-        delivered: true,
-      })
-      setActivePhase('revealed')
-
-      recordDemoActivity({
-        spinId: drawn.demoSpinId,
-        simulated: true,
-        player: address ?? 'demo',
-        machineSlug: machine.slug,
-        machineName: machine.name,
-        machineVersion: 0,
-        status: 'settled',
-        pricePaid: machine.spinPriceUsdc,
-        rewardSymbol: drawn.asset?.symbol,
-        rewardAmount: drawn.amount.toString(),
-        rarity: RARITY_LABEL[drawn.rarity],
-        timestamp: Date.now(),
-      })
-    }, 2600)
-  }
-
+  // This handler is deliberately a plain function. The React Compiler memoises it
+  // automatically, and a hand-written useCallback wrapper here only produced a dependency
+  // list that disagreed with the inferred one — which disables the compiler for the whole
+  // hook and makes things slower, not faster.
   // ------------------------------------------------------------------ live spin
-  async function runLiveSpin() {
+  async function runSpin() {
     if (!managerAddress || !publicClient) {
       // Should be unreachable: the derived resting state already blocks the button. Surfaced
       // as an error rather than a silent return, so a regression in that guard is visible.
       setActivePhase('error')
       setActiveError({
         code: 'not-configured',
-        title: 'Arcade is not configured for this mode',
+        title: 'Arcade is not connected to a deployment',
         detail: 'Contract addresses or an RPC client are missing, so no spin can be submitted.',
-        recovery: 'Set the contract addresses, or switch to demo mode.',
+        recovery: 'Set the contract addresses for a deployed Arcade stack.',
         retryable: false,
       })
       return
@@ -595,11 +542,7 @@ export function useSpin(machine: MachineConfig) {
   }
 
   function spin() {
-    if (mode === 'demo') {
-      runDemoSpin()
-      return
-    }
-    void runLiveSpin()
+    void runSpin()
   }
 
   function reset() {
@@ -630,6 +573,5 @@ export function useSpin(machine: MachineConfig) {
     forget,
     spinPrice,
     balance: balance?.value,
-    simulated: mode === 'demo',
   }
 }

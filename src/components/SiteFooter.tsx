@@ -72,7 +72,7 @@ export function SiteFooter() {
                 </Link>
               </li>
             ))}
-            {contracts && status.mode !== 'demo' ? (
+            {contracts ? (
               <li>
                 <a
                   href={explorerUrl(chainId, 'address', contracts.machineManager)}

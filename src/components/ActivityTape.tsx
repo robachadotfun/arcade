@@ -10,8 +10,8 @@ import {explorerUrl} from '@/config/network'
  * The activity tape.
  *
  * Reads like a financial tape rather than a generic table: monospaced columns, hairline
- * rules, tabular figures, no zebra striping. Simulated rows are marked in text on the row
- * itself, not just in a legend somewhere else on the page.
+ * rules, tabular figures, no zebra striping. Every row is an indexed onchain event; there is
+ * no other kind of row this component can render.
  */
 export function ActivityTape({
   records,
@@ -94,7 +94,7 @@ export function ActivityTape({
 
             {/* player */}
             <span className="font-mono text-[0.75rem] text-ink-muted">
-              {record.simulated ? 'you (demo)' : shortAddress(record.player)}
+              {shortAddress(record.player)}
             </span>
 
             {/* machine */}
@@ -104,9 +104,11 @@ export function ActivityTape({
                 className="text-[0.875rem] text-ink transition-colors hover:text-arc"
               >
                 {record.machineName}
-                <span className="ml-1.5 font-mono text-[0.6875rem] text-ink-faint">
-                  v{record.machineVersion}
-                </span>
+                {record.machineVersion !== undefined ? (
+                  <span className="ml-1.5 font-mono text-[0.6875rem] text-ink-faint">
+                    v{record.machineVersion}
+                  </span>
+                ) : null}
               </Link>
             ) : null}
 
@@ -129,9 +131,6 @@ export function ActivityTape({
               ) : (
                 <span className="text-[0.875rem] text-ink-faint">Refunded {record.pricePaid} USDC</span>
               )}
-              {record.simulated ? (
-                <span className="micro text-signal-warn">simulated</span>
-              ) : null}
             </span>
 
             {/* status */}
@@ -142,12 +141,10 @@ export function ActivityTape({
             {/* tx */}
             {!compact ? (
               <span className="mt-2 block md:mt-0">
-                {record.settlementTx && !record.simulated ? (
+                {record.settlementTx ? (
                   <ExternalLink href={explorerUrl(chainId, 'tx', record.settlementTx)}>
                     <span className="font-mono text-[0.75rem]">{shortHash(record.settlementTx)}</span>
                   </ExternalLink>
-                ) : record.simulated ? (
-                  <span className="font-mono text-[0.75rem] text-ink-faint">no tx</span>
                 ) : (
                   <span className="font-mono text-[0.75rem] text-ink-faint">—</span>
                 )}

@@ -37,8 +37,10 @@ A complete, working MVP: five Solidity contracts with 61 tests, a verified rewar
 built from live Arc Mainnet data, and a Next.js application implementing the full spin
 lifecycle with every failure path designed.
 
-It runs in three modes. In `demo` it is fully explorable with no wallet and no funds. In
-`testnet` and `mainnet` it transacts for real.
+It runs against Arc Testnet or Arc Mainnet. There is **no demo or simulation mode**: every
+outcome is decided by the machine manager contract and read back from chain state, and no
+code path exists that can produce one without the chain. Arcade therefore needs a deployment
+to do anything, and says exactly what is missing when it does not have one.
 
 ---
 
@@ -93,16 +95,18 @@ Arcade/
 │   ├── components/             UI, incl. the Orbit Machine and admin console
 │   ├── config/
 │   │   ├── network.ts          Arc chain definitions + canonical addresses
-│   │   ├── mode.ts             demo / testnet / mainnet resolution
+│   │   ├── mode.ts             network + contract resolution
 │   │   ├── rewards.ts          reward registry, derived from the verification report
 │   │   ├── machines.ts         machine templates and reward tables
 │   │   ├── compliance.ts       responsible-play limits
 │   │   └── wagmi.ts            wallet configuration
 │   ├── content/                FAQ and legal copy
 │   ├── hooks/                  useSpin, useActivity, client-state helpers
-│   └── lib/                    economics, formatting, activity, demo outcomes
+│   └── lib/                    economics, formatting, activity
 │
 ├── scripts/
+│   ├── operator.ts             operator CLI — setup and the reveal daemon
+│   ├── operator/               signer context and the randomness seed store
 │   ├── verify-arc-tokens.ts    onchain token verification (the important one)
 │   ├── export-abis.ts          contracts/out → typed TS modules
 │   ├── generate-arcade-art.ts  isometric art pack (OpenAI, build-time only)
@@ -134,7 +138,7 @@ Requires **Node 22+**, **pnpm**, and **Foundry** for contract work.
 git clone --recurse-submodules git@github.com:robachadotfun/arcade.git
 cd arcade
 pnpm install
-cp .env.example .env.local     # defaults to demo mode; works immediately
+cp .env.example .env.local     # then fill in a network and deployed addresses
 pnpm dev
 ```
 
@@ -163,11 +167,12 @@ forge test -vv
 | `pnpm build` | Production build |
 | `pnpm lint` | ESLint, including the React Compiler rules |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | Vitest (economics, compliance, formatting, demo outcomes) |
+| `pnpm test` | Vitest (economics, compliance, formatting, commitment hashing) |
 | `pnpm verify:all` | lint + typecheck + test + build |
 | `pnpm verify:tokens` | Re-verify reward candidates against Arc Mainnet |
 | `pnpm export:abis` | Regenerate typed ABIs from `contracts/out` |
 | `pnpm fetch:media` | Download licensed photography and rebuild attribution |
+| `pnpm operator` | Operator CLI — setup, funding, and the reveal daemon |
 | `pnpm fetch:logos` | Download real token logos and rebuild the logo manifest |
 | `pnpm generate:art` | Generate the isometric art pack (needs `OPENAI_API_KEY`) |
 | `pnpm optimize:images` | Convert art, photography and logos to web-sized WebP |
@@ -216,29 +221,57 @@ browser wallet works. Testnet USDC comes from the Circle faucet.
 
 ---
 
-## Running in each mode
+## Going live
 
-`NEXT_PUBLIC_ARCADE_MODE` selects the mode.
+A deployed stack is not a working one. `ArcadeMachineManager` will reject a spin until
+randomness commitments exist and the vault can cover the worst case for every token on the
+machine — and once it does accept spins, **something has to reveal the randomness**, or every
+spin expires and is refunded with the operator bond slashed.
 
-### demo
+`pnpm operator` is that something. Run `pnpm operator status` at any point; it reports every
+remaining blocker and ends with a plain answer to "can a spin happen right now?".
 
-No wallet required, no funds move, nothing settles onchain. Outcomes are drawn from
-`crypto.getRandomValues` using the same weighting the contract uses, so the demo is an honest
-preview of the odds rather than a flattering one. Every simulated result is stamped
-`simulated: true` and labelled in the UI.
+```bash
+# 1. Deploy. ARCADE_ADMIN should be a multisig for anything holding real value.
+cd contracts
+forge script script/Deploy.s.sol:Deploy --rpc-url $ARC_MAINNET_RPC_URL --broadcast --verify
 
-### testnet
+# 2. Put the five printed addresses in .env.local, plus NEXT_PUBLIC_ARCADE_MODE
+#    and ARCADE_OPERATOR_PRIVATE_KEY.
 
-Real transactions on Arc Testnet against test-only contracts and test-only assets.
+# 3. Bring the stack up.
+pnpm operator commitments 500      # publish randomness commitments, ahead of demand
+pnpm operator bond 500             # post the operator bond
+pnpm operator register-tokens      # register the verified reward assets
+pnpm operator fund ARGUS 200000    # deposit inventory — repeat per reward token
+pnpm operator machines             # create machines, publish reward tables
 
-### mainnet
+# 4. Copy the printed NEXT_PUBLIC_ARCADE_MACHINE_IDS into .env.local and rebuild.
 
-Real transactions, real USDC.
+# 5. Keep this running for as long as Arcade accepts spins.
+pnpm operator reveal
+```
 
-**Mainnet never silently degrades to demo.** If a live mode is selected while any contract
-address is missing, `resolveMode()` returns `misconfigured`, the UI refuses to offer spins,
-and the header shows "Not configured". A player must never see a fabricated outcome while
-believing it is real.
+Reward inventory has to be acquired on the open market first — nothing here mints it, and
+`fund` refuses rather than partially depositing if the signer's balance is short.
+
+### The seed store
+
+Commit–reveal means pre-images have to survive between the commit and the reveal. They live
+in `scripts/data/seeds/<chainId>-<randomness>.json`, written `0600` and gitignored.
+
+Lose it and every unrevealed commitment becomes unrevealable: those spins expire and are
+refunded with a penalty slashed per spin. Leak it before the matching spins resolve and the
+holder can predict those outcomes — they still cannot change one, since the anchor blockhash
+did not exist at commit time, but foreknowledge is enough to decide when to play. **Back it
+up as carefully as the key.**
+
+### Not configured
+
+With `NEXT_PUBLIC_ARCADE_MODE` or any contract address unset, `resolveMode()` returns
+`misconfigured`, the UI refuses to offer spins, and the header shows "Not configured" with
+the missing variables named. There is nothing to fall back *to* — which is the point. A
+player must never see a fabricated outcome while believing it is real.
 
 ---
 
@@ -484,15 +517,20 @@ Machine odds sum to 1 and every configured token is in the verified registry; th
 module blocks negative-margin, over-ceiling, unverified-token, empty-table and
 inventory-short configurations; session limit boundaries and self-exclusion precedence;
 decimal formatting across 6/8/18-decimal tokens including that a small cirBTC reward never
-renders as `0.00`; sub-1% odds stay legible; demo outcomes always flagged simulated, always
-inside their band, and distributed within 1.5pp of published odds over 30,000 samples.
+renders as `0.00`; sub-1% odds stay legible; and the commitment digest the operator tooling
+publishes matches the one `CommitRevealRandomness.reveal` recomputes — pinned against
+Solidity, because a mismatch there would make every published commitment unrevealable.
 
 ### Manual verification performed
 
-Demo spin lifecycle driven end to end in a real browser
-(`pending-tx → awaiting-randomness → settling → revealed`), session counters verified to
-record exactly one spin, spend-limit blocking confirmed, and responsive layouts checked at
-375 / 768 / 1440 px.
+The full lifecycle driven end to end against a local fork of Arc Mainnet: contracts
+deployed, all 13 reward assets registered (which re-asserts `symbol()`/`decimals()` against
+the real token contracts), inventory funded, four machines created with reward tables
+published, then a real `requestSpin` paying 2 USDC — the reveal daemon picked the request up
+unprompted, revealed it, and settlement pushed 18,059.89 ARCAT to the player's wallet. The
+stored random word was then recomputed independently from the revealed seed, salt, entropy
+and anchor blockhash, and matched. Session counters verified to record exactly one spin,
+spend-limit blocking confirmed, and responsive layouts checked at 375 / 768 / 1440 px.
 
 Three genuine bugs were found and fixed this way, all invisible to the type checker: an
 infinite render loop where a storage write invalidated the snapshot its own effect depended

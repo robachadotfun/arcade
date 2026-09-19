@@ -7,11 +7,10 @@ import {Label} from './ui/Primitives'
 /**
  * Homepage activity preview.
  *
- * Shows genuine indexed events, the locally-simulated demo tape, or an honest zero state.
- * It never invents rows.
+ * Shows genuine indexed events or an honest zero state. It never invents rows.
  */
 export function ActivityPreview() {
-  const {records, loading, error, simulated} = useActivity({limit: 6})
+  const {records, loading, error} = useActivity({limit: 6})
   const chainId = useActivityChainId()
 
   if (loading) {
@@ -46,18 +45,9 @@ export function ActivityPreview() {
         chainId={chainId}
         compact
         emptyTitle="No spins yet."
-        emptyBody={
-          simulated
-            ? 'Demo mode records the spins you run in this browser. Nothing else is shown here, because nothing else has happened.'
-            : 'This deployment has settled no spins. Be the first.'
-        }
+        emptyBody="This deployment has settled no spins. Be the first."
         emptyAction={{href: '/play', label: 'Open the machine'}}
       />
-      {simulated && records.length > 0 ? (
-        <p className="mt-4 text-[0.8125rem] text-ink-faint">
-          Every row above is a local simulation from this browser. No transaction exists.
-        </p>
-      ) : null}
     </div>
   )
 }

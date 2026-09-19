@@ -4,7 +4,6 @@ import {useState} from 'react'
 import {useConnection, useConnect, useDisconnect, useBalance, useSwitchChain, type Connector} from 'wagmi'
 import {Button, Modal, Label, DataRow, Dot} from './ui/Primitives'
 import {expectedChain} from '@/config/wagmi'
-import {resolveMode, isLiveMode} from '@/config/mode'
 import {formatUsdc, shortAddress} from '@/lib/format'
 import {useIsMounted} from '@/hooks/useClientState'
 
@@ -16,7 +15,6 @@ import {useIsMounted} from '@/hooks/useClientState'
  * component library.
  */
 export function WalletButton() {
-  const status = resolveMode()
   const {address, isConnected, chainId, connector} = useConnection()
   const {connect, connectors, isPending, error} = useConnect()
   const {disconnect} = useDisconnect()
@@ -38,26 +36,6 @@ export function WalletButton() {
       <Button variant="secondary" size="sm" disabled>
         Connect Wallet
       </Button>
-    )
-  }
-
-  // Demo mode: a wallet is optional, so this is an invitation rather than a gate.
-  if (status.mode === 'demo' && !isConnected) {
-    return (
-      <>
-        <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-          Connect Wallet
-        </Button>
-        <ConnectDialog
-          open={open}
-          onClose={() => setOpen(false)}
-          connectors={connectors}
-          onConnect={(c) => connect({connector: c})}
-          isPending={isPending}
-          error={error?.message}
-          note="Demo mode does not require a wallet. Connecting only personalises the interface — no transaction is ever requested."
-        />
-      </>
     )
   }
 
@@ -101,7 +79,7 @@ export function WalletButton() {
       >
         <Dot tone="live" />
         <span className="font-mono text-[0.75rem] text-ink">{shortAddress(address)}</span>
-        {balance && isLiveMode(status.mode) ? (
+        {balance ? (
           <span className="hidden font-mono text-[0.75rem] text-ink-muted sm:inline" data-numeric="">
             {formatUsdc(balance.value)}
           </span>

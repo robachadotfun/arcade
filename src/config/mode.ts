@@ -1,19 +1,24 @@
 import {ARC_MAINNET_ID, ARC_TESTNET_ID, type ArcChainId} from './network'
 
 /**
- * Arcade runs in one of three modes, chosen by `NEXT_PUBLIC_ARCADE_MODE`.
+ * Arcade runs against a real Arc network, chosen by `NEXT_PUBLIC_ARCADE_MODE`.
  *
- * The rule that matters: **mainnet never silently degrades to demo.** If mainnet is
- * selected but the required contract addresses are missing, {@link resolveMode} returns a
- * `misconfigured` mode and the UI refuses to offer spins rather than quietly simulating
- * them. A player must never see a fake outcome while believing it is real.
+ * There is no demo, simulation or offline mode, and adding one back would be a mistake. Every
+ * outcome this product shows is decided by the machine manager contract and read back from
+ * chain state. There is no code path that can invent one.
+ *
+ * The consequence is that Arcade needs a deployment to do anything, and says so plainly when
+ * it does not have one: {@link resolveMode} returns `misconfigured` listing exactly which
+ * environment variables are missing, and the UI refuses to offer spins. That refusal is the
+ * feature. A player must never see an outcome that did not happen onchain.
  */
 
-export type ArcadeMode = 'demo' | 'testnet' | 'mainnet'
+export type ArcadeMode = 'testnet' | 'mainnet'
 
 export type ModeStatus =
-  | {kind: 'ready'; mode: ArcadeMode; chainId: ArcChainId | null; contracts: ArcadeContracts}
-  | {kind: 'misconfigured'; mode: ArcadeMode; missing: string[]}
+  | {kind: 'ready'; mode: ArcadeMode; chainId: ArcChainId; contracts: ArcadeContracts}
+  /** `mode` is null when `NEXT_PUBLIC_ARCADE_MODE` itself is unset or unrecognised. */
+  | {kind: 'misconfigured'; mode: ArcadeMode | null; missing: string[]}
 
 export type ArcadeContracts = {
   machineManager: `0x${string}`
@@ -30,38 +35,54 @@ function readAddress(value: string | undefined): `0x${string}` | null {
   return value as `0x${string}`
 }
 
-export function rawMode(): ArcadeMode {
+/**
+ * The configured network, or null if none was configured.
+ *
+ * There is deliberately no default. Guessing here would mean guessing whether the operator
+ * meant real money, and an unconfigured build should be inert and loud rather than pointed at
+ * mainnet by accident.
+ */
+export function rawMode(): ArcadeMode | null {
   const raw = process.env.NEXT_PUBLIC_ARCADE_MODE?.toLowerCase()
-  if (raw === 'mainnet' || raw === 'testnet' || raw === 'demo') return raw
-  // Default to demo: the safest failure is one that cannot touch real funds.
-  return 'demo'
+  if (raw === 'mainnet' || raw === 'testnet') return raw
+  return null
 }
 
+export const MODE_ENV = 'NEXT_PUBLIC_ARCADE_MODE'
+
+const CONTRACT_ENV: Array<[keyof ArcadeContracts, string]> = [
+  ['machineManager', 'NEXT_PUBLIC_ARCADE_MACHINE_MANAGER'],
+  ['prizeVault', 'NEXT_PUBLIC_ARCADE_PRIZE_VAULT'],
+  ['rewardRegistry', 'NEXT_PUBLIC_ARCADE_REWARD_REGISTRY'],
+  ['randomness', 'NEXT_PUBLIC_ARCADE_RANDOMNESS'],
+  ['feeRouter', 'NEXT_PUBLIC_ARCADE_FEE_ROUTER'],
+]
+
 /**
- * Resolves the effective mode, validating that everything a live mode needs is present.
+ * Resolves the network and its contracts, validating that everything is present.
+ *
+ * Next inlines `NEXT_PUBLIC_*` at build time by matching the literal text `process.env.X`, so
+ * each variable is read through an explicit property access below rather than a computed
+ * lookup. A loop over names would read `undefined` in the browser.
  */
 export function resolveMode(): ModeStatus {
   const mode = rawMode()
 
-  if (mode === 'demo') {
-    return {kind: 'ready', mode, chainId: null, contracts: DEMO_CONTRACTS}
+  const values: Record<keyof ArcadeContracts, string | undefined> = {
+    machineManager: process.env.NEXT_PUBLIC_ARCADE_MACHINE_MANAGER,
+    prizeVault: process.env.NEXT_PUBLIC_ARCADE_PRIZE_VAULT,
+    rewardRegistry: process.env.NEXT_PUBLIC_ARCADE_REWARD_REGISTRY,
+    randomness: process.env.NEXT_PUBLIC_ARCADE_RANDOMNESS,
+    feeRouter: process.env.NEXT_PUBLIC_ARCADE_FEE_ROUTER,
   }
-
-  const chainId: ArcChainId = mode === 'mainnet' ? ARC_MAINNET_ID : ARC_TESTNET_ID
-
-  const entries: Array<[keyof ArcadeContracts, string, string | undefined]> = [
-    ['machineManager', 'NEXT_PUBLIC_ARCADE_MACHINE_MANAGER', process.env.NEXT_PUBLIC_ARCADE_MACHINE_MANAGER],
-    ['prizeVault', 'NEXT_PUBLIC_ARCADE_PRIZE_VAULT', process.env.NEXT_PUBLIC_ARCADE_PRIZE_VAULT],
-    ['rewardRegistry', 'NEXT_PUBLIC_ARCADE_REWARD_REGISTRY', process.env.NEXT_PUBLIC_ARCADE_REWARD_REGISTRY],
-    ['randomness', 'NEXT_PUBLIC_ARCADE_RANDOMNESS', process.env.NEXT_PUBLIC_ARCADE_RANDOMNESS],
-    ['feeRouter', 'NEXT_PUBLIC_ARCADE_FEE_ROUTER', process.env.NEXT_PUBLIC_ARCADE_FEE_ROUTER],
-  ]
 
   const missing: string[] = []
   const resolved: Partial<ArcadeContracts> = {}
 
-  for (const [key, envName, value] of entries) {
-    const address = readAddress(value)
+  if (mode === null) missing.push(MODE_ENV)
+
+  for (const [key, envName] of CONTRACT_ENV) {
+    const address = readAddress(values[key])
     if (!address) {
       missing.push(envName)
     } else {
@@ -69,40 +90,29 @@ export function resolveMode(): ModeStatus {
     }
   }
 
-  if (missing.length > 0) {
-    // Deliberately NOT falling back to demo. A misconfigured live mode is an error state
-    // the operator has to see and fix, not something to paper over with simulated spins.
+  if (mode === null || missing.length > 0) {
     return {kind: 'misconfigured', mode, missing}
   }
 
-  return {kind: 'ready', mode, chainId, contracts: resolved as ArcadeContracts}
-}
-
-/**
- * Placeholder addresses used only in demo mode, where no contract is ever called. They are
- * obviously non-real so they cannot be mistaken for a deployment.
- */
-export const DEMO_CONTRACTS: ArcadeContracts = {
-  machineManager: '0x0000000000000000000000000000000000000dEm0',
-  prizeVault: '0x0000000000000000000000000000000000000dEm1',
-  rewardRegistry: '0x0000000000000000000000000000000000000dEm2',
-  randomness: '0x0000000000000000000000000000000000000dEm3',
-  feeRouter: '0x0000000000000000000000000000000000000dEm4',
+  return {
+    kind: 'ready',
+    mode,
+    chainId: mode === 'mainnet' ? ARC_MAINNET_ID : ARC_TESTNET_ID,
+    contracts: resolved as ArcadeContracts,
+  }
 }
 
 export const MODE_LABEL: Record<ArcadeMode, string> = {
-  demo: 'Demo',
   testnet: 'Arc Testnet',
   mainnet: 'Arc Mainnet',
 }
 
 export const MODE_DESCRIPTION: Record<ArcadeMode, string> = {
-  demo: 'Simulated outcomes. No wallet required, no funds move, nothing is settled onchain.',
   testnet: 'Real transactions on Arc Testnet using test-only contracts and test-only assets.',
   mainnet: 'Real transactions on Arc Mainnet. Spins cost real USDC.',
 }
 
-/** True when a mode can actually move value. Gates every irreversible UI affordance. */
-export function isLiveMode(mode: ArcadeMode): boolean {
-  return mode === 'mainnet' || mode === 'testnet'
+/** Label for a mode that may not be configured yet. */
+export function modeLabel(mode: ArcadeMode | null): string {
+  return mode === null ? 'Not configured' : MODE_LABEL[mode]
 }

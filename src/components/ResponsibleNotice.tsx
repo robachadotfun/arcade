@@ -4,7 +4,6 @@ import {useState} from 'react'
 import Link from 'next/link'
 import {Button, Label} from './ui/Primitives'
 import {COMPLIANCE, COMPLIANCE_KEYS} from '@/config/compliance'
-import {resolveMode, isLiveMode} from '@/config/mode'
 import {useLocalStorageValue, safeSetItem} from '@/hooks/useClientState'
 
 /**
@@ -20,22 +19,22 @@ function parseAcknowledged(raw: string | null): boolean {
 /**
  * The entry acknowledgement.
  *
- * Shown once per browser before play in a live mode. It states plainly what Arcade is —
- * paying for a randomised outcome — because the one thing this interface must never do is
- * obscure that. Demo mode skips it: nothing there can cost anything.
+ * Shown once per browser before play. It states plainly what Arcade is — paying for a
+ * randomised outcome — because the one thing this interface must never do is obscure that.
+ * There is no mode in which this is skipped, because there is no mode in which a spin is
+ * free.
  *
  * Age is self-attested. That is a real limitation and it is labelled as one rather than
  * dressed up as verification.
  */
 export function ResponsibleNotice() {
-  const status = resolveMode()
   const [confirmed, setConfirmed] = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
   // Derived, not stored in an effect: the server renders "acknowledged" so the notice never
   // flashes on a return visit before hydration.
   const acknowledged = useLocalStorageValue(COMPLIANCE_KEYS.acknowledged, parseAcknowledged, true)
-  const needsAck = isLiveMode(status.mode) && !acknowledged && !dismissed
+  const needsAck = !acknowledged && !dismissed
 
   function acknowledge() {
     // If storage is unavailable the notice reappears next visit, which is the safe direction.

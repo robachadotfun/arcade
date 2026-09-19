@@ -12,7 +12,7 @@ export function MachineActivity({
   machineSlug: string
   machineName: string
 }) {
-  const {records, loading, error, simulated} = useActivity({limit: 40})
+  const {records, loading, error} = useActivity({limit: 40})
   const chainId = useActivityChainId()
   const forMachine = records.filter((r) => r.machineSlug === machineSlug).slice(0, 10)
 
@@ -39,11 +39,7 @@ export function MachineActivity({
       chainId={chainId}
       compact
       emptyTitle={`No ${machineName} spins yet.`}
-      emptyBody={
-        simulated
-          ? 'Demo mode only records spins you run in this browser.'
-          : 'Nothing has been settled on this machine. Be the first.'
-      }
+      emptyBody="Nothing has been settled on this machine. Be the first."
       emptyAction={{href: `/play?machine=${machineSlug}`, label: 'Open the machine'}}
     />
   )

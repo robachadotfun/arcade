@@ -13,13 +13,13 @@ import {
   LIVE_MACHINES,
   MACHINES,
   assetsOnMachine,
-  demoConfigFingerprint,
   machineBySlug,
   rarityOdds,
   tierOdds,
   type MachineConfig,
 } from '@/config/machines'
-import {resolveMode, MODE_DESCRIPTION, isLiveMode} from '@/config/mode'
+import {OnchainConfigHash} from './OnchainConfigHash'
+import {resolveMode, MODE_DESCRIPTION, MODE_LABEL} from '@/config/mode'
 import {explorerUrl, ARC_MAINNET_ID} from '@/config/network'
 import {useSpin, type SpinPhase} from '@/hooks/useSpin'
 import {formatDecimalAmount, formatPercent, formatUsdc} from '@/lib/format'
@@ -54,10 +54,9 @@ export function PlaySurface({initialSlug}: {initialSlug?: string}) {
       <MachineSwitcher current={machine} onSelect={setSlug} />
       <SpinConsole key={machine.slug} machine={machine} />
       <p className="mt-10 max-w-[68ch] text-[0.8125rem] leading-relaxed text-ink-faint">
-        {MODE_DESCRIPTION[status.mode]}{' '}
-        {isLiveMode(status.mode)
-          ? 'Most spins return less than the spin price. Rewards are not guaranteed to be worth more than what you paid.'
-          : ''}
+        {status.kind === 'ready' ? `${MODE_DESCRIPTION[status.mode]} ` : ''}
+        Most spins return less than the spin price. Rewards are not guaranteed to be worth more
+        than what you paid.
       </p>
       </div>
     </div>
@@ -173,10 +172,8 @@ function SpinConsole({machine}: {machine: MachineConfig}) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <h1 className="text-title text-ink">{machine.name}</h1>
-              <Pill tone={status.mode === 'demo' ? 'warn' : 'live'}>
-                {status.mode === 'demo'
-                  ? 'Demo — no funds move'
-                  : `Config ${demoConfigFingerprint(machine)}`}
+              <Pill tone="live">
+                Config <OnchainConfigHash machine={machine} className="ml-1" />
               </Pill>
             </div>
             <p className="mt-3 max-w-[52ch] text-[1rem] leading-relaxed text-ink-muted">
@@ -209,7 +206,7 @@ function SpinConsole({machine}: {machine: MachineConfig}) {
         {/* A live region: the outcome is announced, not only drawn. */}
         <p aria-live="polite" role="status" className="sr-only">
           {spin.phase === 'revealed' && spin.outcome
-            ? `Reward found: ${formatDecimalAmount(Number.parseFloat(spin.outcome.amount))} ${spin.outcome.asset?.symbol ?? 'tokens'}.${spin.outcome.simulated ? ' This was a simulation.' : ''}`
+            ? `Reward found: ${formatDecimalAmount(Number.parseFloat(spin.outcome.amount))} ${spin.outcome.asset?.symbol ?? 'tokens'}.`
             : busy
               ? 'Spin in progress.'
               : ''}
@@ -308,8 +305,6 @@ function StickySpinBar({
   onSpin: () => void
   onReset: () => void
 }) {
-  const status = resolveMode()
-
   // Nothing useful to offer in these states; the state card explains them in full.
   if (phase === 'blocked' || phase === 'error' || phase === 'needs-wallet' || phase === 'wrong-network') {
     return null
@@ -347,9 +342,7 @@ function StickySpinBar({
           // One full-width control carrying the price. At 375px a separate price block and a
           // button crowd each other, and the cost must stay unmistakable.
           <Button className="flex-1" size="lg" onClick={onSpin} disabled={blocked}>
-            {status.mode === 'demo'
-              ? `Simulate spin — ${machine.spinPriceUsdc} USDC`
-              : `Insert ${machine.spinPriceUsdc}.00 USDC`}
+            Insert {machine.spinPriceUsdc}.00 USDC
           </Button>
         )}
       </div>
@@ -545,7 +538,7 @@ function StateCard({
       <div className="relative overflow-hidden border border-arc/25 bg-arc-wash p-6">
         <div className="relative flex items-center justify-between gap-4">
           <Label className="text-arc">You found</Label>
-          {outcome.simulated ? <Pill tone="warn">Simulated</Pill> : <Pill tone="live">Settled</Pill>}
+          <Pill tone="live">Settled</Pill>
         </div>
 
         <p
@@ -562,7 +555,7 @@ function StateCard({
         </p>
 
         <dl className="mt-6 divide-y divide-hairline-faint border-y border-hairline-faint">
-          <DataRow label="Spin id" value={outcome.simulated ? outcome.spinId : `#${outcome.spinId}`} mono />
+          <DataRow label="Spin id" value={`#${outcome.spinId}`} mono />
           <DataRow label="Paid" value={`${machine.spinPriceUsdc}.00 USDC`} />
           <DataRow
             label="Delivery"
@@ -579,25 +572,16 @@ function StateCard({
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Button onClick={spin.reset}>Spin again</Button>
-          {!outcome.simulated && outcome.settlementTx ? (
+          {outcome.settlementTx ? (
             <ButtonLink href={explorerUrl(chainId, 'tx', outcome.settlementTx)} variant="secondary">
               View transaction
             </ButtonLink>
           ) : null}
-          <ButtonLink
-            href={outcome.simulated ? '/fairness' : `/fairness#spin-${outcome.spinId}`}
-            variant="ghost"
-          >
+          <ButtonLink href={`/fairness#spin-${outcome.spinId}`} variant="ghost">
             View proof
           </ButtonLink>
         </div>
 
-        {outcome.simulated ? (
-          <p className="mt-5 text-[0.75rem] leading-relaxed text-ink-faint">
-            This was a simulation. No transaction exists, no USDC was spent, and no token was
-            transferred.
-          </p>
-        ) : null}
       </div>
     )
   }
@@ -610,7 +594,7 @@ function StateCard({
       <dl className="mt-5 divide-y divide-hairline-faint border-y border-hairline-faint">
         <DataRow label="Machine" value={machine.name} />
         <DataRow label="Spin price" value={`${machine.spinPriceUsdc}.00 USDC`} />
-        <DataRow label="Network" value={status.mode === 'demo' ? 'Demo (none)' : 'Arc'} />
+        <DataRow label="Network" value={status.kind === 'ready' ? MODE_LABEL[status.mode] : 'Not configured'} />
         {isConnected && spin.balance !== undefined ? (
           <DataRow label="Your balance" value={`${formatUsdc(spin.balance)} USDC`} mono />
         ) : null}
@@ -634,15 +618,11 @@ function StateCard({
         onClick={onSpin}
         disabled={Boolean(spendBlocked)}
       >
-        {status.mode === 'demo'
-          ? `Simulate spin — ${machine.spinPriceUsdc} USDC`
-          : `Insert ${machine.spinPriceUsdc} USDC`}
+        Insert {machine.spinPriceUsdc} USDC
       </Button>
 
       <p className="mt-3 text-center text-[0.75rem] text-ink-faint">
-        {status.mode === 'demo'
-          ? 'Demo mode. Nothing is charged.'
-          : 'One signature. No approval step.'}
+        One signature. No approval step.
       </p>
     </div>
   )

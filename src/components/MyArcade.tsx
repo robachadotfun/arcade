@@ -5,11 +5,11 @@ import {prizeVaultAbi, arcadeMachineManagerAbi} from '@/abi'
 import {ActivityTape} from './ActivityTape'
 import {TokenGlyph} from './OrbitMachine'
 import {ClaimPanel} from './ClaimPanel'
-import {SectionHead, Label, ButtonLink, Pill, DataRow} from './ui/Primitives'
+import {SectionHead, Label, ButtonLink, DataRow} from './ui/Primitives'
 import {WalletButton} from './WalletButton'
 import {ArcadeArt} from './ArcadeArt'
 import {useActivity, useActivityChainId} from '@/hooks/useActivity'
-import {resolveMode, isLiveMode} from '@/config/mode'
+import {resolveMode} from '@/config/mode'
 import {REWARD_ASSETS} from '@/config/rewards'
 import {formatDecimalAmount, formatUsdc} from '@/lib/format'
 
@@ -25,7 +25,7 @@ import {formatDecimalAmount, formatUsdc} from '@/lib/format'
 export function MyArcade() {
   const status = resolveMode()
   const {address, isConnected} = useConnection()
-  const {records, loading, simulated} = useActivity({limit: 100, player: address})
+  const {records, loading} = useActivity({limit: 100, player: address})
   const chainId = useActivityChainId()
 
   const contracts = status.kind === 'ready' ? status.contracts : null
@@ -33,7 +33,7 @@ export function MyArcade() {
   // an object rebuilt on each render.
   const vaultAddress = contracts?.prizeVault
   const managerAddress = contracts?.machineManager
-  const canRead = Boolean(vaultAddress) && isLiveMode(status.mode) && Boolean(address)
+  const canRead = Boolean(vaultAddress) && Boolean(address)
 
   // Claimable balances across every registered reward asset, plus any native refund owed.
   // Not wrapped in useMemo: the React Compiler memoises this, and a hand-written dependency
@@ -77,9 +77,9 @@ export function MyArcade() {
   const lastResult = claimData?.[claimData.length - 1]
   const refundable = lastResult?.status === 'success' ? (lastResult.result as bigint) : 0n
 
-  const myRecords = simulated
-    ? records
-    : records.filter((r) => address && String(r.player).toLowerCase() === address.toLowerCase())
+  const myRecords = records.filter(
+    (r) => address && String(r.player).toLowerCase() === address.toLowerCase(),
+  )
 
   const settled = myRecords.filter((r) => r.status === 'settled')
 
@@ -103,7 +103,7 @@ export function MyArcade() {
   }
 
   // ------------------------------------------------------------------ zero states
-  if (!isConnected && isLiveMode(status.mode)) {
+  if (!isConnected) {
     return (
       <div className="shell py-14 md:py-20">
         <SectionHead
@@ -146,7 +146,6 @@ export function MyArcade() {
             </>
           }
         />
-        {simulated ? <Pill tone="warn">Demo — local simulations only</Pill> : null}
       </div>
 
       {/* ==================================================================== summary */}
@@ -160,20 +159,18 @@ export function MyArcade() {
         />
         <Stat
           label="Refundable"
-          value={isLiveMode(status.mode) ? `${formatUsdc(refundable)} USDC` : '—'}
+          value={`${formatUsdc(refundable)} USDC`}
           note={refundable > 0n ? 'From an abandoned spin' : 'None owed'}
         />
       </div>
 
       {/* ==================================================================== claims */}
-      {isLiveMode(status.mode) ? (
-        <section className="mt-16">
-          <SectionHead eyebrow="Claims" title="Anything still waiting for you." />
-          <div className="mt-8">
-            <ClaimPanel claimable={claimable} refundable={refundable} onClaimed={() => void refetch()} />
-          </div>
-        </section>
-      ) : null}
+      <section className="mt-16">
+        <SectionHead eyebrow="Claims" title="Anything still waiting for you." />
+        <div className="mt-8">
+          <ClaimPanel claimable={claimable} refundable={refundable} onClaimed={() => void refetch()} />
+        </div>
+      </section>
 
       {/* ================================================================ assets won */}
       <section className="mt-16">
@@ -241,7 +238,7 @@ export function MyArcade() {
         </div>
       </section>
 
-      {status.kind === 'ready' && contracts && isLiveMode(status.mode) ? (
+      {status.kind === 'ready' && contracts ? (
         <section className="mt-16 border-t border-hairline pt-8">
           <Label>Reading from</Label>
           <dl className="mt-4 max-w-[38rem] divide-y divide-hairline-faint border-y border-hairline-faint">

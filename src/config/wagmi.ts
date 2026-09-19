@@ -18,12 +18,14 @@ import {rawMode} from './mode'
  * it needs a third-party relay and a project id that this build does not have.
  */
 
+/**
+ * Null when `NEXT_PUBLIC_ARCADE_MODE` is unset. The wallet UI still has to render something
+ * coherent in that state — the operator needs to reach /admin to see what is missing — so an
+ * unconfigured build behaves like testnet here. It cannot transact regardless: every spin
+ * path is gated on `resolveMode()` returning `ready`, which an unconfigured build never does.
+ */
 const mode = rawMode()
 
-/**
- * Demo mode still includes a chain so the wallet UI is fully exercisable, but no contract
- * is ever called and no transaction is ever requested.
- */
 const chains = mode === 'mainnet' ? ([arcMainnet] as const) : ([arcTestnet, arcMainnet] as const)
 
 export const wagmiConfig = createConfig({

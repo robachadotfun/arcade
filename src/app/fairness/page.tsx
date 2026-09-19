@@ -8,7 +8,8 @@ import {ArcadeArt} from '@/components/ArcadeArt'
 import {FAIRNESS_FAQ} from '@/content/faq'
 import {resolveMode} from '@/config/mode'
 import {explorerUrl, ARC_MAINNET_ID} from '@/config/network'
-import {MACHINES, demoConfigFingerprint} from '@/config/machines'
+import {MACHINES} from '@/config/machines'
+import {OnchainConfigHash} from '@/components/OnchainConfigHash'
 
 export const metadata: Metadata = {
   title: 'Fairness',
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function FairnessPage() {
   const status = resolveMode()
-  const chainId = status.kind === 'ready' && status.chainId ? status.chainId : ARC_MAINNET_ID
+  const chainId = status.kind === 'ready' ? status.chainId : ARC_MAINNET_ID
   const contracts = status.kind === 'ready' ? status.contracts : null
 
   return (
@@ -166,7 +167,7 @@ export default function FairnessPage() {
         <div className="mt-10 grid gap-10 md:grid-cols-2">
           <div>
             <Label>Deployed addresses</Label>
-            {contracts && status.mode !== 'demo' ? (
+            {contracts ? (
               <dl className="mt-4 divide-y divide-hairline-faint border-y border-hairline-faint">
                 {(
                   [
@@ -191,9 +192,8 @@ export default function FairnessPage() {
             ) : (
               <div className="mt-4 border border-hairline bg-paper-deep/50 p-5">
                 <p className="text-[0.9375rem] leading-relaxed text-ink-soft">
-                  No contracts are deployed for this build. Arcade is running in demo mode, so
-                  there is nothing onchain to link to — and it says so rather than showing
-                  placeholder addresses.
+                  No contracts are configured for this build, so there is nothing onchain to
+                  link to — and it says so rather than showing placeholder addresses.
                 </p>
                 <p className="mt-3 text-[0.8125rem] leading-relaxed text-ink-faint">
                   Deploy with{' '}
@@ -215,15 +215,15 @@ export default function FairnessPage() {
                 <DataRow
                   key={machine.slug}
                   label={machine.name}
-                  value={<span className="font-mono text-[0.75rem]">{demoConfigFingerprint(machine)}</span>}
+                  value={<OnchainConfigHash machine={machine} className="text-[0.75rem]" />}
                 />
               ))}
             </dl>
             <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
-              In demo mode these are deterministic fingerprints of the development config,
-              prefixed <code className="font-mono">demo-</code> so they cannot be confused with an
-              onchain hash. A deployed machine publishes a keccak256 hash covering its id,
-              version, price and full reward table.
+              Each is the <code className="font-mono">configHash</code> that{' '}
+              <code className="font-mono">publishVersion</code> sealed onchain — a keccak256 over
+              the machine id, version, spin price, effective block and the full reward table.
+              Read it from the contract yourself and compare.
             </p>
           </div>
         </div>
@@ -233,9 +233,7 @@ export default function FairnessPage() {
       <section className="mt-20 md:mt-28">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHead eyebrow="Per-spin proof" title="The ledger." />
-          <Pill tone={status.mode === 'demo' ? 'warn' : 'live'}>
-            {status.mode === 'demo' ? 'Demo — local simulations' : 'Live from Arc'}
-          </Pill>
+          <Pill tone="live">Live from Arc</Pill>
         </div>
         <div className="mt-10">
           <FairnessLedger />
