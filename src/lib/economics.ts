@@ -75,6 +75,7 @@ export type MachineEconomics = {
   marginUsd: number | null
   tiers: TierEconomics[]
   liabilities: TokenLiability[]
+  /** Raw sum of tier weights, e.g. 10000 — NOT a fraction. Probabilities are weight/this. */
   weightsSumTo: number
   findings: Finding[]
   /** Worst severity across all findings. */

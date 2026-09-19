@@ -169,6 +169,7 @@ forge test -vv
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` | Vitest (economics, compliance, formatting, commitment hashing) |
 | `pnpm verify:all` | lint + typecheck + test + build |
+| `pnpm machine:audit` | Reward-table risk review: odds, liabilities, break-even basket |
 | `pnpm verify:tokens` | Re-verify reward candidates against Arc Mainnet |
 | `pnpm export:abis` | Regenerate typed ABIs from `contracts/out` |
 | `pnpm fetch:media` | Download licensed photography and rebuild attribution |
