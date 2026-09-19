@@ -1,0 +1,389 @@
+@import 'tailwindcss';
+
+/*
+  Arcade design system
+  ====================
+
+  An editorial financial product that happens to be an arcade. The reference point is Arc's
+  own visual language: warm ivory paper, ink-blue type at display sizes, hairline geometry,
+  and enough negative space that the page feels composed rather than assembled.
+
+  Rules this file encodes:
+    - Backgrounds are warm, never grey and never white.
+    - Borders are hairlines. If a border is visible from across the room, it is wrong.
+    - Shadows are almost absent. Elevation comes from spacing, not drop shadows.
+    - Radii are restrained. Nothing gets a 24px SaaS card radius.
+    - Rarity is never communicated by colour alone.
+*/
+
+@theme {
+  /* ---------------------------------------------------------------- surfaces */
+  /* Warm ivory, the base of the whole product. */
+  --color-paper: #fbf9f4;
+  --color-paper-deep: #f5f1e8;
+  --color-paper-raised: #fefdfa;
+
+  /* Accent surfaces, used sparingly and large. */
+  --color-powder: #dce8f2;
+  --color-sky-pale: #eaf2f8;
+  --color-peach: #f7e4d6;
+  --color-cream: #f6efdf;
+  --color-sand: #ece4d4;
+
+  /* ---------------------------------------------------------------- ink */
+  --color-ink: #10182b;
+  --color-ink-soft: #2b3652;
+  --color-ink-muted: #5c6780;
+  --color-ink-faint: #8a93a6;
+
+  /* ---------------------------------------------------------------- arc blue */
+  --color-arc: #1d5fd0;
+  --color-arc-deep: #14428f;
+  --color-arc-soft: #6b9be0;
+  --color-arc-wash: #f0f5fc;
+
+  /* ---------------------------------------------------------------- signal */
+  /* Muted on purpose. This is a financial product, not a dashboard. */
+  --color-signal-live: #1f7a5a;
+  --color-signal-warn: #9a6b1f;
+  --color-signal-stop: #9e3b32;
+
+  /* ---------------------------------------------------------------- lines */
+  --color-hairline: color-mix(in srgb, var(--color-ink) 11%, transparent);
+  --color-hairline-strong: color-mix(in srgb, var(--color-ink) 20%, transparent);
+  --color-hairline-faint: color-mix(in srgb, var(--color-ink) 6%, transparent);
+
+  /* ---------------------------------------------------------------- type */
+  --font-display: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-stack), ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Display scale. Dramatic on desktop, clamped so mobile is designed, not squeezed. */
+  --text-mega: clamp(2.75rem, 7.6vw, 6.25rem); /* up to 100px */
+  --text-mega--line-height: 0.94;
+  --text-mega--letter-spacing: -0.035em;
+
+  --text-display: clamp(2.25rem, 6vw, 4.5rem);
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: -0.03em;
+
+  --text-title: clamp(1.75rem, 3.6vw, 2.75rem);
+  --text-title--line-height: 1.06;
+  --text-title--letter-spacing: -0.022em;
+
+  --text-lede: clamp(1.0625rem, 1.5vw, 1.3125rem);
+  --text-lede--line-height: 1.55;
+
+  /* Tiny technical labels — the Arc-native detail. */
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.16em;
+
+  --text-micro: 0.625rem;
+  --text-micro--line-height: 1.3;
+  --text-micro--letter-spacing: 0.14em;
+
+  /* ---------------------------------------------------------------- radii */
+  --radius-hair: 2px;
+  --radius-edge: 4px;
+  --radius-panel: 8px;
+
+  /* ---------------------------------------------------------------- shadow */
+  --shadow-breath: 0 1px 2px color-mix(in srgb, var(--color-ink) 3%, transparent);
+  --shadow-lift: 0 8px 28px -20px color-mix(in srgb, var(--color-ink) 22%, transparent);
+
+  /* ---------------------------------------------------------------- motion */
+  /* Slow, mechanical, confident. Nothing bounces. */
+  --ease-mechanical: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================================================================== base */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      font-size: 1.0625rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Visible, high-contrast focus. Never removed. */
+  :focus-visible {
+    outline: 2px solid var(--color-arc);
+    outline-offset: 3px;
+    border-radius: var(--radius-hair);
+  }
+
+  ::selection {
+    background-color: var(--color-powder);
+    color: var(--color-ink);
+  }
+
+  /* Tabular figures everywhere numbers are compared. */
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  svg {
+    display: block;
+  }
+
+  /* Respect the user's motion preference everywhere, without exception. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ====================================================================== utilities */
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+@utility micro {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: var(--text-micro--line-height);
+  letter-spacing: var(--text-micro--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* The page gutter. 16px on phones, generous on desktop. */
+@utility shell {
+  width: 100%;
+  max-width: 82.5rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+
+  @media (min-width: 640px) {
+    padding-inline: 2rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 3.5rem;
+  }
+}
+
+/* Section rhythm: 120–180px on desktop, tighter but still airy on mobile. */
+@utility section-y {
+  padding-block: 4.5rem;
+
+  @media (min-width: 768px) {
+    padding-block: 7.5rem;
+  }
+  @media (min-width: 1280px) {
+    padding-block: 10rem;
+  }
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--color-hairline);
+}
+
+@utility hairline-b {
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+/*
+  A faint technical grid. Deliberately almost invisible — it should register as texture,
+  not as a visible table.
+*/
+@utility field-grid {
+  background-image:
+    linear-gradient(to right, var(--color-hairline-faint) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-hairline-faint) 1px, transparent 1px);
+  background-size: 5.5rem 5.5rem;
+}
+
+/*
+  An isometric ground grid, matching the axonometric illustrations.
+
+  Two 30-degree line families plus a vertical, which is what a true isometric grid is made
+  of. Kept near-invisible: it should register as the illustrations' ground plane continuing
+  onto the page, not as a visible lattice.
+*/
+@utility iso-grid {
+  background-image:
+    repeating-linear-gradient(
+      30deg,
+      var(--color-hairline-faint) 0 1px,
+      transparent 1px 4.5rem
+    ),
+    repeating-linear-gradient(
+      -30deg,
+      var(--color-hairline-faint) 0 1px,
+      transparent 1px 4.5rem
+    );
+}
+
+/* A denser isometric grid for tighter panels. */
+@utility iso-grid-tight {
+  background-image:
+    repeating-linear-gradient(
+      30deg,
+      var(--color-hairline-faint) 0 1px,
+      transparent 1px 2.25rem
+    ),
+    repeating-linear-gradient(
+      -30deg,
+      var(--color-hairline-faint) 0 1px,
+      transparent 1px 2.25rem
+    );
+}
+
+/* Crosshair registration mark, used at structural corners. */
+@utility crosshair {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background-color: var(--color-hairline-strong);
+    pointer-events: none;
+  }
+  &::before {
+    inset-inline-start: -4px;
+    top: 50%;
+    width: 9px;
+    height: 1px;
+  }
+  &::after {
+    inset-inline-start: 50%;
+    top: -4px;
+    width: 1px;
+    height: 9px;
+  }
+}
+
+/* ======================================================================= keyframes */
+
+@keyframes arcade-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes arcade-orbit-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes arcade-draw {
+  from {
+    stroke-dashoffset: var(--dash-length, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes arcade-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes arcade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes arcade-tape {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/*
+  Orbital rings. Motion is almost imperceptible by design: a 90-second rotation reads as
+  "alive" without ever pulling focus from the type.
+*/
+@utility orbit-slow {
+  animation: arcade-orbit 90s linear infinite;
+  transform-origin: center;
+}
+
+@utility orbit-slower {
+  animation: arcade-orbit-reverse 150s linear infinite;
+  transform-origin: center;
+}
+
+@utility node-pulse {
+  animation: arcade-pulse 4s var(--ease-mechanical) infinite;
+}

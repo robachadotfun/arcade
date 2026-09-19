@@ -1,0 +1,144 @@
+{
+  "note": "Real, published logos for verified Arcade reward tokens, keyed by contract address. No logo here is drawn, generated or approximated — a token with no published mark keeps a typographic monogram instead. Regenerate with: pnpm fetch:logos",
+  "generatedAt": "2026-09-18T02:30:49.726Z",
+  "summary": {
+    "verifiedTokens": 13,
+    "withLogo": 12,
+    "withMonogram": 1
+  },
+  "logos": [
+    {
+      "address": "0x07704b06981ea962b87296362a1281484d160000",
+      "symbol": "ARCAT",
+      "file": "0x07704b06981ea962b87296362a1281484d160000.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x07704b06981ea962b87296362a1281484d160000.png",
+      "contentType": "image/png",
+      "bytes": 82787,
+      "fetchedAt": "2026-09-18T02:30:45.515Z"
+    },
+    {
+      "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
+      "symbol": "ARCBAT",
+      "file": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0xbe0cad585ea2d13de2f4e36376be755c0afd8b97.png",
+      "contentType": "image/webp",
+      "bytes": 20912,
+      "fetchedAt": "2026-09-18T02:30:49.424Z"
+    },
+    {
+      "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52",
+      "symbol": "ARCT",
+      "file": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52.png",
+      "contentType": "image/png",
+      "bytes": 68700,
+      "fetchedAt": "2026-09-18T02:30:47.650Z"
+    },
+    {
+      "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434",
+      "symbol": "ARCX10",
+      "file": "0x12ce1f970722ca6e08364b60099b3d25c09b5434.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x12ce1f970722ca6e08364b60099b3d25c09b5434.png",
+      "contentType": "image/png",
+      "bytes": 13120,
+      "fetchedAt": "2026-09-18T02:30:48.478Z"
+    },
+    {
+      "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
+      "symbol": "ARGUS",
+      "file": "0xece5ca8bf9220718e5727754026757512212cb3c.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0xece5ca8bf9220718e5727754026757512212cb3c.png",
+      "contentType": "image/png",
+      "bytes": 100128,
+      "fetchedAt": "2026-09-18T02:30:39.299Z"
+    },
+    {
+      "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
+      "symbol": "cirBTC",
+      "file": null,
+      "source": "none",
+      "sourceUrl": null,
+      "contentType": null,
+      "bytes": null,
+      "note": "Circle Wrapped Bitcoin (cirBTC) publishes no logo through any source checked, including the Arc token image service and CoinGecko. It keeps its typographic monogram rather than being given an invented mark.",
+      "fetchedAt": "2026-09-18T02:30:37.866Z"
+    },
+    {
+      "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
+      "symbol": "COOL",
+      "file": "0xeb64987643db71c76b2a2be7e723decc995e5b37.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0xeb64987643db71c76b2a2be7e723decc995e5b37.png",
+      "contentType": "image/png",
+      "bytes": 91929,
+      "fetchedAt": "2026-09-18T02:30:44.472Z"
+    },
+    {
+      "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b",
+      "symbol": "CRCL",
+      "file": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b.png",
+      "contentType": "image/png",
+      "bytes": 25872,
+      "fetchedAt": "2026-09-18T02:30:44.952Z"
+    },
+    {
+      "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
+      "symbol": "EURC",
+      "file": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1.png",
+      "contentType": "image/png",
+      "bytes": 3080,
+      "fetchedAt": "2026-09-18T02:30:43.393Z"
+    },
+    {
+      "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
+      "symbol": "LONG",
+      "file": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x2164bb17a2d38c1b5170e987b2c0416df1efc752.png",
+      "contentType": "image/png",
+      "bytes": 79282,
+      "fetchedAt": "2026-09-18T02:30:43.929Z"
+    },
+    {
+      "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
+      "symbol": "TOLLY",
+      "file": "0xbc43ce8dec648ea298c4275559b81d6261c90b67.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0xbc43ce8dec648ea298c4275559b81d6261c90b67.png",
+      "contentType": "image/png",
+      "bytes": 32205,
+      "fetchedAt": "2026-09-18T02:30:39.783Z"
+    },
+    {
+      "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7",
+      "symbol": "VIRTUAL",
+      "file": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7.webp",
+      "source": "CoinGecko — virtual-protocol",
+      "sourceUrl": "https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png",
+      "contentType": "image/png",
+      "bytes": 32842,
+      "note": "Virtuals Protocol (VIRTUAL). Verified against the CoinGecko entry for that project.",
+      "fetchedAt": "2026-09-18T02:30:42.356Z"
+    },
+    {
+      "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
+      "symbol": "WETH",
+      "file": "0x128cc466b61f542da60c70e3aa11c10e19b84edb.webp",
+      "source": "CoinGecko — weth",
+      "sourceUrl": "https://coin-images.coingecko.com/coins/images/2518/large/weth.png",
+      "contentType": "image/png",
+      "bytes": 67346,
+      "note": "Wrapped Ether (WETH). The canonical WETH mark.",
+      "fetchedAt": "2026-09-18T02:30:42.931Z"
+    }
+  ]
+}

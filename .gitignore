@@ -1,0 +1,30 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.pem
+
+# env — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# foundry
+# contracts/lib/ is intentionally NOT ignored: the dependencies are git submodules, which is
+# how a fresh clone restores them (`git submodule update --init --recursive`). Ignoring it
+# would leave `forge build` broken for anyone but the original author.
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# generated art (regenerate with pnpm generate:art)
+public/generated/*.png
+!public/generated/.gitkeep
+
+# local reports
+/reports/

@@ -1,0 +1,1729 @@
+{
+  "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
+  "generatedAt": "2026-09-17T21:14:42.401Z",
+  "chainId": 5042,
+  "verifiedAtBlock": "21389832",
+  "rpcUrl": "https://rpc.mainnet.arc.io",
+  "canonicalUsdc": {
+    "address": "0x3600000000000000000000000000000000000000",
+    "symbol": "USDC",
+    "decimals": 6
+  },
+  "eligibilityThresholds": {
+    "minLiquidityUsd": 50000,
+    "minVolume24hUsd": 100000,
+    "minHolders": 1000,
+    "minAgeDays": 3,
+    "maxTransferFeeBps": 0
+  },
+  "sources": [
+    {
+      "name": "ARC Screener",
+      "url": "https://www.arcscreener.live/",
+      "used": "candidate discovery + market-data snapshot"
+    },
+    {
+      "name": "Arc Docs — contract addresses",
+      "url": "https://docs.arc.io/arc/references/contract-addresses",
+      "used": "canonical USDC / EURC addresses"
+    },
+    {
+      "name": "Arc Mainnet JSON-RPC",
+      "url": "https://rpc.mainnet.arc.io",
+      "used": "authoritative onchain verification"
+    }
+  ],
+  "summary": {
+    "candidates": 34,
+    "eligible": 13,
+    "rejected": 21,
+    "rejectedReasonTally": {
+      "tickerCollision": 6,
+      "meetsLiquidity": 7,
+      "meetsAge": 16,
+      "transferVerified": 4,
+      "noTransferFee": 4,
+      "standardBoolReturn": 4,
+      "meetsHolders": 3,
+      "researchFlag": 5,
+      "meetsVolume": 2
+    }
+  },
+  "tokens": [
+    {
+      "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
+      "onchain": {
+        "name": "Circle Wrapped Bitcoin",
+        "symbol": "cirBTC",
+        "decimals": 8,
+        "totalSupply": "22031726310",
+        "hasCode": true,
+        "codeSize": 1798
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xc06ebbefd94032b85424d51906e2a335efae264b",
+        "amountSent": "368",
+        "amountReceived": "368",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 3960000,
+        "liquidityUsd": 12990000,
+        "holders": 13900,
+        "ageDays": 121,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
+      "onchain": {
+        "name": "Argus",
+        "symbol": "ARGUS",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x41027f98494548cbecc3f4c52249a9fc8b3d17ef",
+        "amountSent": "266977333943108956667",
+        "amountReceived": "266977333943108956667",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 8490000,
+        "liquidityUsd": 1130000,
+        "holders": 16300,
+        "ageDays": 15,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
+      "onchain": {
+        "name": "Tolly",
+        "symbol": "TOLLY",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 2181
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xfa0e540780dfcb686a1110fa438dec6f6ba44a04",
+        "amountSent": "3671307140850437977690",
+        "amountReceived": "3671307140850437977690",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 2830000,
+        "liquidityUsd": 577700,
+        "holders": 13100,
+        "ageDays": 45,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7",
+      "onchain": {
+        "name": "Virtuals Protocol",
+        "symbol": "VIRTUAL",
+        "decimals": 18,
+        "totalSupply": "1110450221215593481364722",
+        "hasCode": true,
+        "codeSize": 6240
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x139aad65f4c639424442b069ea8992b4cbd00c0c",
+        "amountSent": "3285708847361798630",
+        "amountReceived": "3285708847361798630",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 986700,
+        "liquidityUsd": 402500,
+        "holders": 5000,
+        "ageDays": 6,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
+      "onchain": {
+        "name": "Wrapped Ether",
+        "symbol": "WETH",
+        "decimals": 18,
+        "totalSupply": "142141000361075473049",
+        "hasCode": true,
+        "codeSize": 735
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x1a77225035d4cbf80c101a8df82e20072ef67367",
+        "amountSent": "400413613131182638",
+        "amountReceived": "400413613131182638",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 788900,
+        "liquidityUsd": 379900,
+        "holders": 2200,
+        "ageDays": 93,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
+      "onchain": {
+        "name": "EURC",
+        "symbol": "EURC",
+        "decimals": 6,
+        "totalSupply": "6160011867277",
+        "hasCode": true,
+        "codeSize": 1798
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x5fd3ee3af5670b95fdb989533eb217fa31064217",
+        "amountSent": "27986032",
+        "amountReceived": "27986032",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1100000,
+        "liquidityUsd": 360000,
+        "holders": 2100,
+        "ageDays": 122,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
+      "onchain": {
+        "name": "LONG",
+        "symbol": "LONG",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x8f3b379fbbfc6749d5dd46c72b8b3772d5651198",
+        "amountSent": "1939000000000000000000",
+        "amountReceived": "1939000000000000000000",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 848500,
+        "liquidityUsd": 230000,
+        "holders": 6100,
+        "ageDays": 5,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
+      "onchain": {
+        "name": "usdc is cool",
+        "symbol": "COOL",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1425
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xfb49223413230df620131b31843df8d80be28351",
+        "amountSent": "7834660700112526776195",
+        "amountReceived": "7834660700112526776195",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1120000,
+        "liquidityUsd": 203600,
+        "holders": 7000,
+        "ageDays": 39,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b",
+      "onchain": {
+        "name": "Circle Internet Group • Arc Token",
+        "symbol": "CRCL",
+        "decimals": 18,
+        "totalSupply": "11783170499295742083802",
+        "hasCode": true,
+        "codeSize": 5110
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xcd6b980029e6e6e0733ac8ec3e02be9410d09799",
+        "amountSent": "91214018277875368",
+        "amountReceived": "91214018277875368",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1660000,
+        "liquidityUsd": 115700,
+        "holders": 4700,
+        "ageDays": 9,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x07704b06981ea962b87296362a1281484d160000",
+      "onchain": {
+        "name": "ARCAT",
+        "symbol": "ARCAT",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 11856
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x93e4f4ca57d53ac206f706e7ff773546f7a63eab",
+        "amountSent": "950635810547117748774542",
+        "amountReceived": "950635810547117748774542",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 825600,
+        "liquidityUsd": 94100,
+        "holders": 6700,
+        "ageDays": 99,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52",
+      "onchain": {
+        "name": "ArcTools",
+        "symbol": "ARCT",
+        "decimals": 18,
+        "totalSupply": "968366602326336909378379563",
+        "hasCode": true,
+        "codeSize": 4453
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x69eb9f58df4d889ea5531f075336d816a8afae4d",
+        "amountSent": "500000000000000000000000",
+        "amountReceived": "500000000000000000000000",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 300700,
+        "liquidityUsd": 70000,
+        "holders": 1700,
+        "ageDays": 8,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434",
+      "onchain": {
+        "name": "Arc Index 10",
+        "symbol": "ARCX10",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x25e689010b0700a33e9643f8bd91c5dcf20df431",
+        "amountSent": "20606762033023574460225",
+        "amountReceived": "20606762033023574460225",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 229900,
+        "liquidityUsd": 65200,
+        "holders": 1500,
+        "ageDays": 4,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
+      "onchain": {
+        "name": "ARC BAT",
+        "symbol": "ARCBAT",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1896
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x5a150988bebc20618077fe445bd71e4d4ec442fc",
+        "amountSent": "43863425664362832599083",
+        "amountReceived": "43863425664362832599083",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 221200,
+        "liquidityUsd": 52500,
+        "holders": 2000,
+        "ageDays": 49,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
+      "onchain": {
+        "name": "Matrixdock Gold",
+        "symbol": "XAUM",
+        "decimals": 18,
+        "totalSupply": "160740000000000000000",
+        "hasCode": true,
+        "codeSize": 170
+      },
+      "transferBehaviour": {
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 726900,
+        "liquidityUsd": 264100,
+        "holders": 9500,
+        "ageDays": 9,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
+      "onchain": {
+        "name": "Faze",
+        "symbol": "FAZE",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 2665
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xcd6b980029e6e6e0733ac8ec3e02be9410d09799",
+        "amountSent": "1838956930774970609443",
+        "amountReceived": "1838956930774970609443",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 756600,
+        "liquidityUsd": 203300,
+        "holders": 3100,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x41358defd0dedc90528b3f1835715e907b686e6a",
+      "onchain": {
+        "name": "The Duke of Arc",
+        "symbol": "DUKE",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x87fb2ebfd28f19a6803b395b0e9eaf604751ea3b",
+        "amountSent": "69944622745497895026673",
+        "amountReceived": "69944622745497895026673",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 5240000,
+        "liquidityUsd": 181000,
+        "holders": 21600,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge",
+        "tickerCollision"
+      ],
+      "eligible": false,
+      "tickerCollision": true
+    },
+    {
+      "address": "0x5849fd68a097b3ee7d87ce88a0fcbb76857648ff",
+      "onchain": {
+        "name": "Arc-man",
+        "symbol": "ARCMAN",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 3299
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x3dfcf974c125b09f1799ee9b176e6216bb04e0e0",
+        "amountSent": "5614791792072309812923097",
+        "amountReceived": "5614791792072309812923097",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 3560000,
+        "liquidityUsd": 138200,
+        "holders": 4600,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x44b453d355835ce1269fc11d3fa4161c0dcc0087",
+      "onchain": {
+        "name": "lift.fun",
+        "symbol": "LIFT",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1479
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xe9dc7a46485f478109f381f334f87d5797a3b314",
+        "amountSent": "590036395964120907917",
+        "amountReceived": "590036395964120907917",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 126900,
+        "liquidityUsd": 119600,
+        "holders": 955,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": false,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsHolders",
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9",
+      "onchain": {
+        "name": "UpSideDownCat",
+        "symbol": "USDC",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x16baf244937887b87d6f295fa4a39046d26f028d",
+        "amountSent": "16777138419814957997277",
+        "amountReceived": "16777138419814957997277",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 3060000,
+        "liquidityUsd": 101300,
+        "holders": 11200,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge",
+        "researchFlag",
+        "tickerCollision"
+      ],
+      "eligible": false,
+      "tickerCollision": true,
+      "researchFlag": "TICKER-SQUAT: uses the ticker USDC but is not Circle USDC. Included only to prove the verifier rejects it."
+    },
+    {
+      "address": "0xf52c56764ffc0495ca8c61de716d7ba4f21fbd7a",
+      "onchain": {
+        "name": "Circle Dog",
+        "symbol": "AROS",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 7154
+      },
+      "transferBehaviour": {
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1020000,
+        "liquidityUsd": 99000,
+        "holders": 9200,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn",
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x2e554c802e6b3a0ea4793f2267e0c4dcb28721e0",
+      "onchain": {
+        "name": "CHEESE",
+        "symbol": "CHEESE",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xc3fe274acfbe8ca7490e6583bed36f3f27b0f0e3",
+        "amountSent": "1542880904468039194187198",
+        "amountReceived": "1542880904468039194187198",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1470000,
+        "liquidityUsd": 81300,
+        "holders": 12100,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x997caf127536de5410dc7a17a920d0a1223d866d",
+      "onchain": {
+        "name": "barc",
+        "symbol": "barc",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x3fe61adc39ca3883420da052a8ee67745fa863fd",
+        "amountSent": "25897234640754536310935",
+        "amountReceived": "25897234640754536310935",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 724500,
+        "liquidityUsd": 78900,
+        "holders": 5300,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x30ac39dec8a854c5fd03aa429e3bef32a7e4c84a",
+      "onchain": {
+        "name": "3.141592653589793238462643383279",
+        "symbol": "PI",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xc43a493e063365f31e54ce14d3ff2f1b7540d516",
+        "amountSent": "782538048412018",
+        "amountReceived": "782538048412018",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1270000,
+        "liquidityUsd": 78800,
+        "holders": 9800,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
+      "onchain": {
+        "name": "Polly",
+        "symbol": "POLL",
+        "decimals": 18,
+        "totalSupply": "946359259259259259212665393",
+        "hasCode": true,
+        "codeSize": 2198
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xc43a493e063365f31e54ce14d3ff2f1b7540d516",
+        "amountSent": "531769441212054",
+        "amountReceived": "531769441212054",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1830000,
+        "liquidityUsd": 73700,
+        "holders": 11500,
+        "ageDays": 2,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xa163d7624da3b5d9182c50eab5b8cd247ae861bb",
+      "onchain": {
+        "name": "Minara",
+        "symbol": "Minara",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 7154
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xa6b7fd23901ff5e03b77d2e98b00650db636c3a1",
+        "amountSent": "148460878052732433961283",
+        "amountReceived": "148460878052732433961283",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 2810000,
+        "liquidityUsd": 70400,
+        "holders": 23000,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x8bcb94279fc2c984ec34e0c1f2192df8c69ea4f0",
+      "onchain": {
+        "name": "Architects",
+        "symbol": "Architects",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1896
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x90ab82746f3a84b50ea3577e29bad1f9c3190bae",
+        "amountSent": "26433187839398555957512",
+        "amountReceived": "26433187839398555957512",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 594400,
+        "liquidityUsd": 61800,
+        "holders": 5500,
+        "ageDays": 62,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "tickerCollision"
+      ],
+      "eligible": false,
+      "tickerCollision": true
+    },
+    {
+      "address": "0x7b8000d1cb9fb68ef3dd20021cfa8a0e74908ffb",
+      "onchain": {
+        "name": "Architects",
+        "symbol": "Architects",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1764
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xac34831624f72673daba50bc6bc1fde537c110d1",
+        "amountSent": "25177650048040360221845",
+        "amountReceived": "25177650048040360221845",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 757100,
+        "liquidityUsd": 55600,
+        "holders": 3200,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsAge",
+        "researchFlag",
+        "tickerCollision"
+      ],
+      "eligible": false,
+      "tickerCollision": true,
+      "researchFlag": "DUPLICATE-TICKER: second token also called Architects. Included to prove collision detection."
+    },
+    {
+      "address": "0x8b903a668f39ca057a452041eea60cd7173b9e3c",
+      "onchain": {
+        "name": "Build on Arc",
+        "symbol": "BOA",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 130
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x3654ac49f1c6b568a5310372d0e2287fde638de1",
+        "amountSent": "1422750620383218098215154",
+        "amountReceived": "1422750620383218098215154",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 343200,
+        "liquidityUsd": 45000,
+        "holders": 1200,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsAge"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x41c8a71f630c636294009fa4fb0cc4c3bbe674fe",
+      "onchain": {
+        "name": "Bean Cat",
+        "symbol": "BEANCAT",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x1b59ef3b7643d1551fc632a49d9d96d09e0b83d4",
+        "amountSent": "580369439145428172255728",
+        "amountReceived": "580369439145428172255728",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 257600,
+        "liquidityUsd": 41100,
+        "holders": 1700,
+        "ageDays": 26,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x384c60f98ecd4c26345499345c03d677e40f115e",
+      "onchain": {
+        "name": "WARP",
+        "symbol": "WARP",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1734
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x25e689010b0700a33e9643f8bd91c5dcf20df431",
+        "amountSent": "49055044680766692283832",
+        "amountReceived": "49055044680766692283832",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 179400,
+        "liquidityUsd": 35200,
+        "holders": 2000,
+        "ageDays": 49,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x7e884bce438043cf6abe43655d73b9538ca5d751",
+      "onchain": {
+        "name": "The Duke of Arc",
+        "symbol": "DUKE",
+        "decimals": 9,
+        "totalSupply": "1000000000000000000",
+        "hasCode": true,
+        "codeSize": 13032
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x9151bbda49908e4a8d88579812c5dbb182f7c780",
+        "amountSent": "1095585370174103",
+        "amountReceived": "1095585370174103",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 418500,
+        "liquidityUsd": 32900,
+        "holders": 2500,
+        "ageDays": 0.04,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsAge",
+        "researchFlag",
+        "tickerCollision"
+      ],
+      "eligible": false,
+      "tickerCollision": true,
+      "researchFlag": "DUPLICATE-TICKER + <1h old."
+    },
+    {
+      "address": "0x0bffa97f774824e9da843699aedd2835cb1b8022",
+      "onchain": {
+        "name": "ARCASH",
+        "symbol": "ARCASH",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xbb3231ac09c0ccfabd49784278963c02270a652e",
+        "amountSent": "23736119014983748495900",
+        "amountReceived": "23736119014983748495900",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 193100,
+        "liquidityUsd": 23600,
+        "holders": 1600,
+        "ageDays": 13,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x57920a9d45f99b76298e4b15693d8153c00bde11",
+      "onchain": {
+        "name": "ARCADEX",
+        "symbol": "ARCADEX",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 3887
+      },
+      "transferBehaviour": {
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 215,
+        "liquidityUsd": 4800,
+        "holders": 9,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn",
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "meetsAge",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Name-adjacent to this project. NOT affiliated with Arcade. Included to prove it fails thresholds."
+    },
+    {
+      "address": "0xc4990c021870093094d8b2baed027245b26c8368",
+      "onchain": {
+        "name": "UPSIDE DOWN CAT",
+        "symbol": "USDC",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 171,
+        "liquidityUsd": 3700,
+        "holders": 15,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn",
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "meetsAge",
+        "researchFlag",
+        "tickerCollision"
+      ],
+      "eligible": false,
+      "tickerCollision": true,
+      "researchFlag": "TICKER-SQUAT + near-zero liquidity."
+    }
+  ]
+}

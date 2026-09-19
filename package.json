@@ -1,0 +1,53 @@
+{
+  "name": "arcade",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Arcade — an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify:tokens": "tsx scripts/verify-arc-tokens.ts",
+    "generate:art": "tsx scripts/generate-arcade-art.ts",
+    "fetch:media": "tsx scripts/fetch-media.ts",
+    "machine:audit": "tsx scripts/audit-machines.ts",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test -vv",
+    "contracts:coverage": "cd contracts && forge coverage",
+    "verify:all": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "export:abis": "tsx scripts/export-abis.ts",
+    "fetch:logos": "tsx scripts/fetch-token-logos.ts",
+    "optimize:images": "tsx scripts/optimize-images.ts",
+    "assets": "pnpm fetch:media && pnpm fetch:logos && pnpm generate:art && pnpm optimize:images"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.103.1",
+    "motion": "13.4.0",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "viem": "2.56.7",
+    "wagmi": "3.7.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.10.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.10.0",
+    "eslint-config-next": "16.3.5",
+    "sharp": "^0.35.4",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.21.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.1"
+  }
+}

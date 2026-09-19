@@ -1,0 +1,17 @@
+# pnpm settings for Arcade.
+#
+# allowBuilds: these three packages ship prebuilt native binaries and run a
+# postinstall step to select the right one for the platform. They are required
+# by tsx/vitest (esbuild) and eslint (unrs-resolver).
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+  sharp: true
+
+# minimumReleaseAge: pnpm's default supply-chain guard rejects very fresh
+# releases. Arc mainnet launched 2026-09-16 and this project pins current
+# stable toolchain versions, some of which are newer than the default cutoff.
+# Set to 0 so the pinned lockfile resolves. Re-raise this (e.g. to 1440
+# minutes) once the pinned versions have aged, and review pnpm-lock.yaml
+# diffs on every dependency bump.
+minimumReleaseAge: 0

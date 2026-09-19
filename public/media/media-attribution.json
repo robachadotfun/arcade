@@ -1,0 +1,44 @@
+{
+  "note": "Attribution for third-party photographs used in Arcade. Every licence and author credit below was read from the Wikimedia Commons API at download time rather than transcribed by hand. All files permit commercial use and are used unmodified apart from display sizing. Regenerate with: pnpm fetch:media",
+  "acceptedLicenses": [
+    "CC BY (any version)",
+    "CC BY-SA (any version)",
+    "CC0",
+    "Public domain"
+  ],
+  "generatedAt": "2026-09-17T22:30:08.809Z",
+  "media": [
+    {
+      "filename": "architecture-curve.webp",
+      "title": "Oculus Interior 252",
+      "creator": "Kidfly182",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "source": "Wikimedia Commons",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Oculus_Interior_252.jpg",
+      "originalFile": "File:Oculus Interior 252.jpg",
+      "credit": "Own work",
+      "dimensions": "2000px wide",
+      "modifications": "None. Used unmodified apart from display sizing and CSS cropping.",
+      "usage": "Editorial accent — architectural curves, used beside the fairness mechanism.",
+      "subject": "White ribbed architectural vault: thin repeating curves against pale light.",
+      "fetchedAt": "2026-09-17T22:29:08.835Z"
+    },
+    {
+      "filename": "machined-ring.webp",
+      "title": "Air intake, fan and compressor of sectioned Rolls-Royce Turboméca Adour turbofan 01",
+      "creator": "Olivier Cleynen",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "Wikimedia Commons",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Air_intake,_fan_and_compressor_of_sectioned_Rolls-Royce_Turbom%C3%A9ca_Adour_turbofan_01.jpg",
+      "originalFile": "File:Air intake, fan and compressor of sectioned Rolls-Royce Turboméca Adour turbofan 01.jpg",
+      "credit": "Own work",
+      "dimensions": "2000px wide",
+      "modifications": "None. Used unmodified apart from display sizing and CSS cropping.",
+      "usage": "Editorial accent — precision circular machinery, used beside machine detail.",
+      "subject": "A sectioned turbofan: a precisely machined circular component, head-on.",
+      "fetchedAt": "2026-09-17T22:30:03.381Z"
+    }
+  ]
+}
