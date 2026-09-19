@@ -1,58 +1,66 @@
+import Image from 'next/image'
+import mark from '../../public/brand/arcade-mark.webp'
+
 /**
  * The Arcade identity mark.
  *
- * Two sweeping arcs that meet at an apex and are crossed by a hairline bar: an "A" read as
- * a portal. The left arc opens, the right arc closes, and the small node at the apex is the
- * settled reward at the centre of an orbit — the "value moves through an arc" motif that runs
- * through the whole product.
+ * The artwork is `public/brand/arcade-mark.webp`, used byte-for-byte as supplied — an "A"
+ * whose two strokes are a single folded ribbon, with a sphere resting at its centre and an
+ * orbit passing through, on a soft ivory disc with registration ticks at the four compass
+ * points. It is rendered, never redrawn: nothing here recolours, recrops or re-encodes it.
  *
- * Drawn from scratch. It is not derived from, and does not modify, Arc's official logo.
+ * ## Why the whole square, disc and all
+ *
+ * The obvious alternative is to bound the layout box on the letter and let the rest bleed, so
+ * the "A" optically matches the wordmark's cap height. That was tried and it is wrong: the
+ * header is `bg-paper/85` over a blur, so its background is translucent, and the artwork's
+ * opaque disc then reads as a pale circle floating behind the letter — with a visible rim.
+ *
+ * The disc is not stray background. It is part of the composition, which is an icon: the whole
+ * square is placed as a badge, and the circle becomes deliberate instead of accidental. This
+ * also makes `size` mean the plain thing — the rendered size of the image.
+ *
+ * ## Why `unoptimized`
+ *
+ * The file has a transparent margin. Next's image optimiser picks its output format from the
+ * request's `Accept` header, and its JPEG fallback — what anything not negotiating WebP gets —
+ * has no alpha, so it flattens that margin to **solid black**: a black square behind the logo.
+ * Serving the original is also the only way to guarantee the mark is the supplied artwork and
+ * not a re-encode of it. One 141 KB file, hashed and immutably cached, shared by the header and
+ * the footer across every page.
  */
 export function ArcadeMark({
   className,
-  size = 28,
+  size = 40,
   title,
 }: {
   className?: string
+  /** Rendered edge length of the square artwork, in pixels. */
   size?: number
   title?: string
 }) {
   return (
-    <svg
-      viewBox="0 0 32 32"
+    <Image
+      src={mark}
+      alt={title ?? ''}
+      aria-hidden={title ? undefined : true}
       width={size}
       height={size}
       className={className}
-      role={title ? 'img' : 'presentation'}
-      aria-label={title}
-      aria-hidden={title ? undefined : true}
-      fill="none"
-    >
-      {/* Left arc: the opening sweep. */}
-      <path
-        d="M4 28C4 15.8 9.4 5.5 16 3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      {/* Right arc: the closing sweep, slightly lighter so the form has direction. */}
-      <path
-        d="M28 28C28 15.8 22.6 5.5 16 3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
-      {/* The crossbar of the A, kept as a true hairline. */}
-      <path d="M9.2 20.5H22.8" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-      {/* The settled reward at the apex. */}
-      <circle cx="16" cy="3" r="2.1" fill="currentColor" />
-    </svg>
+      priority
+      unoptimized
+      style={{width: size, height: size, flexShrink: 0}}
+    />
   )
 }
 
-/** Wordmark plus symbol, for the header and footer. */
-export function ArcadeLogo({className, markSize = 26}: {className?: string; markSize?: number}) {
+/**
+ * Wordmark plus symbol, for the header and footer.
+ *
+ * The badge is set a little taller than the wordmark's cap height, which is how a disc-shaped
+ * mark sits level with type — matching the heights instead would leave the disc looking small.
+ */
+export function ArcadeLogo({className, markSize = 42}: {className?: string; markSize?: number}) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className ?? ''}`}>
       <ArcadeMark size={markSize} title="Arcade" />

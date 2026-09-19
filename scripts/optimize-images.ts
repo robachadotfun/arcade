@@ -17,6 +17,10 @@
  * Token logos are handled differently — they are small, square, and displayed at 16–52px,
  * so they get a tighter ceiling and stay lossless-ish to keep small marks crisp.
  *
+ * `public/brand/` is deliberately absent from the targets below and must stay that way. The
+ * identity mark there is supplied artwork, shipped byte-for-byte and served unoptimised; a
+ * re-encode would make what the site renders no longer the file that was handed over.
+ *
  * Usage: pnpm optimize:images
  */
 
