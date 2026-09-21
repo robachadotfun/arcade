@@ -29,6 +29,8 @@
  * Usage: pnpm machine:audit [--prices <file>]
  */
 
+// Must stay the first import: it loads .env.local before config modules read it.
+import './operator/env'
 import {existsSync, readFileSync} from 'node:fs'
 import {resolve} from 'node:path'
 import {LIVE_MACHINES, MACHINES, totalWeight, rarityOdds} from '../src/config/machines'

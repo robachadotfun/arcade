@@ -32,6 +32,8 @@
  * token on every spin and rejects one it could not cover. `status` reports where you are.
  */
 
+// Must stay the first import: it loads .env.local before config modules read it.
+import './operator/env'
 import {formatUnits, parseUnits, decodeEventLog, type Address, type Hex} from 'viem'
 import {
   arcadeMachineManagerAbi,

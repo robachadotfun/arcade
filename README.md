@@ -237,13 +237,19 @@ remaining blocker and ends with a plain answer to "can a spin happen right now?"
 #    history, your scrollback, or any file in this repository.
 cast wallet import arcade-operator --interactive
 
-# 1. Deploy. ARCADE_ADMIN should be a multisig for anything holding real value.
+# 1. Deploy. ARCADE_ADMIN should be a multisig for anything holding real value; the
+#    deploying wallet is admin only for the length of the broadcast, then renounces.
+#    The operator wallet needs these three roles for `pnpm operator` to work.
 cd contracts
+ARCADE_ADMIN=<multisig-or-your-address> \
+ARCADE_RANDOMNESS_OPERATOR=<operator-address> \
+ARCADE_MACHINE_ADMIN=<operator-address> \
+ARCADE_REGISTRY_ADMIN=<operator-address> \
 forge script script/Deploy.s.sol:Deploy --rpc-url $ARC_MAINNET_RPC_URL \
-  --account arcade-operator --broadcast --verify
+  --account arcade-operator --broadcast
 
 # 2. Put the five printed addresses in .env.local, plus NEXT_PUBLIC_ARCADE_MODE
-#    and ARCADE_OPERATOR_ACCOUNT=arcade-operator.
+#    and ARCADE_OPERATOR_ACCOUNT=arcade-operator. `pnpm operator` reads .env.local.
 
 # 3. Bring the stack up.
 pnpm operator commitments 500      # publish randomness commitments, ahead of demand

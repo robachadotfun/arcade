@@ -137,13 +137,33 @@ export async function loadContext({
   }
 }
 
-/** Confirms the RPC is actually on the chain we think it is, before any write. */
+/**
+ * Confirms the RPC is on the chain we think it is, and that every configured address actually
+ * holds a contract there — before any read or write.
+ *
+ * The second check is for the most likely mistake of all: an address copied with a character
+ * missing, or a testnet address in a mainnet config. Without it the first symptom is an opaque
+ * `returned no data ("0x")` from whichever read happens to run first.
+ */
 export async function assertChain(ctx: OperatorContext): Promise<void> {
   const actual = await ctx.publicClient.getChainId()
   if (actual !== ctx.chain.id) {
     throw new ConfigError(
       `RPC reports chain ${actual}, but ${ctx.network} is chain ${ctx.chain.id}. ` +
         'Check ARC_MAINNET_RPC_URL / ARC_TESTNET_RPC_URL.',
+    )
+  }
+
+  const empty: string[] = []
+  for (const [name, address] of Object.entries(ctx.contracts)) {
+    const code = await ctx.publicClient.getCode({address})
+    if (!code || code === '0x') empty.push(`  ${name.padEnd(16)} ${address}`)
+  }
+  if (empty.length > 0) {
+    throw new ConfigError(
+      `No contract code on ${ctx.chain.name} (chain ${ctx.chain.id}) at:\n${empty.join('\n')}\n\n` +
+        'Check these against the deploy output — a truncated address, or one from a different\n' +
+        'network, is the usual cause.',
     )
   }
 }
