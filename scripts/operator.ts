@@ -16,7 +16,7 @@
  *   pnpm operator status                  — read-only health check of the whole stack
  *   pnpm operator commitments <count>     — generate seed pairs and publish their hashes
  *   pnpm operator bond <usdc>             — post the operator bond
- *   pnpm operator register-tokens         — register verified reward assets
+ *   pnpm operator register-tokens [--all] — register assets the live machines pay out
  *   pnpm operator fund <symbol> <amount>  — deposit reward inventory into the vault
  *   pnpm operator machines                — create machines and publish reward tables
  *   pnpm operator reveal                  — run the reveal daemon (long-running)
@@ -61,7 +61,7 @@ import {
   unpublished,
 } from './operator/seedstore'
 import {MACHINES, RARITY_ORDER, type MachineConfig} from '../src/config/machines'
-import {REWARD_ASSETS, assetByAddress} from '../src/config/rewards'
+import {REWARD_ASSETS, assetByAddress, labelFor} from '../src/config/rewards'
 
 // ─────────────────────────────────────────────────────────────────────── helpers
 
@@ -159,7 +159,7 @@ async function status(): Promise<void> {
     ])
     if (avail === 0n) anyEmpty = true
     log(
-      `  ${asset.symbol.padEnd(10)} ${formatUnits(avail, asset.decimals).padStart(18)}` +
+      `  ${labelFor(asset).padEnd(10)} ${formatUnits(avail, asset.decimals).padStart(18)}` +
         `   ${isReg ? 'registered' : 'NOT REGISTERED'}`,
     )
   }
@@ -305,8 +305,27 @@ async function registerTokens(): Promise<void> {
   const ctx = await loadContext()
   await assertChain(ctx)
 
-  heading(`Registering ${REWARD_ASSETS.length} verified reward assets`)
-  for (const asset of REWARD_ASSETS) {
+  // Only what the live machines actually pay out. Registering all thirteen costs twelve
+  // extra transactions for tokens no machine references, and every one of those is real gas.
+  // `--all` registers the full verified set, for when more machines are coming.
+  const all = process.argv.includes('--all')
+  const needed = new Set<string>()
+  for (const machine of MACHINES) {
+    if (machine.status === 'disabled') continue
+    for (const tier of machine.tiers) needed.add(tier.token.toLowerCase())
+  }
+  const assets = all ? REWARD_ASSETS : REWARD_ASSETS.filter((a) => needed.has(a.address.toLowerCase()))
+
+  if (assets.length === 0) {
+    fail('No live machine references any verified reward asset. Nothing to register.')
+  }
+
+  heading(
+    all
+      ? `Registering all ${assets.length} verified reward assets`
+      : `Registering ${assets.length} asset(s) used by live machines (--all for every verified asset)`,
+  )
+  for (const asset of assets) {
     const already = await ctx.publicClient.readContract({
       address: ctx.contracts.rewardRegistry,
       abi: rewardRegistryAbi,
@@ -314,10 +333,10 @@ async function registerTokens(): Promise<void> {
       args: [asset.address as Address],
     })
     if (already) {
-      log(`  · ${asset.symbol} already registered`)
+      log(`  · ${labelFor(asset)} already registered`)
       continue
     }
-    await send(ctx, `registerToken(${asset.symbol})`, () =>
+    await send(ctx, `registerToken(${labelFor(asset)} / on-chain ${asset.symbol})`, () =>
       ctx.walletClient!.writeContract({
       address: ctx.contracts.rewardRegistry,
       abi: rewardRegistryAbi,
@@ -357,9 +376,14 @@ function verificationRef(address: string): Hex {
 async function fund(symbolArg: string | undefined, amountArg: string | undefined): Promise<void> {
   if (!symbolArg || !amountArg) fail('Usage: pnpm operator fund <symbol> <amount>')
 
-  const asset = REWARD_ASSETS.find((a) => a.symbol.toLowerCase() === symbolArg.toLowerCase())
+  // Accept either the on-chain ticker or the display label, so an admitted collision can be
+  // funded by the name the audit prints rather than the ambiguous real one.
+  const wanted = symbolArg.toLowerCase()
+  const asset = REWARD_ASSETS.find(
+    (a) => a.symbol.toLowerCase() === wanted || labelFor(a).toLowerCase() === wanted,
+  )
   if (!asset) {
-    fail(`Unknown reward asset "${symbolArg}". Known: ${REWARD_ASSETS.map((a) => a.symbol).join(', ')}`)
+    fail(`Unknown reward asset "${symbolArg}". Known: ${REWARD_ASSETS.map((a) => labelFor(a)).join(', ')}`)
   }
 
   const ctx = await loadContext()
@@ -401,7 +425,7 @@ async function fund(symbolArg: string | undefined, amountArg: string | undefined
     )
   }
 
-  await send(ctx, `approve(vault, ${amountArg} ${asset.symbol})`, () =>
+  await send(ctx, `approve(vault, ${amountArg} ${labelFor(asset)})`, () =>
     ctx.walletClient!.writeContract({
     address: asset.address as Address,
     abi: erc20,
@@ -412,7 +436,7 @@ async function fund(symbolArg: string | undefined, amountArg: string | undefined
     }),
   )
 
-  await send(ctx, `depositReward(${amountArg} ${asset.symbol})`, () =>
+  await send(ctx, `depositReward(${amountArg} ${labelFor(asset)})`, () =>
     ctx.walletClient!.writeContract({
     address: ctx.contracts.prizeVault,
     abi: prizeVaultAbi,
@@ -701,7 +725,7 @@ async function main(): Promise<void> {
       log('  pnpm operator status                  read-only health check')
       log('  pnpm operator commitments <count>     publish randomness commitments')
       log('  pnpm operator bond <usdc>             post the operator bond')
-      log('  pnpm operator register-tokens         register verified reward assets')
+      log('  pnpm operator register-tokens [--all] register reward assets used by live machines')
       log('  pnpm operator fund <symbol> <amount>  deposit reward inventory')
       log('  pnpm operator machines                create machines, publish reward tables')
       log('  pnpm operator reveal                  run the reveal daemon (keep running)')

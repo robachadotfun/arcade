@@ -6,7 +6,7 @@ import {parseAbiItem, formatUnits, type Address} from 'viem'
 import {resolveMode} from '@/config/mode'
 import {ARC_MAINNET_ID, NATIVE_USDC_DECIMALS} from '@/config/network'
 import {type ActivityRecord} from '@/lib/activity'
-import {assetByAddress} from '@/config/rewards'
+import {assetByAddress, labelFor} from '@/config/rewards'
 import {MACHINES, RARITY_LABEL, RARITY_ORDER} from '@/config/machines'
 
 /**
@@ -183,7 +183,7 @@ export function useActivity({
             // Neither the version nor the price paid is in SpinSettled. Left absent rather
             // than guessed; the fairness page reads the spin record for the full detail.
             pricePaid: '—',
-            rewardSymbol: asset?.symbol ?? 'UNKNOWN',
+            rewardSymbol: asset ? labelFor(asset) : 'UNKNOWN',
             rewardAddress: args.rewardToken,
             rewardAmount: asset
               ? formatUnits(args.rewardAmount, asset.decimals)

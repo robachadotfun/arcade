@@ -6,7 +6,7 @@ import {formatUnits} from 'viem'
 import {prizeVaultAbi} from '@/abi'
 import {Label, SectionHead, Pill, DataRow, Button} from '../ui/Primitives'
 import {MACHINES, totalWeight, type MachineConfig} from '@/config/machines'
-import {REWARD_ASSETS} from '@/config/rewards'
+import {labelFor, REWARD_ASSETS} from '@/config/rewards'
 import {resolveMode} from '@/config/mode'
 import {OnchainConfigHash} from '../OnchainConfigHash'
 import {
@@ -109,7 +109,7 @@ export function MachineRiskPanel() {
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {REWARD_ASSETS.map((asset) => (
             <label key={asset.address} className="block">
-              <span className="micro block text-ink-faint">{asset.symbol}</span>
+              <span className="micro block text-ink-faint">{labelFor(asset)}</span>
               <input
                 type="text"
                 inputMode="decimal"

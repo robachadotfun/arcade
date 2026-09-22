@@ -55,6 +55,8 @@ export type MachineConfig = {
 }
 
 const ARGUS = '0xece5ca8bf9220718e5727754026757512212cb3c' as const
+/** UpSideDownCat. On-chain ticker is USDC; shown to players as UDCAT. See rewards.ts. */
+const UDCAT = '0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9' as const
 const TOLLY = '0xbc43ce8dec648ea298c4275559b81d6261c90b67' as const
 const COOL = '0xeb64987643db71c76b2a2be7e723decc995e5b37' as const
 const ARCAT = '0x07704b06981ea962b87296362a1281484d160000' as const
@@ -64,9 +66,6 @@ const CIRBTC = '0x171a4217b86a807a64eb94757db6849fb4bdbaa0' as const
 const WETH = '0x128cc466b61f542da60c70e3aa11c10e19b84edb' as const
 const EURC = '0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1' as const
 const VIRTUAL = '0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7' as const
-const ARCT = '0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52' as const
-const ARCX10 = '0x12ce1f970722ca6e08364b60099b3d25c09b5434' as const
-const ARCBAT = '0xbe0cad585ea2d13de2f4e36376be755c0afd8b97' as const
 
 /**
  * Parses `NEXT_PUBLIC_ARCADE_MACHINE_IDS`, e.g. `genesis:1,velocity:2,blue-chip:3`.
@@ -99,7 +98,7 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     description:
       'The broad one. Established Arc assets across four rarity bands, weighted toward frequent small wins.',
     spinPriceUsdc: '2',
-    status: 'live',
+    status: 'disabled',
     tiers: [
       {token: ARGUS, weight: 4200, rarity: 'common', minAmount: '120', maxAmount: '420'},
       {token: TOLLY, weight: 2800, rarity: 'common', minAmount: '180', maxAmount: '640'},
@@ -118,7 +117,7 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     description:
       'Narrower set, tilted toward the assets trading hardest on Arc right now. Bigger swings in both directions.',
     spinPriceUsdc: '3',
-    status: 'live',
+    status: 'disabled',
     tiers: [
       {token: ARGUS, weight: 3800, rarity: 'common', minAmount: '200', maxAmount: '680'},
       {token: LONG, weight: 3000, rarity: 'common', minAmount: '700', maxAmount: '2200'},
@@ -136,7 +135,7 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     description:
       'The smallest reward set and the largest bands. Only assets with the deepest liquidity on Arc.',
     spinPriceUsdc: '5',
-    status: 'live',
+    status: 'disabled',
     tiers: [
       {token: CIRBTC, weight: 4500, rarity: 'common', minAmount: '0.00028', maxAmount: '0.00085'},
       {token: WETH, weight: 3000, rarity: 'common', minAmount: '0.009', maxAmount: '0.028'},
@@ -149,17 +148,18 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     slug: 'discovery',
     onchainId: null,
     name: 'Discovery',
-    tagline: 'Rotating emerging assets',
+    tagline: 'Three verified Arc assets',
     description:
-      'Newer Arc assets that still cleared every contract check. Rotates as the network moves. Higher risk, stated plainly.',
+      'ARGUS, TOLLY, COOL and UpSideDownCat — each transfer-probed against live Arc mainnet state. Four rarity bands, weighted toward frequent small wins.',
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: ARCT, weight: 3600, rarity: 'common', minAmount: '2800', maxAmount: '9000'},
-      {token: ARCX10, weight: 3000, rarity: 'common', minAmount: '1600', maxAmount: '5200'},
-      {token: ARCBAT, weight: 2200, rarity: 'rare', minAmount: '3200', maxAmount: '9600'},
-      {token: ARCAT, weight: 1000, rarity: 'ultra', minAmount: '9000', maxAmount: '28000'},
-      {token: CRCL, weight: 200, rarity: 'jackpot', minAmount: '0.18', maxAmount: '0.55'},
+      {token: COOL, weight: 4000, rarity: 'common', minAmount: '380', maxAmount: '820'},
+      {token: UDCAT, weight: 2600, rarity: 'common', minAmount: '360', maxAmount: '780'},
+      {token: TOLLY, weight: 1800, rarity: 'common', minAmount: '150', maxAmount: '330'},
+      {token: ARGUS, weight: 1300, rarity: 'rare', minAmount: '95', maxAmount: '230'},
+      {token: UDCAT, weight: 250, rarity: 'ultra', minAmount: '1700', maxAmount: '3200'},
+      {token: ARGUS, weight: 50, rarity: 'jackpot', minAmount: '420', maxAmount: '900'},
     ],
   },
   {

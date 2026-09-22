@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {useReducedMotion} from 'motion/react'
-import type {RewardAsset} from '@/config/rewards'
+import {labelFor, type RewardAsset} from '@/config/rewards'
 
 /**
  * The Orbit Machine — Arcade's signature interaction.
@@ -315,7 +315,7 @@ function RevealedCentre({asset}: {asset: RewardAsset}) {
     <div className="flex flex-col items-center gap-2" style={{animation: 'arcade-rise 700ms var(--ease-settle) both'}}>
       <span className="micro text-arc">Reward found</span>
       <TokenGlyph asset={asset} size={52} emphasised />
-      <span className="font-display text-[1.5rem] leading-none text-ink">{asset.symbol}</span>
+      <span className="font-display text-[1.5rem] leading-none text-ink">{labelFor(asset)}</span>
     </div>
   )
 }
@@ -343,7 +343,7 @@ export function TokenGlyph({
   emphasised?: boolean
 }) {
   const [failed, setFailed] = useState(false)
-  const initials = asset.symbol.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase() || '?'
+  const initials = labelFor(asset).replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase() || '?'
   const showLogo = Boolean(asset.logoUri) && !failed
 
   return (
@@ -358,7 +358,7 @@ export function TokenGlyph({
         transform: emphasised ? 'scale(1.06)' : undefined,
         boxShadow: emphasised ? '0 0 0 4px color-mix(in srgb, var(--color-arc) 10%, transparent)' : undefined,
       }}
-      title={asset.symbol}
+      title={labelFor(asset)}
     >
       {showLogo ? (
         <Image

@@ -4,7 +4,7 @@ import {useState} from 'react'
 import Link from 'next/link'
 import {TokenGlyph} from './OrbitMachine'
 import {Label, Pill, Modal, DataRow, ExternalLink, Button} from './ui/Primitives'
-import {TIER_LABEL, type RewardAsset, type RewardTier} from '@/config/rewards'
+import {labelFor, TIER_LABEL, type RewardAsset, type RewardTier} from '@/config/rewards'
 import {explorerUrl, ARC_MAINNET_ID} from '@/config/network'
 import {resolveMode} from '@/config/mode'
 import {formatCount, formatUsdCompact} from '@/lib/format'
@@ -107,7 +107,7 @@ export function RewardsTable({
               return (
                 <tr
                   key={asset.address}
-                  id={asset.symbol.toLowerCase()}
+                  id={labelFor(asset).toLowerCase()}
                   className="border-b border-hairline-faint transition-colors hover:bg-paper-deep/40"
                 >
                   <td className="py-3.5 pr-4">
@@ -118,7 +118,7 @@ export function RewardsTable({
                     >
                       <TokenGlyph asset={asset} size={30} />
                       <span>
-                        <span className="block text-[0.9375rem] text-ink">{asset.symbol}</span>
+                        <span className="block text-[0.9375rem] text-ink">{labelFor(asset)}</span>
                         <span className="block max-w-[24ch] truncate text-[0.75rem] text-ink-faint">
                           {asset.name}
                         </span>
@@ -176,7 +176,7 @@ export function RewardsTable({
       <Modal
         open={selected !== null}
         onClose={() => setSelected(null)}
-        title={selected ? `${selected.symbol}` : ''}
+        title={selected ? labelFor(selected) : ''}
         description={selected?.name}
       >
         {selected ? (

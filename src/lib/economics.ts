@@ -3,7 +3,7 @@ import {
   type MachineConfig,
   type RewardTierConfig,
 } from '@/config/machines'
-import {assetByAddress} from '@/config/rewards'
+import {labelFor, assetByAddress} from '@/config/rewards'
 
 /**
  * Machine economics: expected value, maximum liability, inventory runway.
@@ -144,7 +144,7 @@ export function evaluateMachine(
 
     return {
       tier,
-      symbol: asset?.symbol ?? 'UNKNOWN',
+      symbol: asset ? labelFor(asset) : 'UNKNOWN',
       probability,
       meanAmount,
       maxAmount: Number.isFinite(maxAmount) ? maxAmount : 0,
@@ -183,7 +183,7 @@ export function evaluateMachine(
 
     return {
       address,
-      symbol: asset?.symbol ?? 'UNKNOWN',
+      symbol: asset ? labelFor(asset) : 'UNKNOWN',
       decimals: asset?.decimals ?? 18,
       worstCasePerSpin: worst,
       worstCaseTotal,

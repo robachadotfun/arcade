@@ -23,6 +23,7 @@ import {resolveMode, MODE_DESCRIPTION, MODE_LABEL} from '@/config/mode'
 import {explorerUrl, ARC_MAINNET_ID} from '@/config/network'
 import {useSpin, type SpinPhase} from '@/hooks/useSpin'
 import {formatDecimalAmount, formatPercent, formatUsdc} from '@/lib/format'
+import {labelFor} from '@/config/rewards'
 
 /**
  * The /play surface.
@@ -206,7 +207,7 @@ function SpinConsole({machine}: {machine: MachineConfig}) {
         {/* A live region: the outcome is announced, not only drawn. */}
         <p aria-live="polite" role="status" className="sr-only">
           {spin.phase === 'revealed' && spin.outcome
-            ? `Reward found: ${formatDecimalAmount(Number.parseFloat(spin.outcome.amount))} ${spin.outcome.asset?.symbol ?? 'tokens'}.`
+            ? `Reward found: ${formatDecimalAmount(Number.parseFloat(spin.outcome.amount))} ${spin.outcome.asset ? labelFor(spin.outcome.asset) : 'tokens'}.`
             : busy
               ? 'Spin in progress.'
               : ''}
@@ -550,7 +551,7 @@ function StateCard({
         </p>
         <p className="mt-2 flex items-center gap-2.5">
           {outcome.asset ? <TokenGlyph asset={outcome.asset} size={24} /> : null}
-          <span className="text-lede text-ink-soft">${outcome.asset?.symbol ?? 'UNKNOWN'}</span>
+          <span className="text-lede text-ink-soft">${outcome.asset ? labelFor(outcome.asset) : 'UNKNOWN'}</span>
           <RarityTag rarity={outcome.rarity} />
         </p>
 

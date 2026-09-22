@@ -10,6 +10,7 @@ import {resolveMode} from '@/config/mode'
 import {explorerUrl, ARC_MAINNET_ID} from '@/config/network'
 import type {RewardAsset} from '@/config/rewards'
 import {formatDecimalAmount, formatUsdc} from '@/lib/format'
+import {labelFor} from '@/config/rewards'
 
 /**
  * Claims rewards that could not be pushed, and native-USDC refunds from abandoned spins.
@@ -97,7 +98,7 @@ export function ClaimPanel({
           {claimable.map(({asset, amount}) => (
             <li key={asset.address} className="flex items-center gap-3 py-3">
               <TokenGlyph asset={asset} size={26} />
-              <span className="flex-1 text-[0.9375rem] text-ink">{asset.symbol}</span>
+              <span className="flex-1 text-[0.9375rem] text-ink">{labelFor(asset)}</span>
               <span className="font-mono text-[0.9375rem] text-ink" data-numeric="">
                 {formatDecimalAmount(Number.parseFloat(formatUnits(amount, asset.decimals)))}
               </span>

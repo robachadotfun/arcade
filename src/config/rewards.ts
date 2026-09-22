@@ -33,7 +33,17 @@ export type RewardTier = 'featured' | 'verified' | 'discovery' | 'paused'
 
 export type RewardAsset = {
   address: `0x${string}`
+  /** The symbol the contract reports. The registry asserts this on-chain; never override it. */
   symbol: string
+  /**
+   * What players are shown instead of {@link symbol}, when the real ticker would mislead.
+   *
+   * Only set for admitted ticker collisions — see {@link ADMITTED_COLLISIONS}. Everywhere a
+   * reward is displayed, use {@link labelFor} rather than `symbol`.
+   */
+  displaySymbol?: string
+  /** Why this asset carries a display override, shown next to it in the UI. */
+  collisionNote?: string
   name: string
   decimals: number
   tier: RewardTier
@@ -139,6 +149,12 @@ function toRewardAsset(token: VerifiedToken): RewardAsset | null {
       source: marketSnapshot.source,
       capturedAt: marketSnapshot.capturedAt,
     },
+    ...(ADMITTED_COLLISIONS[token.address.toLowerCase()]
+      ? {
+          displaySymbol: ADMITTED_COLLISIONS[token.address.toLowerCase()]!.displaySymbol,
+          collisionNote: ADMITTED_COLLISIONS[token.address.toLowerCase()]!.reason,
+        }
+      : {}),
     ...(logoUri ? {logoUri} : {}),
     ...(logoNote ? {logoNote} : {}),
     ...(curation.note ? {note: curation.note} : {}),
@@ -146,8 +162,67 @@ function toRewardAsset(token: VerifiedToken): RewardAsset | null {
 }
 
 /** Assets that passed every verification check, ready to be configured onto machines. */
+/**
+ * Tokens admitted despite `eligible: false`, each with the reason and a safe display label.
+ *
+ * ## The rule
+ *
+ * An admission can only ever waive *market* findings — ticker collision, age, or a research
+ * flag. It can never waive a contract-level finding. A token whose `transfer()` took a fee,
+ * returned a non-standard value, or could not be probed at all stays rejected no matter what
+ * is written here; {@link admissible} enforces that, so this list cannot be used to smuggle a
+ * broken token into a reward table.
+ *
+ * ## Why a ticker collision is displayable rather than disqualifying
+ *
+ * A collision is a labelling problem, not a contract problem. The machine pays a specific
+ * address, and the contract never reads a ticker. The only real risk is a player misreading
+ * what they won — so the fix is to stop showing the misleading string, which is what
+ * `displaySymbol` does. The true symbol is still registered on-chain and still shown on
+ * /rewards next to the collision warning.
+ */
+const ADMITTED_COLLISIONS: Record<string, {displaySymbol: string; reason: string}> = {
+  // Real token, real liquidity, transfer-probed clean. Its ticker is USDC, which on a screen
+  // that also says "you paid 2 USDC" would read as the stablecoin. Shown as UDCAT instead.
+  '0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9': {
+    displaySymbol: 'UDCAT',
+    reason: 'Ticker is USDC but this is UpSideDownCat, not Circle USDC. Displayed as UDCAT.',
+  },
+}
+
+/** Findings an admission may waive. Anything else keeps the token out. */
+const WAIVABLE = new Set(['tickerCollision', 'meetsAge', 'researchFlag', 'meetsVolume', 'meetsHolders', 'meetsLiquidity'])
+
+/** Contract-level checks that must all hold, admission or not. */
+function contractChecksPass(t: (typeof verified.tokens)[number]): boolean {
+  const c = t.checks
+  return (
+    c.hasContractCode &&
+    c.exposesSymbol &&
+    c.exposesName &&
+    c.exposesDecimals &&
+    c.hasNonZeroSupply &&
+    c.isNotCanonicalUsdc &&
+    c.transferVerified &&
+    c.noTransferFee &&
+    c.standardBoolReturn
+  )
+}
+
+function admissible(t: (typeof verified.tokens)[number]): boolean {
+  if (t.eligible) return true
+  if (!ADMITTED_COLLISIONS[t.address.toLowerCase()]) return false
+  if (!contractChecksPass(t)) return false
+  return t.failureReasons.every((r) => WAIVABLE.has(r))
+}
+
+/** The label to show a player. Always use this rather than `asset.symbol`. */
+export function labelFor(asset: {symbol: string; displaySymbol?: string}): string {
+  return asset.displaySymbol ?? asset.symbol
+}
+
 export const REWARD_ASSETS: RewardAsset[] = verified.tokens
-  .filter((t) => t.eligible)
+  .filter(admissible)
   .map(toRewardAsset)
   .filter((a): a is RewardAsset => a !== null)
 
@@ -156,7 +231,7 @@ export const REWARD_ASSETS: RewardAsset[] = verified.tokens
  * because showing what we turned away says more about the filter than a list of winners.
  */
 export const REJECTED_CANDIDATES = verified.tokens
-  .filter((t) => !t.eligible)
+  .filter((t) => !admissible(t))
   .map((t) => ({
     address: t.address as `0x${string}`,
     symbol: t.onchain.symbol,
