@@ -120,9 +120,15 @@ const NUL = String.fromCharCode(0)
 
 let rpcId = 1
 
-/** Minimum gap between RPC calls, so a public endpoint does not rate-limit us. */
-const RPC_MIN_INTERVAL_MS = 70
-const RPC_MAX_ATTEMPTS = 5
+/**
+ * Minimum gap between RPC calls, so a public endpoint does not rate-limit us.
+ *
+ * Arc's public RPC started returning 429 at the original 70ms. Tune with
+ * `ARC_RPC_MIN_INTERVAL_MS` rather than editing this: a dedicated endpoint can go faster,
+ * and the public one may need to go slower again.
+ */
+const RPC_MIN_INTERVAL_MS = Number.parseInt(process.env.ARC_RPC_MIN_INTERVAL_MS ?? '250', 10)
+const RPC_MAX_ATTEMPTS = 7
 let lastRpcAt = 0
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
@@ -172,7 +178,12 @@ async function rpc<T>(method: string, params: unknown[]): Promise<T> {
     } catch (err) {
       if (err instanceof RpcExecutionError) throw err
       lastError = err
-      if (attempt < RPC_MAX_ATTEMPTS) await sleep(250 * 2 ** (attempt - 1))
+      if (attempt < RPC_MAX_ATTEMPTS) {
+        // A 429 means the endpoint wants a longer pause than an ordinary transport blip,
+        // so back off from a higher base rather than retrying almost immediately.
+        const rateLimited = /\b429\b|too many requests/i.test(String(err))
+        await sleep((rateLimited ? 1500 : 250) * 2 ** (attempt - 1))
+      }
     }
   }
 

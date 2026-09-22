@@ -3,44 +3,348 @@
   "discoveredAt": "2026-09-18",
   "chainId": 5042,
   "sources": [
-    { "name": "ARC Screener", "url": "https://www.arcscreener.live/", "used": "candidate discovery + market-data snapshot" },
-    { "name": "Arc Docs — contract addresses", "url": "https://docs.arc.io/arc/references/contract-addresses", "used": "canonical USDC / EURC addresses" },
-    { "name": "Arc Mainnet JSON-RPC", "url": "https://rpc.mainnet.arc.io", "used": "authoritative onchain verification" }
+    {
+      "name": "ARC Screener",
+      "url": "https://www.arcscreener.live/",
+      "used": "candidate discovery + market-data snapshot"
+    },
+    {
+      "name": "Arc Docs \u2014 contract addresses",
+      "url": "https://docs.arc.io/arc/references/contract-addresses",
+      "used": "canonical USDC / EURC addresses"
+    },
+    {
+      "name": "Arc Mainnet JSON-RPC",
+      "url": "https://rpc.mainnet.arc.io",
+      "used": "authoritative onchain verification"
+    },
+    {
+      "name": "dexscreener + on-chain Transfer scan",
+      "url": "https://dexscreener.com/arc/0x2f3df55cebac40884077cef1e06448e1d6e6ad1a",
+      "used": "BCAT liquidity/volume from DexScreener; holders measured from Transfer logs"
+    }
   ],
   "candidates": [
-    { "address": "0xece5ca8bf9220718e5727754026757512212cb3c", "label": "Argus", "ticker": "ARGUS", "volume24hUsd": 8490000, "liquidityUsd": 1130000, "holders": 16300, "ageDays": 15 },
-    { "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67", "label": "Tolly", "ticker": "TOLLY", "volume24hUsd": 2830000, "liquidityUsd": 577700, "holders": 13100, "ageDays": 45 },
-    { "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752", "label": "LONG", "ticker": "LONG", "volume24hUsd": 848500, "liquidityUsd": 230000, "holders": 6100, "ageDays": 5 },
-    { "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37", "label": "usdc is cool", "ticker": "COOL", "volume24hUsd": 1120000, "liquidityUsd": 203600, "holders": 7000, "ageDays": 39 },
-    { "address": "0x07704b06981ea962b87296362a1281484d160000", "label": "ARCAT", "ticker": "ARCAT", "volume24hUsd": 825600, "liquidityUsd": 94100, "holders": 6700, "ageDays": 99 },
-    { "address": "0x8bcb94279fc2c984ec34e0c1f2192df8c69ea4f0", "label": "Architects", "ticker": "Architects", "volume24hUsd": 594400, "liquidityUsd": 61800, "holders": 5500, "ageDays": 62 },
-    { "address": "0x384c60f98ecd4c26345499345c03d677e40f115e", "label": "WARP", "ticker": "WARP", "volume24hUsd": 179400, "liquidityUsd": 35200, "holders": 2000, "ageDays": 49 },
-    { "address": "0x41c8a71f630c636294009fa4fb0cc4c3bbe674fe", "label": "Bean Cat", "ticker": "BEANCAT", "volume24hUsd": 257600, "liquidityUsd": 41100, "holders": 1700, "ageDays": 26 },
-    { "address": "0x997caf127536de5410dc7a17a920d0a1223d866d", "label": "barc", "ticker": "barc", "volume24hUsd": 724500, "liquidityUsd": 78900, "holders": 5300, "ageDays": 1 },
-    { "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434", "label": "Arc Index 10", "ticker": "ARCX10", "volume24hUsd": 229900, "liquidityUsd": 65200, "holders": 1500, "ageDays": 4 },
-    { "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0", "label": "Circle Wrapped Bitcoin", "ticker": "cirBTC", "volume24hUsd": 3960000, "liquidityUsd": 12990000, "holders": 13900, "ageDays": 121 },
-    { "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b", "label": "Circle Internet Group - Arc Token", "ticker": "CRCL", "volume24hUsd": 1660000, "liquidityUsd": 115700, "holders": 4700, "ageDays": 9 },
-    { "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb", "label": "Wrapped Ether", "ticker": "WETH", "volume24hUsd": 788900, "liquidityUsd": 379900, "holders": 2200, "ageDays": 93 },
-    { "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349", "label": "XAUM", "ticker": "XAUM", "volume24hUsd": 726900, "liquidityUsd": 264100, "holders": 9500, "ageDays": 9 },
-    { "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1", "label": "EURC", "ticker": "EURC", "volume24hUsd": 1100000, "liquidityUsd": 360000, "holders": 2100, "ageDays": 122, "canonical": "https://docs.arc.io/arc/references/contract-addresses" },
-    { "address": "0x5849fd68a097b3ee7d87ce88a0fcbb76857648ff", "label": "Arc-man", "ticker": "ARCMAN", "volume24hUsd": 3560000, "liquidityUsd": 138200, "holders": 4600, "ageDays": 1 },
-    { "address": "0x41358defd0dedc90528b3f1835715e907b686e6a", "label": "The Duke of Arc", "ticker": "DUKE", "volume24hUsd": 5240000, "liquidityUsd": 181000, "holders": 21600, "ageDays": 1 },
-    { "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e", "label": "Faze", "ticker": "FAZE", "volume24hUsd": 756600, "liquidityUsd": 203300, "holders": 3100, "ageDays": 1 },
-    { "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d", "label": "Polly", "ticker": "POLL", "volume24hUsd": 1830000, "liquidityUsd": 73700, "holders": 11500, "ageDays": 2 },
-    { "address": "0xa163d7624da3b5d9182c50eab5b8cd247ae861bb", "label": "Minara", "ticker": "Minara", "volume24hUsd": 2810000, "liquidityUsd": 70400, "holders": 23000, "ageDays": 1 },
-    { "address": "0xf52c56764ffc0495ca8c61de716d7ba4f21fbd7a", "label": "Circle Dog", "ticker": "AROS", "volume24hUsd": 1020000, "liquidityUsd": 99000, "holders": 9200, "ageDays": 1 },
-    { "address": "0x30ac39dec8a854c5fd03aa429e3bef32a7e4c84a", "label": "3.14159...", "ticker": "PI", "volume24hUsd": 1270000, "liquidityUsd": 78800, "holders": 9800, "ageDays": 1 },
-    { "address": "0x2e554c802e6b3a0ea4793f2267e0c4dcb28721e0", "label": "CHEESE", "ticker": "CHEESE", "volume24hUsd": 1470000, "liquidityUsd": 81300, "holders": 12100, "ageDays": 1 },
-    { "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7", "label": "Virtuals Protocol", "ticker": "VIRTUAL", "volume24hUsd": 986700, "liquidityUsd": 402500, "holders": 5000, "ageDays": 6 },
-    { "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52", "label": "ArcTools", "ticker": "ARCT", "volume24hUsd": 300700, "liquidityUsd": 70000, "holders": 1700, "ageDays": 8 },
-    { "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97", "label": "ARC BAT", "ticker": "ARCBAT", "volume24hUsd": 221200, "liquidityUsd": 52500, "holders": 2000, "ageDays": 49 },
-    { "address": "0x0bffa97f774824e9da843699aedd2835cb1b8022", "label": "ARCASH", "ticker": "ARCASH", "volume24hUsd": 193100, "liquidityUsd": 23600, "holders": 1600, "ageDays": 13 },
-    { "address": "0x44b453d355835ce1269fc11d3fa4161c0dcc0087", "label": "lift.fun", "ticker": "LIFT", "volume24hUsd": 126900, "liquidityUsd": 119600, "holders": 955, "ageDays": 1 },
-    { "address": "0x8b903a668f39ca057a452041eea60cd7173b9e3c", "label": "Build on Arc", "ticker": "BOA", "volume24hUsd": 343200, "liquidityUsd": 45000, "holders": 1200, "ageDays": 1 },
-    { "address": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9", "label": "UpSideDownCat", "ticker": "USDC", "volume24hUsd": 3060000, "liquidityUsd": 101300, "holders": 11200, "ageDays": 1, "researchFlag": "TICKER-SQUAT: uses the ticker USDC but is not Circle USDC. Included only to prove the verifier rejects it." },
-    { "address": "0x7b8000d1cb9fb68ef3dd20021cfa8a0e74908ffb", "label": "Architects (duplicate ticker)", "ticker": "Architects", "volume24hUsd": 757100, "liquidityUsd": 55600, "holders": 3200, "ageDays": 1, "researchFlag": "DUPLICATE-TICKER: second token also called Architects. Included to prove collision detection." },
-    { "address": "0x7e884bce438043cf6abe43655d73b9538ca5d751", "label": "The Duke of Arc (duplicate ticker)", "ticker": "DUKE", "volume24hUsd": 418500, "liquidityUsd": 32900, "holders": 2500, "ageDays": 0.04, "researchFlag": "DUPLICATE-TICKER + <1h old." },
-    { "address": "0xc4990c021870093094d8b2baed027245b26c8368", "label": "UPSIDE DOWN CAT", "ticker": "USDC", "volume24hUsd": 171, "liquidityUsd": 3700, "holders": 15, "ageDays": 1, "researchFlag": "TICKER-SQUAT + near-zero liquidity." },
-    { "address": "0x57920a9d45f99b76298e4b15693d8153c00bde11", "label": "ARCADEX", "ticker": "ARCADEX", "volume24hUsd": 215, "liquidityUsd": 4800, "holders": 9, "ageDays": 1, "researchFlag": "Name-adjacent to this project. NOT affiliated with Arcade. Included to prove it fails thresholds." }
+    {
+      "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
+      "label": "Argus",
+      "ticker": "ARGUS",
+      "volume24hUsd": 8490000,
+      "liquidityUsd": 1130000,
+      "holders": 16300,
+      "ageDays": 15
+    },
+    {
+      "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
+      "label": "Tolly",
+      "ticker": "TOLLY",
+      "volume24hUsd": 2830000,
+      "liquidityUsd": 577700,
+      "holders": 13100,
+      "ageDays": 45
+    },
+    {
+      "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
+      "label": "LONG",
+      "ticker": "LONG",
+      "volume24hUsd": 848500,
+      "liquidityUsd": 230000,
+      "holders": 6100,
+      "ageDays": 5
+    },
+    {
+      "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
+      "label": "usdc is cool",
+      "ticker": "COOL",
+      "volume24hUsd": 1120000,
+      "liquidityUsd": 203600,
+      "holders": 7000,
+      "ageDays": 39
+    },
+    {
+      "address": "0x07704b06981ea962b87296362a1281484d160000",
+      "label": "ARCAT",
+      "ticker": "ARCAT",
+      "volume24hUsd": 825600,
+      "liquidityUsd": 94100,
+      "holders": 6700,
+      "ageDays": 99
+    },
+    {
+      "address": "0x8bcb94279fc2c984ec34e0c1f2192df8c69ea4f0",
+      "label": "Architects",
+      "ticker": "Architects",
+      "volume24hUsd": 594400,
+      "liquidityUsd": 61800,
+      "holders": 5500,
+      "ageDays": 62
+    },
+    {
+      "address": "0x384c60f98ecd4c26345499345c03d677e40f115e",
+      "label": "WARP",
+      "ticker": "WARP",
+      "volume24hUsd": 179400,
+      "liquidityUsd": 35200,
+      "holders": 2000,
+      "ageDays": 49
+    },
+    {
+      "address": "0x41c8a71f630c636294009fa4fb0cc4c3bbe674fe",
+      "label": "Bean Cat",
+      "ticker": "BEANCAT",
+      "volume24hUsd": 257600,
+      "liquidityUsd": 41100,
+      "holders": 1700,
+      "ageDays": 26
+    },
+    {
+      "address": "0x997caf127536de5410dc7a17a920d0a1223d866d",
+      "label": "barc",
+      "ticker": "barc",
+      "volume24hUsd": 724500,
+      "liquidityUsd": 78900,
+      "holders": 5300,
+      "ageDays": 1
+    },
+    {
+      "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434",
+      "label": "Arc Index 10",
+      "ticker": "ARCX10",
+      "volume24hUsd": 229900,
+      "liquidityUsd": 65200,
+      "holders": 1500,
+      "ageDays": 4
+    },
+    {
+      "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
+      "label": "Circle Wrapped Bitcoin",
+      "ticker": "cirBTC",
+      "volume24hUsd": 3960000,
+      "liquidityUsd": 12990000,
+      "holders": 13900,
+      "ageDays": 121
+    },
+    {
+      "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b",
+      "label": "Circle Internet Group - Arc Token",
+      "ticker": "CRCL",
+      "volume24hUsd": 1660000,
+      "liquidityUsd": 115700,
+      "holders": 4700,
+      "ageDays": 9
+    },
+    {
+      "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
+      "label": "Wrapped Ether",
+      "ticker": "WETH",
+      "volume24hUsd": 788900,
+      "liquidityUsd": 379900,
+      "holders": 2200,
+      "ageDays": 93
+    },
+    {
+      "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
+      "label": "XAUM",
+      "ticker": "XAUM",
+      "volume24hUsd": 726900,
+      "liquidityUsd": 264100,
+      "holders": 9500,
+      "ageDays": 9
+    },
+    {
+      "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
+      "label": "EURC",
+      "ticker": "EURC",
+      "volume24hUsd": 1100000,
+      "liquidityUsd": 360000,
+      "holders": 2100,
+      "ageDays": 122,
+      "canonical": "https://docs.arc.io/arc/references/contract-addresses"
+    },
+    {
+      "address": "0x5849fd68a097b3ee7d87ce88a0fcbb76857648ff",
+      "label": "Arc-man",
+      "ticker": "ARCMAN",
+      "volume24hUsd": 3560000,
+      "liquidityUsd": 138200,
+      "holders": 4600,
+      "ageDays": 1
+    },
+    {
+      "address": "0x41358defd0dedc90528b3f1835715e907b686e6a",
+      "label": "The Duke of Arc",
+      "ticker": "DUKE",
+      "volume24hUsd": 5240000,
+      "liquidityUsd": 181000,
+      "holders": 21600,
+      "ageDays": 1
+    },
+    {
+      "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
+      "label": "Faze",
+      "ticker": "FAZE",
+      "volume24hUsd": 756600,
+      "liquidityUsd": 203300,
+      "holders": 3100,
+      "ageDays": 1
+    },
+    {
+      "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
+      "label": "Polly",
+      "ticker": "POLL",
+      "volume24hUsd": 1830000,
+      "liquidityUsd": 73700,
+      "holders": 11500,
+      "ageDays": 2
+    },
+    {
+      "address": "0xa163d7624da3b5d9182c50eab5b8cd247ae861bb",
+      "label": "Minara",
+      "ticker": "Minara",
+      "volume24hUsd": 2810000,
+      "liquidityUsd": 70400,
+      "holders": 23000,
+      "ageDays": 1
+    },
+    {
+      "address": "0xf52c56764ffc0495ca8c61de716d7ba4f21fbd7a",
+      "label": "Circle Dog",
+      "ticker": "AROS",
+      "volume24hUsd": 1020000,
+      "liquidityUsd": 99000,
+      "holders": 9200,
+      "ageDays": 1
+    },
+    {
+      "address": "0x30ac39dec8a854c5fd03aa429e3bef32a7e4c84a",
+      "label": "3.14159...",
+      "ticker": "PI",
+      "volume24hUsd": 1270000,
+      "liquidityUsd": 78800,
+      "holders": 9800,
+      "ageDays": 1
+    },
+    {
+      "address": "0x2e554c802e6b3a0ea4793f2267e0c4dcb28721e0",
+      "label": "CHEESE",
+      "ticker": "CHEESE",
+      "volume24hUsd": 1470000,
+      "liquidityUsd": 81300,
+      "holders": 12100,
+      "ageDays": 1
+    },
+    {
+      "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7",
+      "label": "Virtuals Protocol",
+      "ticker": "VIRTUAL",
+      "volume24hUsd": 986700,
+      "liquidityUsd": 402500,
+      "holders": 5000,
+      "ageDays": 6
+    },
+    {
+      "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52",
+      "label": "ArcTools",
+      "ticker": "ARCT",
+      "volume24hUsd": 300700,
+      "liquidityUsd": 70000,
+      "holders": 1700,
+      "ageDays": 8
+    },
+    {
+      "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
+      "label": "ARC BAT",
+      "ticker": "ARCBAT",
+      "volume24hUsd": 221200,
+      "liquidityUsd": 52500,
+      "holders": 2000,
+      "ageDays": 49
+    },
+    {
+      "address": "0x0bffa97f774824e9da843699aedd2835cb1b8022",
+      "label": "ARCASH",
+      "ticker": "ARCASH",
+      "volume24hUsd": 193100,
+      "liquidityUsd": 23600,
+      "holders": 1600,
+      "ageDays": 13
+    },
+    {
+      "address": "0x44b453d355835ce1269fc11d3fa4161c0dcc0087",
+      "label": "lift.fun",
+      "ticker": "LIFT",
+      "volume24hUsd": 126900,
+      "liquidityUsd": 119600,
+      "holders": 955,
+      "ageDays": 1
+    },
+    {
+      "address": "0x8b903a668f39ca057a452041eea60cd7173b9e3c",
+      "label": "Build on Arc",
+      "ticker": "BOA",
+      "volume24hUsd": 343200,
+      "liquidityUsd": 45000,
+      "holders": 1200,
+      "ageDays": 1
+    },
+    {
+      "address": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9",
+      "label": "UpSideDownCat",
+      "ticker": "USDC",
+      "volume24hUsd": 3060000,
+      "liquidityUsd": 101300,
+      "holders": 11200,
+      "ageDays": 1,
+      "researchFlag": "TICKER-SQUAT: uses the ticker USDC but is not Circle USDC. Included only to prove the verifier rejects it."
+    },
+    {
+      "address": "0x7b8000d1cb9fb68ef3dd20021cfa8a0e74908ffb",
+      "label": "Architects (duplicate ticker)",
+      "ticker": "Architects",
+      "volume24hUsd": 757100,
+      "liquidityUsd": 55600,
+      "holders": 3200,
+      "ageDays": 1,
+      "researchFlag": "DUPLICATE-TICKER: second token also called Architects. Included to prove collision detection."
+    },
+    {
+      "address": "0x7e884bce438043cf6abe43655d73b9538ca5d751",
+      "label": "The Duke of Arc (duplicate ticker)",
+      "ticker": "DUKE",
+      "volume24hUsd": 418500,
+      "liquidityUsd": 32900,
+      "holders": 2500,
+      "ageDays": 0.04,
+      "researchFlag": "DUPLICATE-TICKER + <1h old."
+    },
+    {
+      "address": "0xc4990c021870093094d8b2baed027245b26c8368",
+      "label": "UPSIDE DOWN CAT",
+      "ticker": "USDC",
+      "volume24hUsd": 171,
+      "liquidityUsd": 3700,
+      "holders": 15,
+      "ageDays": 1,
+      "researchFlag": "TICKER-SQUAT + near-zero liquidity."
+    },
+    {
+      "address": "0x57920a9d45f99b76298e4b15693d8153c00bde11",
+      "label": "ARCADEX",
+      "ticker": "ARCADEX",
+      "volume24hUsd": 215,
+      "liquidityUsd": 4800,
+      "holders": 9,
+      "ageDays": 1,
+      "researchFlag": "Name-adjacent to this project. NOT affiliated with Arcade. Included to prove it fails thresholds."
+    },
+    {
+      "address": "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d",
+      "label": "Beancat",
+      "ticker": "BCAT",
+      "volume24hUsd": 336040,
+      "liquidityUsd": 51637,
+      "holders": 2706,
+      "ageDays": 4
+    }
   ]
 }

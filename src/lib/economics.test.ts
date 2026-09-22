@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import {evaluateMachine, SAFETY, formatUnitsShort, type PriceSnapshot} from './economics'
-import {machineBySlug, rarityOdds, totalWeight, type MachineConfig} from '@/config/machines'
+import {MACHINES, machineBySlug, rarityOdds, totalWeight, type MachineConfig} from '@/config/machines'
 import {REWARD_ASSETS} from '@/config/rewards'
 
 /**
@@ -54,16 +54,38 @@ describe('machine odds', () => {
     }
   })
 
-  it('every configured reward token exists in the verified registry', () => {
+  /**
+   * Scoped to machines that can actually be published.
+   *
+   * `pnpm operator machines` skips disabled machines, so their tables never reach the chain.
+   * A disabled machine may therefore reference an asset that has since lost eligibility —
+   * Genesis does, after cirBTC dropped out at block 22,258,137 — and that is a table to
+   * rebuild before re-enabling it, not a live defect.
+   *
+   * The assertion still binds on everything publishable, which is where it matters: a live
+   * machine must never pay a token the registry has not verified.
+   */
+  it('every publishable machine pays only verified assets', () => {
     const verified = new Set(REWARD_ASSETS.map((a) => a.address.toLowerCase()))
-    for (const machine of ['genesis', 'velocity', 'blue-chip', 'discovery'].map(machineBySlug)) {
-      for (const tier of machine!.tiers) {
+    const publishable = MACHINES.filter((m) => m.status !== 'disabled')
+    expect(publishable.length).toBeGreaterThan(0)
+    for (const machine of publishable) {
+      for (const tier of machine.tiers) {
         expect(
           verified.has(tier.token.toLowerCase()),
-          `${tier.token} on ${machine!.slug} must be a verified asset`,
+          `${tier.token} on ${machine.slug} must be a verified asset`,
         ).toBe(true)
       }
     }
+  })
+
+  it('disabled machines are the only place an unverified token may linger', () => {
+    const verified = new Set(REWARD_ASSETS.map((a) => a.address.toLowerCase()))
+    const stale = MACHINES.filter(
+      (m) => m.status === 'disabled' && m.tiers.some((t) => !verified.has(t.token.toLowerCase())),
+    ).map((m) => m.slug)
+    // Recorded, not forbidden: re-enabling one of these requires re-tabling it first.
+    expect(stale).toEqual(['genesis', 'velocity', 'blue-chip'])
   })
 })
 
@@ -217,11 +239,13 @@ describe('evaluateMachine', () => {
     expect(result.blocking.some((f) => f.code === 'empty-table')).toBe(true)
   })
 
-  it('every shipped live machine passes when inventory is ample', () => {
+  it('every publishable machine passes when inventory is ample', () => {
     const inventory = Object.fromEntries(
       REWARD_ASSETS.map((a) => [a.address.toLowerCase(), 1e12]),
     )
-    for (const slug of ['genesis', 'velocity', 'blue-chip', 'discovery']) {
+    // Disabled machines are excluded for the same reason as above: they cannot be published,
+    // and Genesis, Velocity and Blue Chip all still list cirBTC, which lost eligibility.
+    for (const {slug} of MACHINES.filter((m) => m.status !== 'disabled')) {
       const result = evaluateMachine(machineBySlug(slug)!, NO_PRICES, inventory)
       // Without prices EV is unknown, so only structural findings should appear.
       expect(result.blocking, `${slug} should have no blocking findings`).toHaveLength(0)
