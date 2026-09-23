@@ -1,4 +1,5 @@
 import {assetByAddress, type RewardAsset} from './rewards'
+import {FALLBACK_MODE, KNOWN_DEPLOYMENTS} from './deployments'
 
 /**
  * Machine templates and the reward tables that define their economics.
@@ -89,7 +90,12 @@ function parseMachineIds(raw: string | undefined): Map<string, number> {
   return ids
 }
 
-const MACHINE_IDS = parseMachineIds(process.env.NEXT_PUBLIC_ARCADE_MACHINE_IDS)
+const MACHINE_IDS = parseMachineIds(
+  // Environment first, then the committed manifest for the resolved network — same
+  // precedence as the contract addresses, so a build without env vars is still playable.
+  process.env.NEXT_PUBLIC_ARCADE_MACHINE_IDS ??
+    (FALLBACK_MODE ? KNOWN_DEPLOYMENTS[FALLBACK_MODE]?.machineIds : undefined),
+)
 
 const MACHINE_TEMPLATES: MachineConfig[] = [
   {

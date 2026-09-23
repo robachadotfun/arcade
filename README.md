@@ -297,6 +297,20 @@ holder can predict those outcomes — they still cannot change one, since the an
 did not exist at commit time, but foreknowledge is enough to decide when to play. **Back it
 up as carefully as the key.**
 
+### The deployment manifest
+
+`src/config/deployments.ts` records the deployment this repository ships against, so a host
+that builds without environment variables still reaches the right contracts — `NEXT_PUBLIC_*`
+values are inlined at build time, and a build without them can never reach a contract no
+matter what the chain says.
+
+Environment variables always win, so pointing a build elsewhere needs no source edit. A
+manifest entry applies only to its own network: a testnet build does not fall back to the
+mainnet entry, it reports itself misconfigured.
+
+If the deployment is replaced, update the manifest in the same change. A stale entry is worse
+than none — it would send players at abandoned contracts while looking perfectly configured.
+
 ### Not configured
 
 With `NEXT_PUBLIC_ARCADE_MODE` or any contract address unset, `resolveMode()` returns

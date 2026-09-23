@@ -1,4 +1,5 @@
 import {ARC_MAINNET_ID, ARC_TESTNET_ID, type ArcChainId} from './network'
+import {FALLBACK_MODE, KNOWN_DEPLOYMENTS} from './deployments'
 
 /**
  * Arcade runs against a real Arc network, chosen by `NEXT_PUBLIC_ARCADE_MODE`.
@@ -11,6 +12,11 @@ import {ARC_MAINNET_ID, ARC_TESTNET_ID, type ArcChainId} from './network'
  * it does not have one: {@link resolveMode} returns `misconfigured` listing exactly which
  * environment variables are missing, and the UI refuses to offer spins. That refusal is the
  * feature. A player must never see an outcome that did not happen onchain.
+ *
+ * Addresses come from the environment first and, failing that, from the deployment manifest
+ * in `deployments.ts` — a specific, verified deployment checked into the repository so a host
+ * that builds without environment variables still reaches the right contracts. The manifest
+ * never crosses networks: see that file for why.
  */
 
 export type ArcadeMode = 'testnet' | 'mainnet'
@@ -36,16 +42,16 @@ function readAddress(value: string | undefined): `0x${string}` | null {
 }
 
 /**
- * The configured network, or null if none was configured.
+ * The configured network.
  *
- * There is deliberately no default. Guessing here would mean guessing whether the operator
- * meant real money, and an unconfigured build should be inert and loud rather than pointed at
- * mainnet by accident.
+ * Falls back to the network of the committed deployment manifest. That is not a guess about
+ * what the operator meant — it is the deployment they checked in. With no manifest entry the
+ * fallback is null and an unconfigured build stays inert and loud, as before.
  */
 export function rawMode(): ArcadeMode | null {
   const raw = process.env.NEXT_PUBLIC_ARCADE_MODE?.toLowerCase()
   if (raw === 'mainnet' || raw === 'testnet') return raw
-  return null
+  return FALLBACK_MODE
 }
 
 export const MODE_ENV = 'NEXT_PUBLIC_ARCADE_MODE'
@@ -68,12 +74,15 @@ const CONTRACT_ENV: Array<[keyof ArcadeContracts, string]> = [
 export function resolveMode(): ModeStatus {
   const mode = rawMode()
 
+  // Keyed by the resolved network, so a testnet build never inherits mainnet addresses.
+  const fallback = mode === null ? undefined : KNOWN_DEPLOYMENTS[mode]
+
   const values: Record<keyof ArcadeContracts, string | undefined> = {
-    machineManager: process.env.NEXT_PUBLIC_ARCADE_MACHINE_MANAGER,
-    prizeVault: process.env.NEXT_PUBLIC_ARCADE_PRIZE_VAULT,
-    rewardRegistry: process.env.NEXT_PUBLIC_ARCADE_REWARD_REGISTRY,
-    randomness: process.env.NEXT_PUBLIC_ARCADE_RANDOMNESS,
-    feeRouter: process.env.NEXT_PUBLIC_ARCADE_FEE_ROUTER,
+    machineManager: process.env.NEXT_PUBLIC_ARCADE_MACHINE_MANAGER ?? fallback?.machineManager,
+    prizeVault: process.env.NEXT_PUBLIC_ARCADE_PRIZE_VAULT ?? fallback?.prizeVault,
+    rewardRegistry: process.env.NEXT_PUBLIC_ARCADE_REWARD_REGISTRY ?? fallback?.rewardRegistry,
+    randomness: process.env.NEXT_PUBLIC_ARCADE_RANDOMNESS ?? fallback?.randomness,
+    feeRouter: process.env.NEXT_PUBLIC_ARCADE_FEE_ROUTER ?? fallback?.feeRouter,
   }
 
   const missing: string[] = []
