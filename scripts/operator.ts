@@ -141,8 +141,16 @@ async function status(): Promise<void> {
   log(`  tokens registered       ${registered} (of ${REWARD_ASSETS.length} verified locally)`)
 
   heading('Vault inventory')
+  // Only assets a live machine can actually pay out. A verified token no live machine
+  // references needs no inventory, and counting it as a blocker reports a working
+  // deployment as broken.
+  const inPlay = new Set<string>()
+  for (const machine of MACHINES) {
+    if (machine.status === 'disabled') continue
+    for (const tier of machine.tiers) inPlay.add(tier.token.toLowerCase())
+  }
   let anyEmpty = false
-  for (const asset of REWARD_ASSETS) {
+  for (const asset of REWARD_ASSETS.filter((a) => inPlay.has(a.address.toLowerCase()))) {
     const [avail, isReg] = await Promise.all([
       pc.readContract({
         address: ctx.contracts.prizeVault,
@@ -196,7 +204,7 @@ async function status(): Promise<void> {
   if (available === 0n) blockers.push('no randomness commitments available')
   if (bond === 0n) blockers.push('no operator bond posted')
   if (Number(registered) === 0) blockers.push('no reward tokens registered')
-  if (anyEmpty) blockers.push('at least one reward token has zero vault inventory')
+  if (anyEmpty) blockers.push('a reward token a live machine pays has zero vault inventory')
   if (MACHINES.every((m) => m.onchainId === null)) blockers.push('no machine ids mapped')
   if (blockers.length === 0) {
     log('  Yes — every precondition is met. Keep `pnpm operator reveal` running.')
