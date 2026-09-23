@@ -1,3 +1,18 @@
+/**
+ * buy-tokens.ts — acquires reward inventory via Uniswap v3 on Arc.
+ *
+ * Not written as part of the operator CLI; kept because it ran successfully and documents
+ * how the current vault inventory was acquired. Two things to know before reusing it:
+ *
+ *   - It routes every swap through the fee-10000 **v3** pool. ARGUS and UpSideDownCat have
+ *     deeper **v4** pools this router cannot reach — UDCAT's v3 pool held only ~1,471 USDC
+ *     when this was written, against ~$154k in v4. Topping up UDCAT here will cost far more
+ *     than the quoted price.
+ *   - `amountInMaximum` is a flat 15 USDC per swap against ~10 USDC of intent, i.e. roughly
+ *     50% slippage tolerance. That is loose; tighten it per-token for larger buys.
+ *
+ * It also grants the router an unlimited USDC allowance.
+ */
 import './operator/env'
 import {parseUnits, formatUnits, maxUint256, type Address} from 'viem'
 import {loadContext} from './operator/context'
@@ -171,8 +186,8 @@ async function main() {
         args: [account],
       })
       console.log(`  Holding now: ${formatUnits(newBal, 18)} ${item.name}`)
-    } catch (err: any) {
-      console.error(`  ✗ Error buying ${item.name}:`, err.message || err)
+    } catch (err: unknown) {
+      console.error(`  ✗ Error buying ${item.name}:`, err instanceof Error ? err.message : err)
     }
   }
 
