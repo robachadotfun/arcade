@@ -43,14 +43,17 @@ const MAX_LOG_RANGE = 5_000n
 /**
  * How many chunks back to walk before giving up.
  *
- * Arc produces sub-second blocks, so 12 × 5,000 is roughly the last few hours. The scan runs
- * newest-first and stops as soon as it has enough rows, so a busy deployment usually costs
- * one round trip and a quiet one costs the full walk.
+ * Arc produces sub-second blocks (~0.53s), so 6 × 5,000 is roughly the last four hours. The
+ * scan runs newest-first and stops as soon as it has enough rows, so a busy deployment costs
+ * one round trip and a quiet one costs at most six.
+ *
+ * This is a budget, not a lookback target: every chunk is a request against a public endpoint
+ * shared by every visitor, and the tape is a recent-activity view, not an archive.
  *
  * This is the honest ceiling of an RPC-only reader. `ActivitySource` in `lib/activity.ts`
  * exists so a real indexer can replace it without touching any UI.
  */
-const MAX_CHUNKS = 12
+const MAX_CHUNKS = 6
 
 type State = {
   records: ActivityRecord[]
@@ -65,6 +68,19 @@ function machineNameFor(machineId: bigint): {slug: string; name: string} {
 }
 
 const NO_RECORDS: ActivityRecord[] = []
+
+/**
+ * The shape of a decoded log this hook relies on.
+ *
+ * Fetching two events in one `getLogs` returns a union viem cannot narrow for us, so the
+ * fields actually read are named here rather than reaching through `unknown` at each use.
+ */
+type SpinLog = {
+  eventName?: string
+  blockNumber: bigint | null
+  transactionHash: `0x${string}` | null
+  args: Record<string, unknown>
+}
 
 export function useActivity({
   limit = 25,
@@ -99,36 +115,38 @@ export function useActivity({
       try {
         const latest = await publicClient!.getBlockNumber()
 
-        const settled: Awaited<ReturnType<typeof publicClient.getLogs>> = []
-        const requested: Awaited<ReturnType<typeof publicClient.getLogs>> = []
+        const settled: SpinLog[] = []
+        const requested: SpinLog[] = []
 
-        // Walk backwards a chunk at a time, newest first, so the common case costs one
-        // request and an early exit rather than the whole window.
+        // Walk backwards a chunk at a time, newest first. Both events are fetched in ONE
+        // request per chunk rather than two — `events` takes an array and the results carry
+        // an `eventName` discriminator, which halves the request count for free.
         let toBlock = latest
         for (let chunk = 0; chunk < MAX_CHUNKS; chunk += 1) {
           if (cancelled) return
           const fromBlock = toBlock > MAX_LOG_RANGE ? toBlock - MAX_LOG_RANGE : 0n
 
-          const [s, r] = await Promise.all([
-            publicClient!.getLogs({
-              address: manager,
-              event: SPIN_SETTLED,
-              args: player ? {player} : undefined,
-              fromBlock,
-              toBlock,
-            }),
-            publicClient!.getLogs({
-              address: manager,
-              event: SPIN_REQUESTED,
-              args: player ? {player} : undefined,
-              fromBlock,
-              toBlock,
-            }),
-          ])
-          settled.push(...s)
-          requested.push(...r)
+          const logs = await publicClient!.getLogs({
+            address: manager,
+            events: [SPIN_SETTLED, SPIN_REQUESTED],
+            fromBlock,
+            toBlock,
+          })
 
-          if (settled.length >= limit || fromBlock === 0n) break
+          for (const entry of logs) {
+            const log = entry as unknown as SpinLog
+            // `events` cannot take an indexed filter the way a single `event` can, so the
+            // per-player filter is applied here instead of at the node.
+            const who = log.args['player']
+            if (player && String(who ?? '').toLowerCase() !== player.toLowerCase()) continue
+            if (log.eventName === 'SpinSettled') settled.push(log)
+            else if (log.eventName === 'SpinRequested') requested.push(log)
+          }
+
+          // Stop as soon as the view has what it can display. Without this a deployment with
+          // a handful of spins walked every chunk on every poll — 24 log requests every 20
+          // seconds per visitor, which is what got the public RPC to rate-limit us.
+          if (settled.length + requested.length >= limit || fromBlock === 0n) break
           toBlock = fromBlock - 1n
         }
 
@@ -238,7 +256,9 @@ export function useActivity({
     }
 
     void load()
-    const interval = window.setInterval(() => void load(), 20_000)
+    // 45s rather than 20s. Each poll is up to six log requests plus block timestamps, and a
+    // tape that is a few seconds stale is worth far more than one that is rate-limited away.
+    const interval = window.setInterval(() => void load(), 45_000)
     return () => {
       cancelled = true
       window.clearInterval(interval)

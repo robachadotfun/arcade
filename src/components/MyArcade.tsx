@@ -11,6 +11,7 @@ import {ArcadeArt} from './ArcadeArt'
 import {useActivity, useActivityChainId} from '@/hooks/useActivity'
 import {resolveMode} from '@/config/mode'
 import {REWARD_ASSETS} from '@/config/rewards'
+import {MACHINES} from '@/config/machines'
 import {formatDecimalAmount, formatUsdc} from '@/lib/format'
 
 /**
@@ -42,8 +43,19 @@ export function MyArcade() {
 
   function buildClaimQueries() {
     if (!canRead || !vaultAddress || !managerAddress || !address) return []
+    // Only assets a live machine can actually pay. Querying all fifteen meant fifteen reads
+    // per visitor per refresh against a shared public endpoint, for ten tokens no machine
+    // pays out. A claim on a retired token is still withdrawable — the vault keeps it — it
+    // just is not worth polling for on every render.
+    const payable = REWARD_ASSETS.filter((asset) =>
+      MACHINES.some(
+        (machine) =>
+          machine.status !== 'disabled' &&
+          machine.tiers.some((tier) => tier.token.toLowerCase() === asset.address.toLowerCase()),
+      ),
+    )
     return [
-      ...REWARD_ASSETS.map(
+      ...payable.map(
         (asset) =>
           ({
             address: vaultAddress,

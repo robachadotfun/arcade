@@ -39,13 +39,19 @@ export const wagmiConfig = createConfig({
   ssr: true,
   storage: createStorage({storage: cookieStorage}),
   transports: {
+    // Arc's public RPC returns -32005 ("Request exceeds defined limit", which is a *rate*
+    // limit, not a size one) under modest load. Reads are retried with a real pause rather
+    // than hammering through it; set NEXT_PUBLIC_ARC_MAINNET_RPC_URL to a dedicated endpoint
+    // for anything with traffic, because no client-side pacing fixes a shared quota.
     [arcMainnet.id]: http(process.env.NEXT_PUBLIC_ARC_MAINNET_RPC_URL ?? undefined, {
-      batch: true,
-      retryCount: 2,
+      batch: {batchSize: 16, wait: 24},
+      retryCount: 3,
+      retryDelay: 400,
     }),
     [arcTestnet.id]: http(process.env.NEXT_PUBLIC_ARC_TESTNET_RPC_URL ?? undefined, {
-      batch: true,
-      retryCount: 2,
+      batch: {batchSize: 16, wait: 24},
+      retryCount: 3,
+      retryDelay: 400,
     }),
   },
 })
