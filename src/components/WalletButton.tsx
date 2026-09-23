@@ -1,8 +1,8 @@
 'use client'
 
 import {useState} from 'react'
-import {useConnection, useConnect, useDisconnect, useBalance, useSwitchChain, type Connector} from 'wagmi'
-import {Button, Modal, Label, DataRow, Dot} from './ui/Primitives'
+import {useConnection, useConnect, useDisconnect, useBalance, useSwitchChain} from 'wagmi'
+import {Button, Modal, DataRow, Dot} from './ui/Primitives'
 import {expectedChain} from '@/config/wagmi'
 import {formatUsdc, shortAddress} from '@/lib/format'
 import {useIsMounted} from '@/hooks/useClientState'
@@ -10,9 +10,13 @@ import {useIsMounted} from '@/hooks/useClientState'
 /**
  * Wallet connect / account control.
  *
- * Bespoke rather than RainbowKit: see `config/wagmi.ts` for why. Everything here is real
- * button and dialog semantics, so it is keyboard and screen-reader navigable without a
- * component library.
+ * Wallet selection is Reown's modal, not ours. Arcade used to open its own dialog listing
+ * every connector, which broke down on a machine with several wallet extensions installed:
+ * each one is discovered as a separate connector, the list outgrew the viewport, and the
+ * dialog had no way to scroll. With a single WalletConnect connector there is nothing to
+ * choose between, so this connects directly and lets Reown handle the rest.
+ *
+ * The account view below is still ours — it is product surface, not wallet plumbing.
  */
 export function WalletButton() {
   const {address, isConnected, chainId, connector} = useConnection()
@@ -40,19 +44,23 @@ export function WalletButton() {
   }
 
   if (!isConnected) {
+    const connector = connectors[0]
     return (
       <>
-        <Button size="sm" onClick={() => setOpen(true)}>
-          Connect Wallet
+        <Button
+          size="sm"
+          disabled={isPending || !connector}
+          onClick={() => {
+            if (connector) connect({connector})
+          }}
+        >
+          {isPending ? 'Connecting…' : 'Connect Wallet'}
         </Button>
-        <ConnectDialog
-          open={open}
-          onClose={() => setOpen(false)}
-          connectors={connectors}
-          onConnect={(c) => connect({connector: c})}
-          isPending={isPending}
-          error={error?.message}
-        />
+        {error ? (
+          <p role="alert" className="sr-only">
+            {error.message}
+          </p>
+        ) : null}
       </>
     )
   }
@@ -126,70 +134,3 @@ export function WalletButton() {
   )
 }
 
-function ConnectDialog({
-  open,
-  onClose,
-  connectors,
-  onConnect,
-  isPending,
-  error,
-  note,
-}: {
-  open: boolean
-  onClose: () => void
-  connectors: readonly Connector[]
-  onConnect: (connector: Connector) => void
-  isPending: boolean
-  error?: string
-  note?: string
-}) {
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title="Connect a wallet"
-      description={note ?? `Arcade uses ${expectedChain.name}. Spins are paid in native USDC.`}
-    >
-      {connectors.length === 0 ? (
-        <div className="border border-hairline p-4">
-          <Label>No wallet detected</Label>
-          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
-            No EVM browser wallet was found. Install one, then reload this page.
-          </p>
-        </div>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {connectors.map((connector) => (
-            <li key={connector.uid}>
-              <button
-                type="button"
-                onClick={() => {
-                  onConnect(connector)
-                  onClose()
-                }}
-                disabled={isPending}
-                className="flex w-full items-center justify-between border border-hairline px-4 py-3.5 text-left transition-colors hover:bg-paper-deep disabled:opacity-50"
-              >
-                <span className="text-[0.9375rem] text-ink">{connector.name}</span>
-                <svg viewBox="0 0 12 12" className="size-3 text-ink-faint" fill="none" aria-hidden="true">
-                  <path d="M4 2.5L7.5 6L4 9.5" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {error ? (
-        <p role="alert" className="mt-4 border border-signal-stop/30 bg-signal-stop/5 p-3 text-[0.8125rem] text-signal-stop">
-          {error}
-        </p>
-      ) : null}
-
-      <p className="mt-5 text-[0.75rem] leading-relaxed text-ink-faint">
-        Arcade never asks for a seed phrase or private key. You approve every transaction in
-        your own wallet.
-      </p>
-    </Modal>
-  )
-}

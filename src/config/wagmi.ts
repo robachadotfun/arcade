@@ -1,21 +1,32 @@
 import {createConfig, http, createStorage, cookieStorage} from 'wagmi'
-import {injected} from 'wagmi/connectors'
+import {walletConnect} from '@wagmi/connectors/walletConnect'
 import {arcMainnet, arcTestnet} from './network'
 import {rawMode} from './mode'
 
 /**
  * Wagmi configuration.
  *
- * ## Why not RainbowKit
+ * ## Connectors
  *
- * RainbowKit 2.x peers on `wagmi@^2.9`, which is incompatible with wagmi 3. More to the
- * point, its modal carries its own visual identity, and this product's whole premise is a
- * bespoke Arc-native surface. Arcade ships a small accessible connect dialog instead —
- * see `components/WalletButton.tsx` — built on wagmi's own connector APIs.
+ * WalletConnect (Reown) only. It is wagmi's own first-party connector rather than
+ * `@reown/appkit` — the AppKit wagmi adapter declares `wagmi >=2.19.5`, which this project's
+ * wagmi 3 satisfies numerically while saying nothing about wagmi 3's breaking changes.
+ * `@wagmi/connectors` is pinned to the exact version wagmi resolves, so it cannot drift.
  *
- * The injected connector covers every EVM browser wallet the user already has. Adding
- * WalletConnect later is a one-line change here plus a project id; it is left out because
- * it needs a third-party relay and a project id that this build does not have.
+ * Imported from the `./walletConnect` subpath rather than the package barrel on purpose. The
+ * barrel re-exports every connector, so a bundler follows `baseAccount` into
+ * `@base-org/account` and `@coinbase/cdp-sdk`, which imports a module that does not resolve
+ * (`@x402/evm/upto/client`) and breaks the build. Nothing here uses those connectors; the
+ * subpath means nothing has to load them.
+ *
+ * Reown's own modal handles wallet selection, so Arcade no longer opens a dialog of its own
+ * to pick a connector. `components/WalletButton.tsx` connects directly.
+ *
+ * ## The tradeoff this makes
+ *
+ * The `injected` connector is deliberately gone, so a desktop browser extension is no longer
+ * a one-click connect — it goes through Reown's modal like any other wallet. Re-adding it is
+ * one import and one array entry if that turns out to matter more than a single code path.
  */
 
 /**
@@ -24,17 +35,57 @@ import {rawMode} from './mode'
  * unconfigured build behaves like testnet here. It cannot transact regardless: every spin
  * path is gated on `resolveMode()` returning `ready`, which an unconfigured build never does.
  */
+/**
+ * Reown/WalletConnect project id.
+ *
+ * Public by design: it is inlined into the browser bundle and identifies the project to the
+ * relay. It is not a secret, but it is a quota — restrict it to this site's domains in the
+ * Reown dashboard, or someone else's traffic lands on your allowance.
+ *
+ * Committed with an env override for the same reason the deployment manifest is: a build
+ * without environment variables still has to work.
+ */
+const WALLETCONNECT_PROJECT_ID =
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? 'c19d39569957d24fa88dfd2c75205606'
+
+/** Used for the connection metadata Reown shows in the wallet's approval screen. */
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://myarcade.fun'
+
 const mode = rawMode()
 
 const chains = mode === 'mainnet' ? ([arcMainnet] as const) : ([arcTestnet, arcMainnet] as const)
 
 export const wagmiConfig = createConfig({
   chains,
-  connectors: [
-    injected({
-      shimDisconnect: true,
-    }),
-  ],
+  /*
+   * Browser only. WalletConnect's provider reaches for indexedDB as it initialises, which
+   * does not exist while Next prerenders — it logged `ReferenceError: indexedDB is not
+   * defined` during the static build. No connection can happen during SSR anyway, so the
+   * server simply has no connectors.
+   *
+   * Safe for hydration because WalletButton renders a disabled shell until it has mounted,
+   * so the server and client markup agree regardless.
+   */
+  connectors:
+    typeof window === 'undefined'
+      ? []
+      : [
+          walletConnect({
+            projectId: WALLETCONNECT_PROJECT_ID,
+            showQrModal: true,
+            // The site is ivory; Reown's modal defaults to dark. Only themeMode is set —
+            // the CSS variable names for deeper theming differ between the modal versions
+            // Reown has shipped, and a wrong key fails silently.
+            qrModalOptions: {themeMode: 'light'},
+            metadata: {
+              name: 'Arcade',
+              description:
+                'An onchain gacha built on Arc. Pay in USDC, spin once, win real tokens.',
+              url: SITE_URL,
+              icons: [`${SITE_URL}/icon.png`],
+            },
+          }),
+        ],
   // SSR-safe: state lives in cookies so the server render matches the client.
   ssr: true,
   storage: createStorage({storage: cookieStorage}),

@@ -259,12 +259,14 @@ export function Modal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
       <button
         type="button"
         aria-label="Close dialog"
         onClick={onClose}
-        className="absolute inset-0 bg-ink/20 backdrop-blur-[2px]"
+        /* Fixed, not absolute: the panel scrolls internally, and a backdrop that scrolled
+           with it would let the page show through at the edges. */
+        className="fixed inset-0 bg-ink/20 backdrop-blur-[2px]"
       />
       <div
         ref={panelRef}
@@ -273,17 +275,33 @@ export function Modal({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className="relative z-10 w-full max-w-md border border-hairline-strong bg-paper-raised p-6 sm:p-7"
+        /*
+         * Capped to the viewport, with the body scrolling inside it.
+         *
+         * Without the cap, tall content — a wallet list on a machine with several extensions
+         * installed, where every one is discovered as its own connector — grew past the
+         * screen in both directions. It could not be scrolled either: the overlay had no
+         * overflow and the Modal sets `body { overflow: hidden }`, so the title and the
+         * bottom of the list were simply unreachable.
+         *
+         * dvh, not vh, so mobile browser chrome collapsing does not crop it.
+         */
+        className="relative z-10 flex max-h-[92dvh] w-full max-w-md flex-col border border-hairline-strong bg-paper-raised sm:max-h-[calc(100dvh-3rem)]"
       >
-        <h2 id={titleId} className="font-display text-[1.375rem] leading-tight text-ink">
-          {title}
-        </h2>
-        {description ? (
-          <p id={descId} className="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
-            {description}
-          </p>
-        ) : null}
-        <div className="mt-6">{children}</div>
+        <div className="shrink-0 p-6 pb-0 sm:p-7 sm:pb-0">
+          <h2 id={titleId} className="font-display text-[1.375rem] leading-tight text-ink">
+            {title}
+          </h2>
+          {description ? (
+            <p id={descId} className="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        {/* min-h-0 is what actually lets a flex child shrink enough to scroll. */}
+        <div className="mt-6 min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 pt-0 sm:p-7 sm:pt-0">
+          {children}
+        </div>
       </div>
     </div>
   )

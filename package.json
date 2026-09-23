@@ -2,7 +2,7 @@
   "name": "arcade",
   "version": "0.1.0",
   "private": true,
-  "description": "Arcade \u2014 an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
+  "description": "Arcade — an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
   "packageManager": "pnpm@12.4.2",
   "engines": {
     "node": ">=22"
@@ -31,6 +31,8 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.103.1",
+    "@wagmi/connectors": "8.2.0",
+    "@walletconnect/ethereum-provider": "^2.25.0",
     "motion": "13.4.0",
     "next": "16.3.5",
     "react": "19.3.0",
