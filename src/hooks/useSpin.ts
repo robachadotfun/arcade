@@ -93,6 +93,14 @@ export type SpinError = {
 }
 
 const PENDING_SPIN_KEY = 'arcade.pendingSpinId.v1'
+/**
+ * How long to wait for the operator to settle before offering the player a manual button.
+ *
+ * Long enough that the daemon's normal path (reveal, then settle) always wins the race —
+ * anchor delay is 2 blocks, about a second on Arc — so the button only appears when something
+ * is actually wrong.
+ */
+const MANUAL_SETTLE_AFTER_MS = 25_000
 /** How long to wait for randomness before surfacing a timeout with recovery options. */
 const RANDOMNESS_DEADLINE_MS = 90_000
 /** Poll interval while waiting for the reveal. */
@@ -279,6 +287,7 @@ export function useSpin(machine: MachineConfig) {
   const [outcome, setOutcome] = useState<SpinOutcome | null>(null)
   const [activeError, setActiveError] = useState<SpinError | null>(null)
   const [txHash, setTxHash] = useState<Hex | undefined>()
+  const [settleOffered, setSettleOffered] = useState(false)
   const deadlineRef = useRef<number | null>(null)
 
   // Primitives pulled out of `status` so every dependency list below is statically checkable.
@@ -377,6 +386,7 @@ export function useSpin(machine: MachineConfig) {
     if (deadlineRef.current === null) {
       deadlineRef.current = Date.now() + RANDOMNESS_DEADLINE_MS
     }
+    const waitStarted = Date.now()
 
     /** Reads the settled spin out of contract storage and presents it. */
     async function finish() {
@@ -436,6 +446,12 @@ export function useSpin(machine: MachineConfig) {
           return
         }
 
+        // Nothing has settled it yet. After a grace period, surface a manual option rather
+        // than leaving the player watching a spinner with no recourse.
+        if (!cancelled && Date.now() - waitStarted > MANUAL_SETTLE_AFTER_MS) {
+          setSettleOffered(true)
+        }
+
         if (spin.status === SPIN_REFUNDED) {
           setActivePhase('error')
           setActiveError({
@@ -450,19 +466,13 @@ export function useSpin(machine: MachineConfig) {
           return
         }
 
-        // Still pending. Settlement is permissionless and the outcome is identical whoever
-        // calls it, so attempt it rather than waiting for someone else to.
-        try {
-          await writeContractAsync({
-            address: manager,
-            abi: arcadeMachineManagerAbi,
-            functionName: 'settleSpin',
-            args: [spinIdValue],
-          })
-          if (!cancelled) setActivePhase('settling')
-        } catch {
-          // Randomness simply is not revealed yet. Keep waiting.
-        }
+        // Still pending. This loop deliberately sends NOTHING: settlement is permissionless
+        // and the operator's reveal daemon settles each spin right after revealing it, so the
+        // player signs exactly once — for the spin itself.
+        //
+        // This used to attempt settleSpin on every tick, which meant a wallet confirmation
+        // every few seconds until randomness landed, most of them reverting. If the daemon is
+        // down, `canSettleManually` below offers a single explicit button instead.
       } catch (err) {
         if (cancelled) return
         setActivePhase('error')
@@ -545,11 +555,34 @@ export function useSpin(machine: MachineConfig) {
     void runSpin()
   }
 
+  /**
+   * Settles the pending spin from the browser. One transaction, only ever on a click.
+   *
+   * The outcome is already fixed by the revealed random word, so this cannot change what was
+   * won — it only finalises it. Exists so a player is never stranded by an offline operator.
+   */
+  async function settleNow() {
+    if (!pendingSpinId || !managerAddress) return
+    try {
+      setActivePhase('settling')
+      await writeContractAsync({
+        address: managerAddress,
+        abi: arcadeMachineManagerAbi,
+        functionName: 'settleSpin',
+        args: [BigInt(pendingSpinId)],
+      })
+    } catch (err) {
+      setActivePhase('error')
+      setActiveError(classifyError(err))
+    }
+  }
+
   function reset() {
     setOutcome(null)
     setActiveError(null)
     setTxHash(undefined)
     deadlineRef.current = null
+    setSettleOffered(false)
     // Clearing the active phase hands control back to the derived resting state, so the
     // right answer is recomputed rather than guessed.
     setActivePhase(null)
@@ -571,6 +604,9 @@ export function useSpin(machine: MachineConfig) {
     spin,
     reset,
     forget,
+    settleNow,
+    /** True once the operator has had long enough that a manual settle is worth offering. */
+    canSettleManually: settleOffered && phase === 'awaiting-randomness',
     spinPrice,
     balance: balance?.value,
   }

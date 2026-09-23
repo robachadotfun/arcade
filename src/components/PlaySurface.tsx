@@ -524,10 +524,28 @@ function StateCard({
         </dl>
 
         {phase === 'awaiting-randomness' ? (
-          <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
-            Safe to close this tab. The spin is onchain, and anyone — including you, later —
-            can settle it.
-          </p>
+          <>
+            <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
+              Safe to close this tab. The spin is onchain, and anyone — including you, later —
+              can settle it. No further signature is needed.
+            </p>
+            {/*
+              Only after the operator has had long enough. Settlement is permissionless and
+              the outcome is already fixed by the revealed word, so this finalises the result
+              rather than deciding it — and it is one click, never automatic.
+            */}
+            {spin.canSettleManually ? (
+              <div className="mt-4 border-t border-hairline-faint pt-4">
+                <p className="text-[0.8125rem] leading-relaxed text-ink-muted">
+                  This is taking longer than usual. You can settle it yourself — one
+                  transaction, and it cannot change what you won.
+                </p>
+                <Button variant="secondary" size="sm" className="mt-3" onClick={() => void spin.settleNow()}>
+                  Settle it myself
+                </Button>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
     )

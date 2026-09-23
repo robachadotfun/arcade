@@ -562,6 +562,78 @@ async function publishTable(
 
 // ────────────────────────────────────────────────────────────────────── reveal
 
+const SPIN_REQUESTED_EVENT = {
+  type: 'event',
+  name: 'SpinRequested',
+  inputs: [
+    {name: 'spinId', type: 'uint256', indexed: true},
+    {name: 'player', type: 'address', indexed: true},
+    {name: 'machineId', type: 'uint64', indexed: true},
+    {name: 'machineVersion', type: 'uint32', indexed: false},
+    {name: 'pricePaid', type: 'uint256', indexed: false},
+    {name: 'randomnessRequestId', type: 'uint256', indexed: false},
+  ],
+} as const
+
+/**
+ * Settles the spin that consumed a freshly revealed randomness request.
+ *
+ * Settlement is permissionless and the outcome is a pure function of the revealed word, so it
+ * does not matter who calls it. Someone has to, though, and it must not be the player: the
+ * browser used to attempt it on a timer, which meant a wallet prompt every few seconds until
+ * randomness landed. The daemon is already watching and already signing, so it does the job
+ * and the player signs exactly once, for the spin itself.
+ *
+ * A failure here is logged and left alone rather than retried into the ground — the spin stays
+ * settleable by anyone, including the player from the UI.
+ */
+async function settleSpinFor(
+  ctx: OperatorContext,
+  requestId: bigint,
+  fromBlock: bigint,
+  toBlock: bigint,
+): Promise<void> {
+  const logs = await ctx.publicClient.getLogs({
+    address: ctx.contracts.machineManager,
+    event: SPIN_REQUESTED_EVENT,
+    fromBlock,
+    toBlock,
+  })
+
+  const match = logs.find(
+    (entry) => (entry.args as {randomnessRequestId?: bigint}).randomnessRequestId === requestId,
+  )
+  const spinId = (match?.args as {spinId?: bigint} | undefined)?.spinId
+  if (spinId === undefined) {
+    log(`    ! revealed request ${requestId} but found no spin that consumed it`)
+    return
+  }
+
+  const spin = await ctx.publicClient.readContract({
+    address: ctx.contracts.machineManager,
+    abi: arcadeMachineManagerAbi,
+    functionName: 'spinOf',
+    args: [spinId],
+  })
+  // 1 = Pending. Anything else is already resolved.
+  if (spin.status !== 1) return
+
+  try {
+    await send(ctx, `settleSpin(${spinId})`, () =>
+      ctx.walletClient!.writeContract({
+        address: ctx.contracts.machineManager,
+        abi: arcadeMachineManagerAbi,
+        functionName: 'settleSpin',
+        args: [spinId],
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
+  } catch (err) {
+    log(`    ! settle of spin ${spinId} failed: ${err instanceof Error ? err.message.slice(0, 160) : String(err)}`)
+  }
+}
+
 /**
  * The reveal daemon.
  *
@@ -573,6 +645,9 @@ async function publishTable(
  * It re-scans from a bounded lookback on every tick rather than holding a subscription, so a
  * restart or a dropped websocket cannot silently skip a request. Reveals are idempotent in
  * effect: a request that is no longer Pending is skipped.
+ *
+ * After each reveal it also settles the spin that consumed it, so the player signs once and
+ * only once — for the spin itself.
  */
 async function reveal(): Promise<void> {
   const ctx = await loadContext()
@@ -691,6 +766,7 @@ async function reveal(): Promise<void> {
         )
         pair.revealedFor = Number(requestId)
         saveStore(store)
+        await settleSpinFor(ctx, requestId, fromBlock, head)
       } catch (err) {
         // Another caller may have revealed it first — reveal is permissionless by design.
         log(`    ! reveal of ${key} failed: ${err instanceof Error ? err.message.slice(0, 160) : String(err)}`)
