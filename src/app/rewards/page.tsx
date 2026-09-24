@@ -1,7 +1,14 @@
 import type {Metadata} from 'next'
 import {RewardsTable} from '@/components/RewardsTable'
 import {DataRow, Label, Pill, SectionHead, ExternalLink} from '@/components/ui/Primitives'
-import {REWARD_ASSETS, REJECTED_CANDIDATES, VERIFICATION_META, TIER_LABEL, TIER_MEANING} from '@/config/rewards'
+import {
+  REWARD_ASSETS,
+  REJECTED_CANDIDATES,
+  ADMITTED_DISCLOSURES,
+  VERIFICATION_META,
+  TIER_LABEL,
+  TIER_MEANING,
+} from '@/config/rewards'
 import {MACHINES, assetsOnMachine} from '@/config/machines'
 import {ArcadeArt} from '@/components/ArcadeArt'
 import {formatCount} from '@/lib/format'
@@ -84,6 +91,44 @@ export default function RewardsPage() {
           </p>
         </div>
       </div>
+
+      {/*
+        Tokens paid out despite failing the thresholds stated just above.
+
+        This sits directly under those thresholds on purpose. Publishing a bar and then
+        quietly paying something that does not clear it would make the whole page a
+        misrepresentation; naming the exceptions and what each one failed keeps it honest.
+      */}
+      {ADMITTED_DISCLOSURES.length > 0 ? (
+        <section className="mt-14 border border-signal-warn/30 bg-signal-warn/5 p-6">
+          <Label className="text-signal-warn">Paid out despite failing these checks</Label>
+          <p className="mt-3 max-w-[68ch] text-[0.9375rem] leading-relaxed text-ink-soft">
+            The thresholds above are the bar. These assets do not clear all of it and are paid
+            out anyway, by operator decision. Every one still passes every contract-level
+            check — the transfer probe, zero fee, a standard return value — because that part
+            is not negotiable.
+          </p>
+          <dl className="mt-6 divide-y divide-hairline-faint border-y border-hairline-faint">
+            {ADMITTED_DISCLOSURES.map((entry) => (
+              <div key={entry.address} className="py-4">
+                <dt className="flex flex-wrap items-baseline gap-3">
+                  <span className="text-[0.9375rem] text-ink">{entry.symbol}</span>
+                  <span className="text-[0.875rem] text-ink-muted">{entry.name}</span>
+                  <span className="font-mono text-[0.6875rem] text-ink-faint">{entry.address}</span>
+                </dt>
+                <dd className="mt-2 max-w-[68ch] text-[0.875rem] leading-relaxed text-ink-muted">
+                  {entry.disclose}
+                </dd>
+                <dd className="mt-2">
+                  <span className="micro text-signal-warn">
+                    failed: {entry.failed.join(', ')}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
 
       {/* ==================================================================== what tiers mean */}
       <section className="mt-14">

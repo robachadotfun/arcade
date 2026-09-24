@@ -165,6 +165,10 @@ function toRewardAsset(token: VerifiedToken): RewardAsset | null {
 /**
  * Tokens admitted despite `eligible: false`, each with the reason and a safe display label.
  *
+ * Every entry here is published on /rewards as an admission, with the checks it failed. An
+ * operator may decide a token is worth paying out anyway; what is not acceptable is a page
+ * that advertises thresholds while quietly paying something that fails them.
+ *
  * ## The rule
  *
  * An admission can only ever waive *market* findings — ticker collision, age, or a research
@@ -181,12 +185,32 @@ function toRewardAsset(token: VerifiedToken): RewardAsset | null {
  * `displaySymbol` does. The true symbol is still registered on-chain and still shown on
  * /rewards next to the collision warning.
  */
-const ADMITTED_COLLISIONS: Record<string, {displaySymbol: string; reason: string}> = {
+const ADMITTED_COLLISIONS: Record<
+  string,
+  {displaySymbol?: string; reason: string; disclose?: string}
+> = {
   // Real token, real liquidity, transfer-probed clean. Its ticker is USDC, which on a screen
   // that also says "you paid 2 USDC" would read as the stablecoin. Shown as UDCAT instead.
   '0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9': {
     displaySymbol: 'UDCAT',
     reason: 'Ticker is USDC but this is UpSideDownCat, not Circle USDC. Displayed as UDCAT.',
+    disclose: 'Admitted despite a ticker collision with USDC. Shown as UDCAT so a reward is never labelled as the stablecoin.',
+  },
+  /*
+   * $ARCADE, this project's own token, added at the operator's direction.
+   *
+   * It passes every contract-level check: transfer probed against live mainnet state moved
+   * the full amount, zero fee, standard bool return, real supply. It fails the market
+   * thresholds — liquidity roughly 7x short, 24h volume far short, and it is days old.
+   *
+   * That matters for a player: at this depth a large win cannot be sold at anything near the
+   * quoted price. Publishing the admission and its reasons is the condition for paying it
+   * out at all, so /rewards shows this alongside the thresholds rather than in place of them.
+   */
+  '0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6': {
+    reason: "The project's own token, admitted by the operator despite failing market depth.",
+    disclose:
+      'Admitted by the operator despite failing the liquidity, volume and age thresholds. It passes every contract check, but the pool is thin — a large win may not be sellable near the quoted price.',
   },
 }
 
@@ -215,6 +239,25 @@ function admissible(t: (typeof verified.tokens)[number]): boolean {
   if (!contractChecksPass(t)) return false
   return t.failureReasons.every((r) => WAIVABLE.has(r))
 }
+
+/**
+ * Tokens paid out despite failing the published thresholds, with the disclosure text.
+ *
+ * Rendered on /rewards. If this list is non-empty and the page does not show it, the page is
+ * making a claim that is not true.
+ */
+export const ADMITTED_DISCLOSURES = Object.entries(ADMITTED_COLLISIONS)
+  .filter(([, v]) => Boolean(v.disclose))
+  .map(([address, v]) => {
+    const token = verified.tokens.find((t) => t.address.toLowerCase() === address)
+    return {
+      address: address as `0x${string}`,
+      symbol: v.displaySymbol ?? token?.onchain.symbol ?? address.slice(0, 10),
+      name: token?.onchain.name ?? 'Unknown',
+      failed: token?.failureReasons ?? [],
+      disclose: v.disclose!,
+    }
+  })
 
 /** The label to show a player. Always use this rather than `asset.symbol`. */
 export function labelFor(asset: {symbol: string; displaySymbol?: string}): string {

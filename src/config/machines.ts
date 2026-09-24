@@ -61,6 +61,12 @@ const UDCAT = '0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9' as const
 const TOLLY = '0xbc43ce8dec648ea298c4275559b81d6261c90b67' as const
 /** Beancat. Verified clean at block 22,258,137: zero fee, standard bool return. */
 const BCAT = '0x258bbb25fb1bc34c87212f8dab34838854ef2d5d' as const
+/**
+ * $ARCADE, the project's own token. Admitted as a reward by operator decision despite
+ * failing the market thresholds — see ADMITTED_DISCLOSURES in rewards.ts, which publishes
+ * that admission and its reasons on /rewards.
+ */
+const ARCADE_TOKEN_ADDR = '0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6' as const
 const COOL = '0xeb64987643db71c76b2a2be7e723decc995e5b37' as const
 const ARCAT = '0x07704b06981ea962b87296362a1281484d160000' as const
 const LONG = '0x2164bb17a2d38c1b5170e987b2c0416df1efc752' as const
@@ -161,12 +167,15 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     name: 'Discovery',
     tagline: 'Three verified Arc assets',
     description:
-      'COOL, Beancat, UpSideDownCat, TOLLY and ARGUS — each transfer-probed against live Arc mainnet state. Four rarity bands, weighted toward frequent small wins.',
+      'COOL, $ARCADE, Beancat, UpSideDownCat, TOLLY and ARGUS — each transfer-probed against live Arc mainnet state. Four rarity bands, weighted toward frequent small wins.',
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: COOL, weight: 4000, rarity: 'common', minAmount: '450', maxAmount: '930'},
-      {token: BCAT, weight: 2500, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
+      {token: COOL, weight: 2500, rarity: 'common', minAmount: '450', maxAmount: '930'},
+      // Sized in USD terms like every other tier: ~$0.36-0.73 at the current price. The
+      // amounts look large only because the token is cheap.
+      {token: ARCADE_TOKEN_ADDR, weight: 2000, rarity: 'common', minAmount: '40000', maxAmount: '80000'},
+      {token: BCAT, weight: 2000, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
       {token: UDCAT, weight: 1800, rarity: 'common', minAmount: '480', maxAmount: '980'},
       {token: TOLLY, weight: 1200, rarity: 'rare', minAmount: '160', maxAmount: '334'},
       {token: ARGUS, weight: 450, rarity: 'ultra', minAmount: '110', maxAmount: '220'},
