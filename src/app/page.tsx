@@ -5,6 +5,7 @@ import {OddsRail} from '@/components/OddsRail'
 import {HeroOrbit} from '@/components/HeroOrbit'
 import {FeaturedMachine} from '@/components/FeaturedMachine'
 import {ActivityPreview} from '@/components/ActivityPreview'
+import {BurnCounter} from '@/components/BurnCounter'
 import {FaqAccordion} from '@/components/FaqAccordion'
 import {machineBySlug, rarityOdds, LIVE_MACHINES, assetsOnMachine} from '@/config/machines'
 import {REWARD_ASSETS, VERIFICATION_META} from '@/config/rewards'
@@ -97,6 +98,11 @@ export default function HomePage() {
             note={status.kind === 'ready' ? 'Live onchain' : 'Awaiting deployment'}
           />
         </div>
+      </section>
+
+      {/* Renders only once tokens have actually been sent to the burn address. */}
+      <section className="shell">
+        <BurnCounter className="mx-auto max-w-[36rem]" />
       </section>
 
       {/* ================================================================== machine row */}

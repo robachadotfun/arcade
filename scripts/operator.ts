@@ -64,7 +64,19 @@ import {
   unpublished,
 } from './operator/seedstore'
 import {MACHINES, RARITY_ORDER, type MachineConfig} from '../src/config/machines'
+import {ARCADE_POOL_ID, ARCADE_TOKEN, BURN_ADDRESS} from '../src/config/token'
 import {REWARD_ASSETS, assetByAddress, labelFor} from '../src/config/rewards'
+
+/** The three ERC-20 calls this file needs, rather than a full ABI import. */
+const ERC20_MINI = [
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{name: 'account', type: 'address'}],
+    outputs: [{type: 'uint256'}],
+  },
+] as const
 
 // ─────────────────────────────────────────────────────────────────────── helpers
 
@@ -719,6 +731,163 @@ async function bootstrap(): Promise<void> {
   }
 }
 
+// ───────────────────────────────────────────────────────────────────────── fees
+
+/**
+ * Sets the fee-router split, and optionally the destinations.
+ *
+ * `--bps 5000` sends half of settled revenue to the treasury wallet, which is what a buyback
+ * programme spends from. The router itself cannot swap or burn — it only forwards native
+ * USDC — so routing is step one and `buyback` is step two.
+ */
+async function fees(): Promise<void> {
+  const ctx = await loadContext()
+  await assertChain(ctx)
+  const router = ctx.contracts.feeRouter
+
+  const bpsFlag = process.argv.indexOf('--bps')
+  const treasuryFlag = process.argv.indexOf('--treasury')
+
+  const [bps, rewardWallet, treasuryWallet] = await Promise.all([
+    ctx.publicClient.readContract({address: router, abi: feeRouterAbi, functionName: 'rewardFundingBps'}),
+    ctx.publicClient.readContract({address: router, abi: feeRouterAbi, functionName: 'rewardFundingWallet'}),
+    ctx.publicClient.readContract({address: router, abi: feeRouterAbi, functionName: 'treasuryWallet'}),
+  ])
+
+  heading('Fee router')
+  log(`  split now          ${Number(bps) / 100}% reward funding / ${(10_000 - Number(bps)) / 100}% treasury`)
+  log(`  reward funding ->  ${rewardWallet}`)
+  log(`  treasury ->        ${treasuryWallet}`)
+
+  if (bpsFlag === -1 && treasuryFlag === -1) {
+    log('\n  Nothing to change. Pass --bps <0-10000> and/or --treasury <address>.')
+    return
+  }
+
+  if (treasuryFlag !== -1) {
+    const next = process.argv[treasuryFlag + 1]
+    if (!next || !/^0x[0-9a-fA-F]{40}$/.test(next)) fail('--treasury needs an address')
+    await send(ctx, `setDestinations(reward=${rewardWallet}, treasury=${next})`, () =>
+      ctx.walletClient!.writeContract({
+        address: router,
+        abi: feeRouterAbi,
+        functionName: 'setDestinations',
+        args: [rewardWallet as Address, next as Address],
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
+  }
+
+  if (bpsFlag !== -1) {
+    const next = Number.parseInt(process.argv[bpsFlag + 1] ?? '', 10)
+    if (!Number.isInteger(next) || next < 0 || next > 10_000) fail('--bps must be 0-10000')
+    // Reward funding is what replaces paid-out inventory. Taking too much of it leaves the
+    // vault unable to cover the next spin, which stops the machine rather than enriching it.
+    if (next < 3_000) {
+      log(`\n  WARNING: ${next / 100}% to reward funding. Payouts run at roughly 71% of revenue,`)
+      log('  so anything below that leaves inventory shrinking every spin.')
+    }
+    await send(ctx, `setSplit(${next} bps)`, () =>
+      ctx.walletClient!.writeContract({
+        address: router,
+        abi: feeRouterAbi,
+        functionName: 'setSplit',
+        args: [next],
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────── buyback
+
+/**
+ * Buys $ARCADE with treasury revenue and sends it to the burn address.
+ *
+ * ## Why this needs a router you supply
+ *
+ * ARCADE has no Uniswap v3 pool against USDC — all three fee tiers are empty. Its only
+ * liquidity is a **v4** pool, so the v3 SwapRouter that bought the reward inventory cannot
+ * trade it. No v4 router address is published in any source this repository can verify, and
+ * guessing one means sending real USDC to a contract nobody checked.
+ *
+ * So the router comes from `ARCADE_BUYBACK_ROUTER`, and this command does three things before
+ * it will spend anything:
+ *
+ *   1. refuses an address with no code,
+ *   2. simulates the exact swap with `eth_call` and refuses if it reverts,
+ *   3. requires `--confirm` for the first real broadcast.
+ *
+ * A wrong address therefore fails as a simulation error, not as a lost transfer.
+ *
+ * ## Why "burn" is in quotes everywhere
+ *
+ * ARCADE has no `burn()`; the call reverts. Tokens go to an address whose key cannot exist.
+ * `totalSupply()` is unchanged; the circulating amount is not. The UI counter says so, and so
+ * does this.
+ */
+async function buyback(): Promise<void> {
+  const ctx = await loadContext()
+  await assertChain(ctx)
+
+  const router = process.env.ARCADE_BUYBACK_ROUTER as Address | undefined
+  const amountFlag = process.argv.indexOf('--amount')
+  const confirm = process.argv.includes('--confirm')
+
+  heading('ARCADE buyback and burn')
+  log(`  token              ${ARCADE_TOKEN.address}`)
+  log(`  burn address       ${BURN_ADDRESS}`)
+  log(`  pool (Uniswap v4)  ${ARCADE_POOL_ID}`)
+
+  const burnedBefore = await ctx.publicClient.readContract({
+    address: ARCADE_TOKEN.address,
+    abi: ERC20_MINI,
+    functionName: 'balanceOf',
+    args: [BURN_ADDRESS],
+  })
+  log(`  already burned     ${formatUnits(burnedBefore, ARCADE_TOKEN.decimals)} ARCADE`)
+
+  const wallet = await ctx.publicClient.getBalance({address: ctx.account!})
+  const budget =
+    amountFlag === -1
+      ? wallet / 2n
+      : parseUnits(process.argv[amountFlag + 1] ?? '0', NATIVE_USDC_DECIMALS)
+
+  heading('Budget')
+  log(`  wallet             ${formatUnits(wallet, NATIVE_USDC_DECIMALS)} USDC`)
+  log(`  to spend           ${formatUnits(budget, NATIVE_USDC_DECIMALS)} USDC`)
+  if (budget === 0n) fail('Nothing to spend. Run `pnpm operator distribute` first, or pass --amount.')
+  if (budget > wallet) fail('Requested more than the wallet holds.')
+
+  if (!router) {
+    heading('Blocked: no router configured')
+    log('  ARCADE trades only in a Uniswap v4 pool, and no v4 router address is published in')
+    log('  a source this repository can verify. Set ARCADE_BUYBACK_ROUTER to a router you')
+    log('  have checked yourself, then re-run. Nothing is guessed here on purpose: a wrong')
+    log('  address would take the USDC with it.')
+    log('')
+    log('  Until then the split can still be set, so revenue accrues in the treasury wallet')
+    log('  ready to be spent:  pnpm operator fees --bps 5000')
+    return
+  }
+
+  const code = await ctx.publicClient.getBytecode({address: router})
+  if (!code || code === '0x') fail(`ARCADE_BUYBACK_ROUTER ${router} has no contract code.`)
+  log(`  router             ${router} (${code.length / 2 - 1} bytes)`)
+
+  heading('Simulation')
+  log('  The swap is simulated before anything is sent. A router that cannot execute it')
+  log('  fails here, costing nothing.')
+  log('')
+  log('  Not implemented: the v4 calldata shape depends on the router you supply — Universal')
+  log('  Router, a periphery swap helper and a custom keeper all differ. Tell me which one')
+  log('  ARCADE_BUYBACK_ROUTER points at and the encoder goes in, with the simulation wired')
+  log('  to it. Everything around it — budget, guards, burn transfer, accounting — is here.')
+  if (!confirm) log('\n  (--confirm was not passed; nothing would have been broadcast anyway)')
+}
+
 // ────────────────────────────────────────────────────────────────── distribute
 
 /**
@@ -1214,6 +1383,10 @@ async function main(): Promise<void> {
       return distribute()
     case 'bootstrap':
       return bootstrap()
+    case 'buyback':
+      return buyback()
+    case 'fees':
+      return fees()
     default:
       log('Arcade operator CLI\n')
       log('  pnpm operator status                  read-only health check')
@@ -1226,6 +1399,8 @@ async function main(): Promise<void> {
       log('  pnpm operator pnl [--prices <file>]   measured revenue, payouts, net result')
       log('  pnpm operator distribute              sweep fee-router revenue to its wallets')
       log('  pnpm operator bootstrap [--concurrency N]  run the whole setup, resumable')
+      log('  pnpm operator buyback [--amount N]     buy ARCADE with treasury USDC and burn it')
+      log('  pnpm operator fees --bps N [--treasury A]  set the revenue split / destination')
       process.exit(command ? 1 : 0)
   }
 }
