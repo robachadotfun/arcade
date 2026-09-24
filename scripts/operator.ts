@@ -214,6 +214,53 @@ async function status(): Promise<void> {
   }
   if (mapping.length > 0) log(`\n  NEXT_PUBLIC_ARCADE_MACHINE_IDS=${mapping.join(',')}`)
 
+  /*
+   * Compare the local reward table against the one actually published.
+   *
+   * Everything above reads config to decide what to check. That is fine for inventory, but it
+   * made "every precondition is met" mean "the config is satisfiable", not "the chain pays
+   * what this file says". A token funded in the vault and added to config still is not paid
+   * out until a version carrying it is published, and status said yes anyway.
+   */
+  heading('Config vs chain')
+  let drift = false
+  for (const machine of MACHINES) {
+    if (machine.status === 'disabled' || machine.onchainId === null) continue
+    const onchain = await pc.readContract({
+      address: ctx.contracts.machineManager,
+      abi: arcadeMachineManagerAbi,
+      functionName: 'machineOf',
+      args: [BigInt(machine.onchainId)],
+    })
+    const published = await pc.readContract({
+      address: ctx.contracts.machineManager,
+      abi: arcadeMachineManagerAbi,
+      functionName: 'versionTokens',
+      args: [BigInt(machine.onchainId), onchain.currentVersion],
+    })
+    const onchainSet = new Set(published.map((a) => a.toLowerCase()))
+    const configSet = new Set(machine.tiers.map((t) => t.token.toLowerCase()))
+
+    const missing = [...configSet].filter((a) => !onchainSet.has(a))
+    const extra = [...onchainSet].filter((a) => !configSet.has(a))
+
+    if (missing.length === 0 && extra.length === 0) {
+      log(`  ${machine.slug.padEnd(14)} v${onchain.currentVersion} matches config`)
+      continue
+    }
+    drift = true
+    log(`  ${machine.slug.padEnd(14)} v${onchain.currentVersion} DIFFERS from config`)
+    for (const a of missing) {
+      const asset = assetByAddress(a as Address)
+      log(`    in config, not published:  ${asset ? labelFor(asset) : a}`)
+    }
+    for (const a of extra) {
+      const asset = assetByAddress(a as Address)
+      log(`    published, not in config:  ${asset ? labelFor(asset) : a}`)
+    }
+  }
+  if (drift) log('\n  Run `pnpm operator machines` to publish the config as a new version.')
+
   heading('Can a spin happen right now?')
   const blockers: string[] = []
   if (available === 0n) blockers.push('no randomness commitments available')
@@ -221,6 +268,7 @@ async function status(): Promise<void> {
   if (Number(registered) === 0) blockers.push('no reward tokens registered')
   if (anyEmpty) blockers.push('a reward token a live machine pays has zero vault inventory')
   if (MACHINES.every((m) => m.onchainId === null)) blockers.push('no machine ids mapped')
+  if (drift) blockers.push('the published reward table does not match config (see above)')
   if (blockers.length === 0) {
     log('  Yes — every precondition is met. Keep `pnpm operator reveal` running.')
   } else {
