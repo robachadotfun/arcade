@@ -31,3 +31,6 @@ public/generated/*.png
 
 # Randomness pre-images. Losing these forces refunds; leaking them reveals outcomes early.
 scripts/data/seeds/
+
+# Cumulative buyback spend. Operational state, not source.
+scripts/data/buyback-ledger.json

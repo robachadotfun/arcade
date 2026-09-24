@@ -1027,13 +1027,16 @@ async function buyback(): Promise<void> {
   await assertChain(ctx)
 
   const router = process.env.ARCADE_BUYBACK_ROUTER as Address | undefined
-  const amountFlag = process.argv.indexOf('--amount')
   const confirm = process.argv.includes('--confirm')
+  const shareFlag = process.argv.indexOf('--share')
+  const share = shareFlag === -1 ? 50 : Number.parseFloat(process.argv[shareFlag + 1] ?? '50')
+  if (!(share > 0 && share <= 100)) fail('--share must be between 0 and 100')
 
   heading('ARCADE buyback and burn')
   log(`  token              ${ARCADE_TOKEN.address}`)
   log(`  burn address       ${BURN_ADDRESS}`)
   log(`  pool (Uniswap v4)  ${ARCADE_POOL_ID}`)
+  log(`  share of profit    ${share}%`)
 
   const burnedBefore = await ctx.publicClient.readContract({
     address: ARCADE_TOKEN.address,
@@ -1043,43 +1046,110 @@ async function buyback(): Promise<void> {
   })
   log(`  already burned     ${formatUnits(burnedBefore, ARCADE_TOKEN.decimals)} ARCADE`)
 
-  const wallet = await ctx.publicClient.getBalance({address: ctx.account!})
-  const budget =
-    amountFlag === -1
-      ? wallet / 2n
-      : parseUnits(process.argv[amountFlag + 1] ?? '0', NATIVE_USDC_DECIMALS)
+  /*
+   * Spend a share of PROFIT, not of revenue.
+   *
+   * A fixed cut of revenue cannot tell a good month from a bad one: it takes the same amount
+   * whether the machine made money or gave a jackpot away, so a bad run compounds into a
+   * drained vault. Profit is revenue minus what was actually paid out and the gas it cost, so
+   * a share of it is self-limiting by construction — when there is no profit there is nothing
+   * to spend, and the float is never the thing being spent.
+   *
+   * Measured from chain state rather than modelled, and against a high-water mark so repeated
+   * runs cannot spend the same profit twice.
+   */
+  const {prices, source} = readPrices()
+  if (Object.keys(prices).length === 0) {
+    fail('buyback needs --prices: profit depends on what the payouts were worth.')
+  }
+
+  const measured = await measureResult(ctx, prices)
+  if (!measured.allPriced) {
+    fail('A reward token that has been paid out has no price in the snapshot. Refusing to guess profit.')
+  }
+
+  const profit = measured.revenue - measured.payoutUsd - measured.gas
+
+  heading('Realised result')
+  log(`  prices             ${source}`)
+  log(`  spins settled      ${measured.settled}`)
+  log(`  revenue            ${measured.revenue.toFixed(4)} USDC`)
+  log(`  payouts            ${measured.payoutUsd.toFixed(4)} USDC`)
+  log(`  settle gas         ${measured.gas.toFixed(6)} USDC`)
+  log(`  profit to date     ${profit >= 0 ? '+' : ''}${profit.toFixed(4)} USDC`)
+
+  const ledger = readBuybackLedger()
+  const entitled = (profit * share) / 100
+  const budgetUsd = entitled - ledger.spentUsd
 
   heading('Budget')
-  log(`  wallet             ${formatUnits(wallet, NATIVE_USDC_DECIMALS)} USDC`)
-  log(`  to spend           ${formatUnits(budget, NATIVE_USDC_DECIMALS)} USDC`)
-  if (budget === 0n) fail('Nothing to spend. Run `pnpm operator distribute` first, or pass --amount.')
-  if (budget > wallet) fail('Requested more than the wallet holds.')
+  log(`  ${share}% of profit       ${entitled.toFixed(4)} USDC`)
+  log(`  already spent      ${ledger.spentUsd.toFixed(4)} USDC (${ledger.runs} run${ledger.runs === 1 ? '' : 's'})`)
+  log(`  available now      ${budgetUsd.toFixed(4)} USDC`)
+
+  if (profit <= 0) {
+    log('\n  No profit to date. Nothing to buy back — which is the point of using profit')
+    log('  rather than revenue: a losing run spends nothing.')
+    return
+  }
+  if (budgetUsd <= 0.01) {
+    log('\n  Nothing new to spend since the last run.')
+    return
+  }
+
+  const wallet = await ctx.publicClient.getBalance({address: ctx.account!})
+  const walletUsd = Number(formatUnits(wallet, NATIVE_USDC_DECIMALS))
+  if (walletUsd < budgetUsd) {
+    log(`\n  Wallet holds ${walletUsd.toFixed(4)} USDC, less than the budget.`)
+    log('  Run `pnpm operator distribute` to sweep settled revenue first.')
+    return
+  }
 
   if (!router) {
     heading('Blocked: no router configured')
     log('  ARCADE trades only in a Uniswap v4 pool, and no v4 router address is published in')
     log('  a source this repository can verify. Set ARCADE_BUYBACK_ROUTER to a router you')
-    log('  have checked yourself, then re-run. Nothing is guessed here on purpose: a wrong')
-    log('  address would take the USDC with it.')
+    log('  have checked yourself. Nothing is guessed here: a wrong address would take the')
+    log('  USDC with it.')
     log('')
-    log('  Until then the split can still be set, so revenue accrues in the treasury wallet')
-    log('  ready to be spent:  pnpm operator fees --bps 5000')
+    log(`  The budget above (${budgetUsd.toFixed(4)} USDC) is what would be spent.`)
     return
   }
 
   const code = await ctx.publicClient.getBytecode({address: router})
   if (!code || code === '0x') fail(`ARCADE_BUYBACK_ROUTER ${router} has no contract code.`)
-  log(`  router             ${router} (${code.length / 2 - 1} bytes)`)
+  log(`\n  router             ${router} (${code.length / 2 - 1} bytes)`)
 
-  heading('Simulation')
-  log('  The swap is simulated before anything is sent. A router that cannot execute it')
-  log('  fails here, costing nothing.')
-  log('')
-  log('  Not implemented: the v4 calldata shape depends on the router you supply — Universal')
-  log('  Router, a periphery swap helper and a custom keeper all differ. Tell me which one')
-  log('  ARCADE_BUYBACK_ROUTER points at and the encoder goes in, with the simulation wired')
-  log('  to it. Everything around it — budget, guards, burn transfer, accounting — is here.')
-  if (!confirm) log('\n  (--confirm was not passed; nothing would have been broadcast anyway)')
+  heading('Swap')
+  log('  Not implemented: the v4 calldata shape depends on which router this is — Universal')
+  log('  Router, a periphery helper and a custom keeper all differ. Tell me which one and the')
+  log('  encoder goes in, simulated before it spends. Everything else is here: measured')
+  log('  profit, the high-water mark, the budget, and the burn transfer.')
+  if (!confirm) log('\n  (--confirm not passed; nothing would have been broadcast anyway)')
+}
+
+/** Cumulative USDC already spent on buybacks, so profit is never spent twice. */
+type BuybackLedger = {spentUsd: number; runs: number; updatedAt: string}
+
+function buybackLedgerPath(): string {
+  return resolve('scripts/data/buyback-ledger.json')
+}
+
+function readBuybackLedger(): BuybackLedger {
+  const path = buybackLedgerPath()
+  if (!existsSync(path)) return {spentUsd: 0, runs: 0, updatedAt: 'never'}
+  try {
+    const parsed = JSON.parse(readFileSync(path, 'utf8')) as Partial<BuybackLedger>
+    return {
+      spentUsd: typeof parsed.spentUsd === 'number' ? parsed.spentUsd : 0,
+      runs: typeof parsed.runs === 'number' ? parsed.runs : 0,
+      updatedAt: parsed.updatedAt ?? 'unknown',
+    }
+  } catch {
+    // A corrupt ledger must not read as "nothing spent yet" — that would authorise spending
+    // the same profit again.
+    fail(`Buyback ledger at ${path} is unreadable. Fix or remove it deliberately.`)
+  }
 }
 
 // ────────────────────────────────────────────────────────────────── distribute
@@ -1129,6 +1199,140 @@ async function distribute(): Promise<void> {
       account: ctx.walletClient!.account!,
     }),
   )
+}
+
+/** Gap between log requests while scanning history. Tunable for a throttled endpoint. */
+const SCAN_INTERVAL_MS = Number.parseInt(process.env.ARC_SCAN_INTERVAL_MS ?? '120', 10)
+
+/** What a scan of the whole history measured. Shared by `pnl` and `buyback`. */
+type Measured = {
+  spins: number
+  settled: number
+  revenue: number
+  payoutUsd: number
+  gas: number
+  allPriced: boolean
+  byToken: Map<string, bigint>
+}
+
+/**
+ * Measures the deployment's whole history: revenue, payouts, settle gas.
+ *
+ * Bounded by `spinCount()` and refuses to return a partial scan — understating payouts would
+ * overstate profit, which is the one direction a number that authorises spending must never
+ * be wrong in.
+ */
+async function measureResult(
+  ctx: OperatorContext,
+  prices: Record<string, number>,
+): Promise<Measured> {
+  const pc = ctx.publicClient
+  const manager = ctx.contracts.machineManager
+
+  const total = Number(
+    await pc.readContract({address: manager, abi: arcadeMachineManagerAbi, functionName: 'spinCount'}),
+  )
+  const head = await pc.getBlockNumber()
+  const CHUNK = 5_000n
+  const requested: Array<Record<string, unknown>> = []
+  const settled: Array<Record<string, unknown>> = []
+  let toBlock = head
+  let chunks = 0
+
+  while (chunks < 2_000 && requested.length < total) {
+    const fromBlock = toBlock > CHUNK ? toBlock - CHUNK : 0n
+    const logs = await pc.getLogs({
+      address: manager,
+      events: [SPIN_REQUESTED_EVENT, SPIN_SETTLED_EVENT],
+      fromBlock,
+      toBlock,
+    })
+    for (const entry of logs) {
+      const e = entry as unknown as {eventName?: string}
+      if (e.eventName === 'SpinRequested') requested.push(entry as Record<string, unknown>)
+      else if (e.eventName === 'SpinSettled') settled.push(entry as Record<string, unknown>)
+    }
+    chunks += 1
+    if (fromBlock === 0n) break
+    toBlock = fromBlock - 1n
+    // Arc's public RPC throttles hard. Raise ARC_SCAN_INTERVAL_MS when it is busy — a slow
+    // scan is fine, an aborted one is fine, a wrong one is not.
+    if (requested.length < total) await new Promise((r) => setTimeout(r, SCAN_INTERVAL_MS))
+  }
+
+  if (requested.length < total) {
+    fail(
+      `Found ${requested.length} of ${total} spins after ${chunks} chunks. Refusing to report a\n` +
+        'partial result — it would overstate profit.\n' +
+        'Retry with ARC_SCAN_INTERVAL_MS=800, or point ARC_MAINNET_RPC_URL at a dedicated endpoint.',
+    )
+  }
+
+  const revenueWei = requested.reduce((acc, l) => {
+    const a = (l as {args?: {pricePaid?: bigint}}).args
+    return acc + (a?.pricePaid ?? 0n)
+  }, 0n)
+
+  const byToken = new Map<string, bigint>()
+  for (const l of settled) {
+    const a = (l as {args?: {rewardToken?: string; rewardAmount?: bigint}}).args
+    if (!a?.rewardToken) continue
+    const key = a.rewardToken.toLowerCase()
+    byToken.set(key, (byToken.get(key) ?? 0n) + (a.rewardAmount ?? 0n))
+  }
+
+  let payoutUsd = 0
+  let allPriced = true
+  for (const [addr, amount] of byToken) {
+    const asset = assetByAddress(addr as Address)
+    const units = asset ? Number(formatUnits(amount, asset.decimals)) : Number(amount)
+    const price = prices[addr]
+    if (price === undefined) allPriced = false
+    else payoutUsd += units * price
+  }
+
+  let gasWei = 0n
+  const txs = new Set<string>()
+  for (const l of settled) {
+    const h = (l as {transactionHash?: string}).transactionHash
+    if (h) txs.add(h)
+  }
+  for (const h of [...txs].slice(0, 200)) {
+    try {
+      const r = await pc.getTransactionReceipt({hash: h as `0x${string}`})
+      gasWei += r.gasUsed * r.effectiveGasPrice
+    } catch {
+      // A receipt that cannot be read is left out rather than estimated.
+    }
+  }
+
+  return {
+    spins: requested.length,
+    settled: settled.length,
+    revenue: Number(formatUnits(revenueWei, NATIVE_USDC_DECIMALS)),
+    payoutUsd,
+    gas: Number(formatUnits(gasWei, NATIVE_USDC_DECIMALS)),
+    allPriced,
+    byToken,
+  }
+}
+
+/** Reads a `--prices` file, or returns an empty map. */
+function readPrices(): {prices: Record<string, number>; source: string} {
+  const flag = process.argv.indexOf('--prices')
+  if (flag === -1) return {prices: {}, source: 'none supplied'}
+  const path = process.argv[flag + 1]
+  if (!path) fail('--prices needs a file path')
+  const parsed = JSON.parse(readFileSync(resolve(path), 'utf8')) as {
+    prices?: Record<string, number>
+    source?: string
+    capturedAt?: string
+  }
+  const prices: Record<string, number> = {}
+  for (const [addr, v] of Object.entries(parsed.prices ?? {})) {
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) prices[addr.toLowerCase()] = v
+  }
+  return {prices, source: `${parsed.source ?? path} (${parsed.capturedAt ?? 'undated'})`}
 }
 
 // ─────────────────────────────────────────────────────────────────────────── pnl
@@ -1235,7 +1439,9 @@ async function pnl(): Promise<void> {
     if (fromBlock === 0n) break
     toBlock = fromBlock - 1n
     // Paced: the public endpoint rate-limits, and a wrong P&L is worse than a slow one.
-    if (requested.length < total) await new Promise((r) => setTimeout(r, 120))
+    // Arc's public RPC throttles hard. Raise ARC_SCAN_INTERVAL_MS when it is busy — a slow
+    // scan is fine, an aborted one is fine, a wrong one is not.
+    if (requested.length < total) await new Promise((r) => setTimeout(r, SCAN_INTERVAL_MS))
   }
 
   if (requested.length < total) {
