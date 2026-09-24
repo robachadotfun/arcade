@@ -34,10 +34,13 @@
 
 // Must stay the first import: it loads .env.local before config modules read it.
 import './operator/env'
+import {readFileSync} from 'node:fs'
+import {resolve} from 'node:path'
 import {formatUnits, parseUnits, decodeEventLog, type Address, type Hex} from 'viem'
 import {
   arcadeMachineManagerAbi,
   commitRevealRandomnessAbi,
+  feeRouterAbi,
   prizeVaultAbi,
   rewardRegistryAbi,
 } from '../src/abi'
@@ -560,6 +563,407 @@ async function publishTable(
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────── bootstrap
+
+/**
+ * Brings a fresh deployment all the way to accepting spins, in one command.
+ *
+ * Every step is idempotent and checks chain state before acting, so this is safe to re-run
+ * after a failure, a rate limit, or a top-up. It never re-publishes a machine that exists,
+ * never re-registers a token, and never bonds twice.
+ *
+ * ## What it will not do
+ *
+ * It cannot buy reward inventory. Acquiring tokens is a trade on a market, not an operator
+ * call, and `fund` refuses rather than partially depositing when the wallet is short. So the
+ * one step this cannot finish for you is the one that needs tokens in hand — it reports
+ * exactly what is missing.
+ *
+ * When inventory is short it stops before publishing. A sealed table that pays a token the
+ * vault does not hold takes a working machine off line, because the contract rejects every
+ * spin it cannot cover at worst case.
+ *
+ * Inventory is sized from the machine's own worst case: the contract gates each spin on
+ * `worstCase x (outstanding + 1)`, so `--concurrency N` funds enough for N simultaneous
+ * spins. The default of 3 is a deliberate floor, not a recommendation.
+ */
+async function bootstrap(): Promise<void> {
+  const ctx = await loadContext()
+  await assertChain(ctx)
+
+  const cFlag = process.argv.indexOf('--concurrency')
+  const concurrency = cFlag === -1 ? 3 : Math.max(1, Number.parseInt(process.argv[cFlag + 1] ?? '3', 10))
+  const bondFlag = process.argv.indexOf('--bond')
+  const bondTarget = bondFlag === -1 ? '20' : (process.argv[bondFlag + 1] ?? '20')
+  const commitFlag = process.argv.indexOf('--commitments')
+  const commitTarget = commitFlag === -1 ? 200 : Number.parseInt(process.argv[commitFlag + 1] ?? '200', 10)
+
+  heading(`Bootstrapping Arcade on ${ctx.chain.name}`)
+  log(`  signer             ${ctx.account}`)
+  log(`  target concurrency ${concurrency} simultaneous spins`)
+
+  const R = {address: ctx.contracts.randomness, abi: commitRevealRandomnessAbi} as const
+
+  // ------------------------------------------------------------ 1. commitments
+  heading('1. Randomness commitments')
+  const available = await ctx.publicClient.readContract({...R, functionName: 'availableCommitments'})
+  if (Number(available) >= commitTarget) {
+    log(`  ${available} already available, target ${commitTarget} — skipping`)
+  } else {
+    const needed = commitTarget - Number(available)
+    log(`  ${available} available, publishing ${needed} more`)
+    await commitments(String(Math.min(needed, 500)))
+  }
+
+  // ------------------------------------------------------------------- 2. bond
+  heading('2. Operator bond')
+  const bonded = await ctx.publicClient.readContract({...R, functionName: 'operatorBond'})
+  if (bonded > 0n) {
+    log(`  ${formatUnits(bonded, NATIVE_USDC_DECIMALS)} USDC already posted — skipping`)
+  } else {
+    await bond(bondTarget)
+  }
+
+  // --------------------------------------------------------------- 3. registry
+  heading('3. Reward registry')
+  await registerTokens()
+
+  // -------------------------------------------------------------- 4. inventory
+  heading('4. Vault inventory')
+  const live = MACHINES.filter((m) => m.status !== 'disabled')
+  const needByToken = new Map<string, {asset: (typeof REWARD_ASSETS)[number]; units: number}>()
+  for (const machine of live) {
+    for (const tier of machine.tiers) {
+      const asset = assetByAddress(tier.token)
+      if (!asset) continue
+      const key = asset.address.toLowerCase()
+      // Worst case for a token is its largest single payout across the table.
+      const worst = Math.max(
+        needByToken.get(key)?.units ?? 0,
+        Number.parseFloat(tier.maxAmount) * concurrency,
+      )
+      needByToken.set(key, {asset, units: worst})
+    }
+  }
+
+  const erc20 = [
+    {
+      type: 'function',
+      name: 'balanceOf',
+      stateMutability: 'view',
+      inputs: [{name: 'a', type: 'address'}],
+      outputs: [{type: 'uint256'}],
+    },
+  ] as const
+
+  const short: string[] = []
+  for (const {asset, units} of needByToken.values()) {
+    const have = await ctx.publicClient.readContract({
+      address: ctx.contracts.prizeVault,
+      abi: prizeVaultAbi,
+      functionName: 'availableOf',
+      args: [asset.address as Address],
+    })
+    const haveUnits = Number(formatUnits(have, asset.decimals))
+    if (haveUnits >= units) {
+      log(`  ${labelFor(asset).padEnd(10)} ${haveUnits.toFixed(4)} in vault, need ${units} — ok`)
+      continue
+    }
+
+    const missing = units - haveUnits
+    const wallet = await ctx.publicClient.readContract({
+      address: asset.address as Address,
+      abi: erc20,
+      functionName: 'balanceOf',
+      args: [ctx.account!],
+    })
+    const walletUnits = Number(formatUnits(wallet, asset.decimals))
+
+    if (walletUnits >= missing) {
+      log(`  ${labelFor(asset).padEnd(10)} depositing ${missing.toFixed(4)} from wallet`)
+      await fund(labelFor(asset), missing.toFixed(Math.min(asset.decimals, 6)))
+    } else {
+      short.push(
+        `  ${labelFor(asset).padEnd(10)} need ${missing.toFixed(4)} more, wallet holds ${walletUnits.toFixed(4)}`,
+      )
+      log(`  ${labelFor(asset).padEnd(10)} SHORT — need ${missing.toFixed(4)}, wallet has ${walletUnits.toFixed(4)}`)
+    }
+  }
+
+  // --------------------------------------------------------------- 5. machines
+  //
+  // Only when every token is funded. publishVersion seals a reward table and makes it the
+  // version new spins use, so publishing a table that pays a token the vault does not hold
+  // takes a working machine OFF LINE until that token is deposited — the contract rejects
+  // every spin with InsufficientInventory. That happened once; it must not happen again.
+  heading('5. Machines')
+  if (short.length > 0) {
+    log('  SKIPPED — publishing now would seal a table the vault cannot cover, and the')
+    log('  machine would reject every spin until it is funded. Fund these first:')
+    for (const line of short) log(line)
+  } else {
+    await machines()
+  }
+
+  // ----------------------------------------------------------------- 6. verdict
+  heading('Bootstrap complete')
+  if (short.length > 0) {
+    log('  Inventory is short, so no reward table was published. The machine is unchanged.')
+    for (const line of short) log(line)
+    log('')
+    log('  Buy them on a market, then re-run this command — it resumes where it stopped.')
+  } else {
+    log('  Every precondition is met. Start the daemon and leave it running:')
+    log('')
+    log('    pnpm operator reveal')
+  }
+}
+
+// ────────────────────────────────────────────────────────────────── distribute
+
+/**
+ * Sweeps settled revenue out of the fee router to its configured destinations.
+ *
+ * Revenue reaches the router automatically on every settlement, but it stays there until
+ * someone calls this — there is no automatic sweep, by design: an unattended transfer of
+ * every spin's takings is a worse default than a balance an operator moves deliberately.
+ *
+ * The split and destinations are the router's own configuration; this only triggers the
+ * transfer. Check `pnpm operator status` or the printed values below before running it.
+ */
+async function distribute(): Promise<void> {
+  const ctx = await loadContext()
+  await assertChain(ctx)
+
+  const router = ctx.contracts.feeRouter
+  const [balance, bps, rewardWallet, treasuryWallet] = await Promise.all([
+    ctx.publicClient.getBalance({address: router}),
+    ctx.publicClient.readContract({address: router, abi: feeRouterAbi, functionName: 'rewardFundingBps'}),
+    ctx.publicClient.readContract({address: router, abi: feeRouterAbi, functionName: 'rewardFundingWallet'}),
+    ctx.publicClient.readContract({address: router, abi: feeRouterAbi, functionName: 'treasuryWallet'}),
+  ])
+
+  heading('Fee router')
+  log(`  balance            ${formatUnits(balance, NATIVE_USDC_DECIMALS)} USDC`)
+  log(`  split              ${Number(bps) / 100}% reward funding / ${(10_000 - Number(bps)) / 100}% treasury`)
+  log(`  reward funding ->  ${rewardWallet}`)
+  log(`  treasury ->        ${treasuryWallet}`)
+  if (String(rewardWallet).toLowerCase() === String(treasuryWallet).toLowerCase()) {
+    log('  both destinations are the same wallet, so the split has no practical effect')
+  }
+
+  if (balance === 0n) {
+    log('\n  Nothing to distribute.')
+    return
+  }
+
+  await send(ctx, `distribute(${formatUnits(balance, NATIVE_USDC_DECIMALS)} USDC)`, () =>
+    ctx.walletClient!.writeContract({
+      address: router,
+      abi: feeRouterAbi,
+      functionName: 'distribute',
+      chain: ctx.chain,
+      account: ctx.walletClient!.account!,
+    }),
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────── pnl
+
+const SPIN_SETTLED_EVENT = {
+  type: 'event',
+  name: 'SpinSettled',
+  inputs: [
+    {name: 'spinId', type: 'uint256', indexed: true},
+    {name: 'player', type: 'address', indexed: true},
+    {name: 'machineId', type: 'uint64', indexed: true},
+    {name: 'rewardToken', type: 'address', indexed: false},
+    {name: 'rewardAmount', type: 'uint256', indexed: false},
+    {name: 'randomWord', type: 'uint256', indexed: false},
+    {name: 'rarity', type: 'uint8', indexed: false},
+    {name: 'pushDelivered', type: 'bool', indexed: false},
+  ],
+} as const
+
+/**
+ * Realised profit and loss, measured from chain state.
+ *
+ * ## Why this exists
+ *
+ * `machine:audit` answers "should this be profitable" from a reward table and a price file.
+ * It is a model. It cannot say whether the machine actually made money, because that depends
+ * on what was really paid out.
+ *
+ * This reads what happened: every spin's price from `SpinRequested`, every payout's token and
+ * amount from `SpinSettled`, the undistributed balance in the fee router, and the gas the
+ * settle transactions cost. Those are facts.
+ *
+ * ## What it still cannot tell you
+ *
+ * Revenue is native USDC, so it is already a dollar figure. Payouts are tokens, and valuing
+ * them needs prices — which this project refuses to fetch, for the same reason as everywhere
+ * else: a scraped quote for a thin Arc asset is a confident number resting on a trade that
+ * may not clear. `--prices <file>` values them from a snapshot supplied deliberately. Without
+ * one it reports units and says the result is not computable.
+ *
+ * Gas for buying inventory is not counted: those trades are not distinguishable on-chain from
+ * any other transfer out of the operator wallet.
+ */
+async function pnl(): Promise<void> {
+  const ctx = await loadContext({requireSigner: false})
+  await assertChain(ctx)
+  const pc = ctx.publicClient
+  const manager = ctx.contracts.machineManager
+
+  const flag = process.argv.indexOf('--prices')
+  const prices: Record<string, number> = {}
+  let priceSource = 'none supplied'
+  if (flag !== -1) {
+    const path = process.argv[flag + 1]
+    if (!path) fail('--prices needs a file path')
+    const parsed = JSON.parse(readFileSync(resolve(path), 'utf8')) as {
+      prices?: Record<string, number>
+      source?: string
+      capturedAt?: string
+    }
+    for (const [addr, v] of Object.entries(parsed.prices ?? {})) {
+      if (typeof v === 'number' && Number.isFinite(v) && v > 0) prices[addr.toLowerCase()] = v
+    }
+    priceSource = `${parsed.source ?? path} (${parsed.capturedAt ?? 'undated'})`
+  }
+
+  heading(`Arcade P&L on ${ctx.chain.name}`)
+  log(`  prices             ${priceSource}`)
+
+  /*
+   * The scan must be complete — a partial one understates payouts and overstates profit,
+   * the one direction a number someone acts on must never be wrong in.
+   *
+   * `spinCount()` says exactly how many spins exist, so the walk stops the moment it has
+   * found them all rather than guessing a lookback. Without that bound this scanned back
+   * toward genesis in 5,000-block steps and was rate-limited off the public endpoint long
+   * before it finished.
+   */
+  const total = Number(
+    await pc.readContract({address: manager, abi: arcadeMachineManagerAbi, functionName: 'spinCount'}),
+  )
+  const head = await pc.getBlockNumber()
+  const CHUNK = 5_000n
+  const requested: Array<Record<string, unknown>> = []
+  const settled: Array<Record<string, unknown>> = []
+  let toBlock = head
+  let chunks = 0
+  const MAX_CHUNKS = 2_000
+
+  while (chunks < MAX_CHUNKS && requested.length < total) {
+    const fromBlock = toBlock > CHUNK ? toBlock - CHUNK : 0n
+    const logs = await pc.getLogs({
+      address: manager,
+      events: [SPIN_REQUESTED_EVENT, SPIN_SETTLED_EVENT],
+      fromBlock,
+      toBlock,
+    })
+    for (const entry of logs) {
+      const e = entry as unknown as {eventName?: string}
+      if (e.eventName === 'SpinRequested') requested.push(entry as Record<string, unknown>)
+      else if (e.eventName === 'SpinSettled') settled.push(entry as Record<string, unknown>)
+    }
+    chunks += 1
+    if (fromBlock === 0n) break
+    toBlock = fromBlock - 1n
+    // Paced: the public endpoint rate-limits, and a wrong P&L is worse than a slow one.
+    if (requested.length < total) await new Promise((r) => setTimeout(r, 120))
+  }
+
+  if (requested.length < total) {
+    fail(
+      `Found ${requested.length} of ${total} spins after ${chunks} chunks. Refusing to report a\n` +
+        'partial P&L — it would understate payouts. Use a dedicated RPC and re-run.',
+    )
+  }
+
+  const revenueWei = requested.reduce((acc, l) => {
+    const a = (l as {args?: {pricePaid?: bigint}}).args
+    return acc + (a?.pricePaid ?? 0n)
+  }, 0n)
+  const revenue = Number(formatUnits(revenueWei, NATIVE_USDC_DECIMALS))
+
+  heading('Revenue')
+  log(`  spins requested    ${requested.length}`)
+  log(`  spins settled      ${settled.length}`)
+  log(`  gross revenue      ${revenue.toFixed(4)} USDC`)
+  const routerBalance = await pc.getBalance({address: ctx.contracts.feeRouter})
+  const managerBalance = await pc.getBalance({address: manager})
+  log(`  in feeRouter       ${Number(formatUnits(routerBalance, NATIVE_USDC_DECIMALS)).toFixed(4)} USDC (undistributed)`)
+  log(`  in manager         ${Number(formatUnits(managerBalance, NATIVE_USDC_DECIMALS)).toFixed(4)} USDC (in-flight / refundable)`)
+
+  heading('Paid out')
+  const byToken = new Map<string, bigint>()
+  for (const l of settled) {
+    const a = (l as {args?: {rewardToken?: string; rewardAmount?: bigint}}).args
+    if (!a?.rewardToken) continue
+    const key = a.rewardToken.toLowerCase()
+    byToken.set(key, (byToken.get(key) ?? 0n) + (a.rewardAmount ?? 0n))
+  }
+
+  let payoutUsd = 0
+  let allPriced = true
+  if (byToken.size === 0) log('  nothing settled yet')
+  for (const [addr, amount] of byToken) {
+    const asset = assetByAddress(addr as Address)
+    const units = asset ? Number(formatUnits(amount, asset.decimals)) : Number(amount)
+    const price = prices[addr]
+    if (price === undefined) allPriced = false
+    else payoutUsd += units * price
+    log(
+      `  ${(asset ? labelFor(asset) : addr.slice(0, 10)).padEnd(10)} ` +
+        `${units.toLocaleString('en-US', {maximumFractionDigits: 6}).padStart(16)}` +
+        (price === undefined ? '   (no price supplied)' : `   $${(units * price).toFixed(4)}`),
+    )
+  }
+
+  heading('Operator gas')
+  let gasWei = 0n
+  const txs = new Set<string>()
+  for (const l of settled) {
+    const h = (l as {transactionHash?: string}).transactionHash
+    if (h) txs.add(h)
+  }
+  for (const h of [...txs].slice(0, 200)) {
+    try {
+      const r = await pc.getTransactionReceipt({hash: h as `0x${string}`})
+      gasWei += r.gasUsed * r.effectiveGasPrice
+    } catch {
+      // A receipt that cannot be read is left out rather than estimated.
+    }
+  }
+  const gas = Number(formatUnits(gasWei, NATIVE_USDC_DECIMALS))
+  log(`  settle transactions ${txs.size}`)
+  log(`  gas paid            ${gas.toFixed(6)} USDC`)
+  log('  reveal gas and inventory purchases are not included')
+
+  heading('Result')
+  if (byToken.size === 0) {
+    log('  No settled spins. Nothing to measure yet.')
+  } else if (!allPriced) {
+    log('  Payout value is not computable: a reward token had no price in the snapshot.')
+    log('  Revenue and the token units above are exact.')
+  } else {
+    const net = revenue - payoutUsd - gas
+    const ratio = revenue > 0 ? payoutUsd / revenue : 0
+    log(`  revenue            ${revenue.toFixed(4)} USDC`)
+    log(`  payouts            ${payoutUsd.toFixed(4)} USDC  (${(ratio * 100).toFixed(1)}% of revenue)`)
+    log(`  settle gas         ${gas.toFixed(6)} USDC`)
+    log(`  net                ${net >= 0 ? '+' : ''}${net.toFixed(4)} USDC`)
+    if (settled.length < 100) {
+      log('')
+      log(`  ${settled.length} settled spins is far too small a sample to read as a trend. One`)
+      log("  jackpot swings it entirely; steer by the audit's modelled ratio until the count")
+      log('  is in the thousands.')
+    }
+  }
+}
+
 // ────────────────────────────────────────────────────────────────────── reveal
 
 const SPIN_REQUESTED_EVENT = {
@@ -804,6 +1208,12 @@ async function main(): Promise<void> {
       return machines()
     case 'reveal':
       return reveal()
+    case 'pnl':
+      return pnl()
+    case 'distribute':
+      return distribute()
+    case 'bootstrap':
+      return bootstrap()
     default:
       log('Arcade operator CLI\n')
       log('  pnpm operator status                  read-only health check')
@@ -813,6 +1223,9 @@ async function main(): Promise<void> {
       log('  pnpm operator fund <symbol> <amount>  deposit reward inventory')
       log('  pnpm operator machines                create machines, publish reward tables')
       log('  pnpm operator reveal                  run the reveal daemon (keep running)')
+      log('  pnpm operator pnl [--prices <file>]   measured revenue, payouts, net result')
+      log('  pnpm operator distribute              sweep fee-router revenue to its wallets')
+      log('  pnpm operator bootstrap [--concurrency N]  run the whole setup, resumable')
       process.exit(command ? 1 : 0)
   }
 }
