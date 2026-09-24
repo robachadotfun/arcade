@@ -34,7 +34,7 @@
 
 // Must stay the first import: it loads .env.local before config modules read it.
 import './operator/env'
-import {readFileSync} from 'node:fs'
+import {existsSync, readFileSync} from 'node:fs'
 import {resolve} from 'node:path'
 import {formatUnits, parseUnits, decodeEventLog, type Address, type Hex} from 'viem'
 import {
@@ -731,6 +731,184 @@ async function bootstrap(): Promise<void> {
   }
 }
 
+// ────────────────────────────────────────────────────────────────────── solvency
+
+/**
+ * Works out how much revenue can be diverted to buyback without draining the operation.
+ *
+ * ## The model
+ *
+ * Every spin takes `R` in USDC and gives away `P` of reward tokens, which have to be bought
+ * back at market to keep the vault able to cover the next spin. Gas `G` is paid per spin by
+ * the operator. If a fraction `f` of revenue is routed to reward funding and the rest to
+ * buyback, operating capital moves by:
+ *
+ *     ΔC = f·R − P − G
+ *
+ * Solvency needs `ΔC ≥ 0`, so `f ≥ (P + G) / R`. Anything below that is a slow drain dressed
+ * up as a tokenomics feature: the machine keeps running until the vault cannot cover a spin,
+ * then stops.
+ *
+ * ## Why expected value is not enough
+ *
+ * `P` is a mean. A single spin can pay the largest amount in the table, which here exceeds
+ * revenue several times over. A thin bankroll can be wiped out by an early jackpot even when
+ * the long-run maths is fine, so this also reports how many worst-case payouts the capital
+ * absorbs — the number that actually decides whether a small float survives.
+ */
+async function solvency(): Promise<void> {
+  const ctx = await loadContext({requireSigner: false})
+
+  const capFlag = process.argv.indexOf('--capital')
+  const capital = capFlag === -1 ? 100 : Number.parseFloat(process.argv[capFlag + 1] ?? '100')
+  const bpsFlag = process.argv.indexOf('--bps')
+  const proposedBps = bpsFlag === -1 ? null : Number.parseInt(process.argv[bpsFlag + 1] ?? '', 10)
+
+  const priceFlag = process.argv.indexOf('--prices')
+  if (priceFlag === -1) {
+    fail(
+      'solvency needs prices: the payout side is denominated in tokens.\\n' +
+        'Usage: pnpm operator solvency --capital 100 --prices scripts/data/prices.json',
+    )
+  }
+  const parsed = JSON.parse(readFileSync(resolve(process.argv[priceFlag + 1] ?? ''), 'utf8')) as {
+    prices?: Record<string, number>
+    source?: string
+  }
+  const prices: Record<string, number> = {}
+  for (const [a, v] of Object.entries(parsed.prices ?? {})) {
+    if (typeof v === 'number' && v > 0) prices[a.toLowerCase()] = v
+  }
+
+  const live = MACHINES.filter((m) => m.status !== 'disabled')
+  if (live.length === 0) fail('No live machines.')
+
+  heading('Solvency of the revenue split')
+  log(`  capital            $${capital.toFixed(2)}`)
+  log(`  prices             ${parsed.source ?? 'supplied'}`)
+
+  // Measured on this deployment: 0.015526 USDC of settle gas across 3 spins. Reveal is a
+  // comparable write and is estimated at the same cost, so this is a floor, not a ceiling.
+  const GAS_PER_SPIN = 0.0052 * 2
+
+  let totalRevenue = 0
+  let totalExpected = 0
+  let worstSingle = 0
+
+  for (const machine of live) {
+    const revenue = Number.parseFloat(machine.spinPriceUsdc)
+    const weights = machine.tiers.reduce((a, t) => a + t.weight, 0)
+    let expected = 0
+    for (const tier of machine.tiers) {
+      const asset = assetByAddress(tier.token)
+      const price = asset ? prices[asset.address.toLowerCase()] : undefined
+      if (price === undefined) {
+        fail(`No price for ${asset ? labelFor(asset) : tier.token}. Every reward token needs one.`)
+      }
+      const p = tier.weight / weights
+      const mean = (Number.parseFloat(tier.minAmount) + Number.parseFloat(tier.maxAmount)) / 2
+      expected += p * mean * price
+      worstSingle = Math.max(worstSingle, Number.parseFloat(tier.maxAmount) * price)
+    }
+    totalRevenue += revenue
+    totalExpected += expected
+
+    heading(machine.name)
+    log(`  revenue per spin   $${revenue.toFixed(4)}`)
+    log(`  expected payout    $${expected.toFixed(4)}  (${((expected / revenue) * 100).toFixed(1)}%)`)
+    log(`  gas per spin       $${GAS_PER_SPIN.toFixed(4)}  (settle measured, reveal estimated)`)
+    log(`  largest single win $${worstSingle.toFixed(4)}  (${(worstSingle / revenue).toFixed(1)}x revenue)`)
+  }
+
+  const R = totalRevenue / live.length
+  const P = totalExpected / live.length
+  const minFraction = (P + GAS_PER_SPIN) / R
+  const minBps = Math.ceil(minFraction * 10_000)
+
+  heading('The split')
+  log(`  break-even reward funding   ${(minFraction * 100).toFixed(1)}%  (${minBps} bps)`)
+  log(`  so the most that can go to buyback is ${(100 - minFraction * 100).toFixed(1)}%, with ZERO buffer`)
+  log('')
+
+  const recommendations = [8_500, 8_000, 7_500]
+  log('  reward     buyback    net per spin    spins until $' + capital.toFixed(0) + ' is gone')
+  log('  ' + '─'.repeat(64))
+  for (const bps of [...recommendations, 5_000]) {
+    const f = bps / 10_000
+    const net = f * R - P - GAS_PER_SPIN
+    const runway = net >= 0 ? '—  (capital grows)' : `${Math.floor(capital / -net)}`
+    log(
+      `  ${String(bps / 100).padStart(4)}%     ${String((10_000 - bps) / 100).padStart(4)}%` +
+        `     ${(net >= 0 ? '+' : '') + net.toFixed(4)} USDC` +
+        `      ${runway}`,
+    )
+  }
+
+  heading('Variance')
+  const absorb = Math.floor(capital / worstSingle)
+  log(`  largest single payout is $${worstSingle.toFixed(2)}, so $${capital.toFixed(0)} absorbs ${absorb} of them`)
+  log('  back to back before the vault cannot cover the next spin.')
+  log('')
+  log('  Expected value is a long-run average. With a float this size the thing that ends a')
+  log('  run is an early cluster of big wins, not the mean.')
+
+  if (proposedBps !== null) {
+    const f = proposedBps / 10_000
+    const net = f * R - P - GAS_PER_SPIN
+    heading(`Verdict on ${proposedBps} bps`)
+    if (net < 0) {
+      log(`  REFUSE. Every spin loses $${(-net).toFixed(4)} of capital.`)
+      log(`  $${capital.toFixed(0)} is exhausted after about ${Math.floor(capital / -net)} spins, then the machine stops.`)
+    } else {
+      log(`  Sustainable. Every spin adds $${net.toFixed(4)} to capital.`)
+      log(`  Buyback receives $${((1 - f) * R).toFixed(4)} per spin.`)
+    }
+  }
+
+  log('')
+  log(`  contracts: ${ctx.contracts.feeRouter}`)
+}
+
+/**
+ * Break-even reward-funding share, in bps, from the live tables and a price snapshot.
+ *
+ * Returns null when prices are unavailable — an unknown break-even must not silently read as
+ * a safe one, so the caller treats null as "cannot check" rather than "fine".
+ */
+async function breakEvenBps(): Promise<number | null> {
+  const path = resolve('scripts/data/prices.json')
+  if (!existsSync(path)) return null
+  const prices: Record<string, number> = {}
+  try {
+    const parsed = JSON.parse(readFileSync(path, 'utf8')) as {prices?: Record<string, number>}
+    for (const [a, v] of Object.entries(parsed.prices ?? {})) {
+      if (typeof v === 'number' && v > 0) prices[a.toLowerCase()] = v
+    }
+  } catch {
+    return null
+  }
+
+  const live = MACHINES.filter((m) => m.status !== 'disabled')
+  if (live.length === 0) return null
+
+  const GAS_PER_SPIN = 0.0104
+  let ratioSum = 0
+  for (const machine of live) {
+    const revenue = Number.parseFloat(machine.spinPriceUsdc)
+    const weights = machine.tiers.reduce((a, t) => a + t.weight, 0)
+    let expected = 0
+    for (const tier of machine.tiers) {
+      const asset = assetByAddress(tier.token)
+      const price = asset ? prices[asset.address.toLowerCase()] : undefined
+      if (price === undefined) return null
+      const mean = (Number.parseFloat(tier.minAmount) + Number.parseFloat(tier.maxAmount)) / 2
+      expected += (tier.weight / weights) * mean * price
+    }
+    ratioSum += (expected + GAS_PER_SPIN) / revenue
+  }
+  return Math.ceil((ratioSum / live.length) * 10_000)
+}
+
 // ───────────────────────────────────────────────────────────────────────── fees
 
 /**
@@ -782,11 +960,27 @@ async function fees(): Promise<void> {
   if (bpsFlag !== -1) {
     const next = Number.parseInt(process.argv[bpsFlag + 1] ?? '', 10)
     if (!Number.isInteger(next) || next < 0 || next > 10_000) fail('--bps must be 0-10000')
-    // Reward funding is what replaces paid-out inventory. Taking too much of it leaves the
-    // vault unable to cover the next spin, which stops the machine rather than enriching it.
-    if (next < 3_000) {
-      log(`\n  WARNING: ${next / 100}% to reward funding. Payouts run at roughly 71% of revenue,`)
-      log('  so anything below that leaves inventory shrinking every spin.')
+    /*
+     * Reward funding replaces paid-out inventory. Set it below what payouts actually cost
+     * and every spin quietly consumes capital until the vault cannot cover one, at which
+     * point the machine stops taking spins.
+     *
+     * The break-even point is computed from the live reward tables and a price snapshot
+     * rather than hardcoded, because it moves whenever a table or a token price does. An
+     * earlier version of this warned below 3000 bps, which was backwards: on the current
+     * tables the danger line is above 7100.
+     */
+    const breakEven = await breakEvenBps()
+    if (breakEven !== null && next < breakEven) {
+      const force = process.argv.includes('--force')
+      log('')
+      log(`  ${next / 100}% to reward funding is below break-even of ${(breakEven / 100).toFixed(1)}%.`)
+      log('  Payouts plus gas cost more than that, so every spin would consume capital.')
+      log('  Run `pnpm operator solvency --capital <your float>` for the runway.')
+      if (!force) {
+        fail('Refusing to set an insolvent split. Pass --force if this is deliberate.')
+      }
+      log('  --force given; proceeding anyway.')
     }
     await send(ctx, `setSplit(${next} bps)`, () =>
       ctx.walletClient!.writeContract({
@@ -1387,6 +1581,8 @@ async function main(): Promise<void> {
       return buyback()
     case 'fees':
       return fees()
+    case 'solvency':
+      return solvency()
     default:
       log('Arcade operator CLI\n')
       log('  pnpm operator status                  read-only health check')
@@ -1401,6 +1597,7 @@ async function main(): Promise<void> {
       log('  pnpm operator bootstrap [--concurrency N]  run the whole setup, resumable')
       log('  pnpm operator buyback [--amount N]     buy ARCADE with treasury USDC and burn it')
       log('  pnpm operator fees --bps N [--treasury A]  set the revenue split / destination')
+      log('  pnpm operator solvency --capital N --prices F  what split the float can afford')
       process.exit(command ? 1 : 0)
   }
 }
