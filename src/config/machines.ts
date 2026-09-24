@@ -161,16 +161,19 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     name: 'Discovery',
     tagline: 'Three verified Arc assets',
     description:
-      'COOL, Beancat, UpSideDownCat, TOLLY and ARGUS — each transfer-probed against live Arc mainnet state. Four rarity bands, weighted toward frequent small wins.',
+      'COOL, Beancat, UpSideDownCat, TOLLY and ARGUS, each transfer-probed against live Arc mainnet state, with a rare EURC jackpot. Four rarity bands, weighted toward frequent small wins.',
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
       {token: COOL, weight: 4000, rarity: 'common', minAmount: '450', maxAmount: '930'},
       {token: BCAT, weight: 2500, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
-      {token: UDCAT, weight: 1800, rarity: 'common', minAmount: '480', maxAmount: '980'},
+      {token: UDCAT, weight: 1775, rarity: 'common', minAmount: '480', maxAmount: '980'},
       {token: TOLLY, weight: 1200, rarity: 'rare', minAmount: '160', maxAmount: '334'},
       {token: ARGUS, weight: 450, rarity: 'ultra', minAmount: '110', maxAmount: '220'},
       {token: ARGUS, weight: 50, rarity: 'jackpot', minAmount: '180', maxAmount: '300'},
+      // The rare one. 1 in 400, and it pays a stablecoin rather than a thin Arc asset, so
+      // the prize is worth its face value without needing a market to sell into.
+      {token: EURC, weight: 25, rarity: 'jackpot', minAmount: '8', maxAmount: '15'},
     ],
   },
   {

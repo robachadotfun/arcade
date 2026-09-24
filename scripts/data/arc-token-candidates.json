@@ -345,6 +345,15 @@
       "liquidityUsd": 51637,
       "holders": 2706,
       "ageDays": 4
+    },
+    {
+      "address": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6",
+      "label": "Arcade",
+      "ticker": "ARCADE",
+      "volume24hUsd": 2309,
+      "liquidityUsd": 7026,
+      "holders": 0,
+      "ageDays": 2
     }
   ]
 }

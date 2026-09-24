@@ -79,13 +79,20 @@ describe('machine odds', () => {
     }
   })
 
-  it('disabled machines are the only place an unverified token may linger', () => {
+  it('any machine carrying an unverified token is disabled', () => {
+    // Stated from the other direction to the test above, and deliberately not pinned to a
+    // list of slugs: token eligibility moves as liquidity, volume and age move, so naming
+    // which machines are currently stale made this fail whenever the registry was re-run.
+    // What must never change is that a stale table cannot be published.
     const verified = new Set(REWARD_ASSETS.map((a) => a.address.toLowerCase()))
-    const stale = MACHINES.filter(
-      (m) => m.status === 'disabled' && m.tiers.some((t) => !verified.has(t.token.toLowerCase())),
-    ).map((m) => m.slug)
-    // Recorded, not forbidden: re-enabling one of these requires re-tabling it first.
-    expect(stale).toEqual(['genesis', 'velocity', 'blue-chip'])
+    const stale = MACHINES.filter((m) =>
+      m.tiers.some((t) => !verified.has(t.token.toLowerCase())),
+    )
+    for (const machine of stale) {
+      expect(machine.status, `${machine.slug} pays an unverified token and must be disabled`).toBe(
+        'disabled',
+      )
+    }
   })
 })
 

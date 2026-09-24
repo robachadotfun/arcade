@@ -1,8 +1,8 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-22T23:56:18.882Z",
+  "generatedAt": "2026-09-24T00:17:20.670Z",
   "chainId": 5042,
-  "verifiedAtBlock": "22258137",
+  "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
   "canonicalUsdc": {
     "address": "0x3600000000000000000000000000000000000000",
@@ -39,22 +39,69 @@
     }
   ],
   "summary": {
-    "candidates": 35,
-    "eligible": 14,
-    "rejected": 21,
+    "candidates": 36,
+    "eligible": 13,
+    "rejected": 23,
     "rejectedReasonTally": {
+      "transferVerified": 10,
+      "noTransferFee": 10,
+      "standardBoolReturn": 10,
+      "meetsAge": 17,
       "tickerCollision": 6,
-      "meetsLiquidity": 7,
-      "meetsAge": 16,
-      "transferVerified": 7,
-      "noTransferFee": 7,
-      "standardBoolReturn": 7,
-      "meetsHolders": 3,
+      "meetsHolders": 4,
       "researchFlag": 5,
-      "meetsVolume": 2
+      "meetsLiquidity": 8,
+      "meetsVolume": 3
     }
   },
   "tokens": [
+    {
+      "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
+      "onchain": {
+        "name": "Circle Wrapped Bitcoin",
+        "symbol": "cirBTC",
+        "decimals": 8,
+        "totalSupply": "140425063742",
+        "hasCode": true,
+        "codeSize": 1798
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x2041403bb7abe3249a1b5c8e2a1e8973353c6ecd",
+        "amountSent": "4403",
+        "amountReceived": "4403",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 3960000,
+        "liquidityUsd": 12990000,
+        "holders": 13900,
+        "ageDays": 121,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
     {
       "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
       "onchain": {
@@ -67,9 +114,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x934dea9ab179de155db10519aa89a8c418c50705",
-        "amountSent": "404186859563591603894904",
-        "amountReceived": "404186859563591603894904",
+        "holderTested": "0xfaa3e7aa0f60d030c1d01e1fa416aa9296860947",
+        "amountSent": "253687160804198995960",
+        "amountReceived": "253687160804198995960",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -114,9 +161,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x8694650ac7a089cded87014ab2677b054ae0ab4d",
-        "amountSent": "65745385903137781275309",
-        "amountReceived": "65745385903137781275309",
+        "holderTested": "0x396ae51ad9ce300bfe7abca91dcbad976e96254a",
+        "amountSent": "234992611798509498162982",
+        "amountReceived": "234992611798509498162982",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -150,67 +197,20 @@
       "tickerCollision": false
     },
     {
-      "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7",
-      "onchain": {
-        "name": "Virtuals Protocol",
-        "symbol": "VIRTUAL",
-        "decimals": 18,
-        "totalSupply": "424007890401119689748157",
-        "hasCode": true,
-        "codeSize": 6240
-      },
-      "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0xe2d3bbb45ea1a2387d510b66d39a5a619f1a1b30",
-        "amountSent": "2242866723119572289",
-        "amountReceived": "2242866723119572289",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
-      },
-      "marketSnapshot": {
-        "volume24hUsd": 986700,
-        "liquidityUsd": 402500,
-        "holders": 5000,
-        "ageDays": 6,
-        "source": "https://www.arcscreener.live/",
-        "capturedAt": "2026-09-18"
-      },
-      "checks": {
-        "hasContractCode": true,
-        "exposesSymbol": true,
-        "exposesName": true,
-        "exposesDecimals": true,
-        "hasNonZeroSupply": true,
-        "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
-        "meetsLiquidity": true,
-        "meetsVolume": true,
-        "meetsHolders": true,
-        "meetsAge": true
-      },
-      "failureReasons": [],
-      "eligible": true,
-      "tickerCollision": false
-    },
-    {
       "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
       "onchain": {
         "name": "Wrapped Ether",
         "symbol": "WETH",
         "decimals": 18,
-        "totalSupply": "502889489998216059257",
+        "totalSupply": "622705420482469736183",
         "hasCode": true,
         "codeSize": 735
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x66199aa0764a540dcca5a6593368b3434c908669",
-        "amountSent": "283991283833328",
-        "amountReceived": "283991283833328",
+        "holderTested": "0xb4055b21d5f0e160244d93d61a78fb9367b5ac21",
+        "amountSent": "717294467559771251",
+        "amountReceived": "717294467559771251",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -249,15 +249,15 @@
         "name": "EURC",
         "symbol": "EURC",
         "decimals": 6,
-        "totalSupply": "5312286569819",
+        "totalSupply": "7619144761964",
         "hasCode": true,
         "codeSize": 1798
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x888cc42701fa88f1e08cfb771447f0f103996c19",
-        "amountSent": "2605411",
-        "amountReceived": "2605411",
+        "holderTested": "0xb058afa2a12e7cb811532435109b68059e9ffc9b",
+        "amountSent": "3643841",
+        "amountReceived": "3643841",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -302,9 +302,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x140d90c6225cc2ea166fa99fc1adea2904e10f24",
-        "amountSent": "57349582472775",
-        "amountReceived": "57349582472775",
+        "holderTested": "0xcc716b2dfb36ac7d48d414ad22a42a2f545308b0",
+        "amountSent": "1808652333040341",
+        "amountReceived": "1808652333040341",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -349,9 +349,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x784568d54370db24f458e9db8a15ec33383a067c",
-        "amountSent": "761902414345885743690",
-        "amountReceived": "761902414345885743690",
+        "holderTested": "0xf2601325de161583b4eeee0728fc41104c3dff70",
+        "amountSent": "585542579969133867472",
+        "amountReceived": "585542579969133867472",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -396,9 +396,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x4a302be3e38401f6e81d92a9ba03a9f50ad9a556",
-        "amountSent": "891347432011001577879",
-        "amountReceived": "891347432011001577879",
+        "holderTested": "0x84b72b79cb8c3f941028c453a3c83f47f9454c16",
+        "amountSent": "449648874951945471167",
+        "amountReceived": "449648874951945471167",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -437,15 +437,15 @@
         "name": "Circle Internet Group • Arc Token",
         "symbol": "CRCL",
         "decimals": 18,
-        "totalSupply": "5599938594549229430492",
+        "totalSupply": "4704575823652698876553",
         "hasCode": true,
         "codeSize": 5110
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x1914feb36f4fb0b87f4ced2348667f736d1ce35a",
-        "amountSent": "12182018682309115",
-        "amountReceived": "12182018682309115",
+        "holderTested": "0xee68fe8189139e9a131859e70c5e9505a6e50f69",
+        "amountSent": "12626941131521713",
+        "amountReceived": "12626941131521713",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -490,9 +490,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x7a1100dc179ef08e696dc82d64bf0adcbadd5e68",
-        "amountSent": "883203697582885966577",
-        "amountReceived": "883203697582885966577",
+        "holderTested": "0x305b3e1b67808ced0e996a7e4a4a277d5932814f",
+        "amountSent": "2276907039923066158550",
+        "amountReceived": "2276907039923066158550",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -531,15 +531,15 @@
         "name": "ArcTools",
         "symbol": "ARCT",
         "decimals": 18,
-        "totalSupply": "963213176593246468276828292",
+        "totalSupply": "962769170065655332945415956",
         "hasCode": true,
         "codeSize": 4453
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0xde618757eab9dff881b5b33a6ca40848e7f6f710",
-        "amountSent": "298645924098875282949",
-        "amountReceived": "298645924098875282949",
+        "holderTested": "0xf1e99a853efd87f8312170985b2c63ada1279917",
+        "amountSent": "15081984544128994739453",
+        "amountReceived": "15081984544128994739453",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -550,53 +550,6 @@
         "liquidityUsd": 70000,
         "holders": 1700,
         "ageDays": 8,
-        "source": "https://www.arcscreener.live/",
-        "capturedAt": "2026-09-18"
-      },
-      "checks": {
-        "hasContractCode": true,
-        "exposesSymbol": true,
-        "exposesName": true,
-        "exposesDecimals": true,
-        "hasNonZeroSupply": true,
-        "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
-        "meetsLiquidity": true,
-        "meetsVolume": true,
-        "meetsHolders": true,
-        "meetsAge": true
-      },
-      "failureReasons": [],
-      "eligible": true,
-      "tickerCollision": false
-    },
-    {
-      "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434",
-      "onchain": {
-        "name": "Arc Index 10",
-        "symbol": "ARCX10",
-        "decimals": 18,
-        "totalSupply": "1000000000000000000000000000",
-        "hasCode": true,
-        "codeSize": 45
-      },
-      "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0x7f42f769ec5cfe93434690712c641c7b5aac7f05",
-        "amountSent": "961453941344120605686310",
-        "amountReceived": "961453941344120605686310",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
-      },
-      "marketSnapshot": {
-        "volume24hUsd": 229900,
-        "liquidityUsd": 65200,
-        "holders": 1500,
-        "ageDays": 4,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },
@@ -631,9 +584,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x305b3e1b67808ced0e996a7e4a4a277d5932814f",
-        "amountSent": "13245970991442102546554",
-        "amountReceived": "13245970991442102546554",
+        "holderTested": "0x67652474943234928b287fee9a3cc6a443adefcd",
+        "amountSent": "12956764474613458477234",
+        "amountReceived": "12956764474613458477234",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -678,9 +631,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0xad01c20d5886137e056775af56915de824c8fce5",
-        "amountSent": "198072959578923720674",
-        "amountReceived": "198072959578923720674",
+        "holderTested": "0x07bcf2faf79cac7cf49d370939c682118d9812c9",
+        "amountSent": "5485779855992514086356664",
+        "amountReceived": "5485779855992514086356664",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -714,30 +667,30 @@
       "tickerCollision": false
     },
     {
-      "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
+      "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7",
       "onchain": {
-        "name": "Circle Wrapped Bitcoin",
-        "symbol": "cirBTC",
-        "decimals": 8,
-        "totalSupply": "83972936101",
+        "name": "Virtuals Protocol",
+        "symbol": "VIRTUAL",
+        "decimals": 18,
+        "totalSupply": "422884325165039311003047",
         "hasCode": true,
-        "codeSize": 1798
+        "codeSize": 6240
       },
       "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0x88939468a0198efffc2dc18f653afbe3f92437ac",
-        "amountSent": "579113",
-        "amountReceived": "0",
-        "feeBps": 10000,
-        "callSucceeded": false,
-        "returnsBoolTrue": false,
-        "note": "transfer() REVERTED against live state — token restricts transfers (pause / blacklist / hook)."
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
       },
       "marketSnapshot": {
-        "volume24hUsd": 3960000,
-        "liquidityUsd": 12990000,
-        "holders": 13900,
-        "ageDays": 121,
+        "volume24hUsd": 986700,
+        "liquidityUsd": 402500,
+        "holders": 5000,
+        "ageDays": 6,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },
@@ -776,9 +729,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x093656d97c4ead1dd35c5bf6159e6925916376e5",
-        "amountSent": "79411030918535134413896",
-        "amountReceived": "79411030918535134413896",
+        "holderTested": "0xe0a28ae6667725cff0e17a98a51cb42d56eba595",
+        "amountSent": "5330334906866323717002",
+        "amountReceived": "5330334906866323717002",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -825,9 +778,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x682cf68fc214d99b0cbb2438d44bcd921f763b4f",
-        "amountSent": "114790765946185869034",
-        "amountReceived": "114790765946185869034",
+        "holderTested": "0x0ab251425a8772504a5e59bed62613c2729cca21",
+        "amountSent": "62514019970104876386735",
+        "amountReceived": "62514019970104876386735",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -875,9 +828,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x52c79c215189e396e9596da6987d99e55c08e62f",
-        "amountSent": "5491839204505420710055730",
-        "amountReceived": "5491839204505420710055730",
+        "holderTested": "0xc533f7ee8c2fb37453a6fac35b5dcdf8429f296b",
+        "amountSent": "5360440779441387616383999",
+        "amountReceived": "5360440779441387616383999",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -923,14 +876,14 @@
         "codeSize": 1479
       },
       "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0x6977c66da94eb03ffc61c930c0cf040b7a10f3bf",
-        "amountSent": "4742695995686",
-        "amountReceived": "4742695995686",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
       },
       "marketSnapshot": {
         "volume24hUsd": 126900,
@@ -947,15 +900,18 @@
         "exposesDecimals": true,
         "hasNonZeroSupply": true,
         "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
         "meetsLiquidity": true,
         "meetsVolume": true,
         "meetsHolders": false,
         "meetsAge": false
       },
       "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn",
         "meetsHolders",
         "meetsAge"
       ],
@@ -974,9 +930,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0xac6024d82e54401029d092e9b471f42f31b87c42",
-        "amountSent": "405363311546663624228541",
-        "amountReceived": "405363311546663624228541",
+        "holderTested": "0xa288a3f88741384ee6e8e9e1f3b620c0935addd1",
+        "amountSent": "1733658879869573803155",
+        "amountReceived": "1733658879869573803155",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1078,9 +1034,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x4792c83312b8f515b8e1c958897d8e9b49360f65",
-        "amountSent": "20702121464169761217940",
-        "amountReceived": "20702121464169761217940",
+        "holderTested": "0x888cfd632a91884082084f5d080940ff26894ff3",
+        "amountSent": "18912742111960850704618",
+        "amountReceived": "18912742111960850704618",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1127,9 +1083,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x011954b1b994a198cc902bf6cf6eba2df41275c7",
-        "amountSent": "17389769346315998299140",
-        "amountReceived": "17389769346315998299140",
+        "holderTested": "0xb7f681f479216b078be6978a9b939413347b7820",
+        "amountSent": "853495419071225083147",
+        "amountReceived": "853495419071225083147",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1176,9 +1132,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x231314684ff71fa6ddfb23f8c8bfa883cce71ca6",
-        "amountSent": "231031521322693892567137",
-        "amountReceived": "231031521322693892567137",
+        "holderTested": "0xac0b2aa80a3ccbd172f0abc693bbf3eb7b5a45e9",
+        "amountSent": "537759674684362694848148",
+        "amountReceived": "537759674684362694848148",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1225,9 +1181,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x1b04ca601f2957ec496d1b994cdfcd9117b95b72",
-        "amountSent": "34027964160278917697310",
-        "amountReceived": "34027964160278917697310",
+        "holderTested": "0x6faf3c89a39cc29e6c4ada6b8344b61e53e3aa3e",
+        "amountSent": "12719139653840237524911",
+        "amountReceived": "12719139653840237524911",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1274,9 +1230,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0xe5ccf045f58853dff427edfe6dbe3e879566bdfb",
-        "amountSent": "2643355859350091559213",
-        "amountReceived": "2643355859350091559213",
+        "holderTested": "0x557340ccb0cd97ceb3918a71283ce56eca31b406",
+        "amountSent": "8311772438163211230764",
+        "amountReceived": "8311772438163211230764",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1312,6 +1268,57 @@
       "tickerCollision": false
     },
     {
+      "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434",
+      "onchain": {
+        "name": "Arc Index 10",
+        "symbol": "ARCX10",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 229900,
+        "liquidityUsd": 65200,
+        "holders": 1500,
+        "ageDays": 4,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
       "address": "0x8bcb94279fc2c984ec34e0c1f2192df8c69ea4f0",
       "onchain": {
         "name": "Architects",
@@ -1323,9 +1330,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x6c92a0bd9f577859816946ed3ba1675664cf5080",
-        "amountSent": "1553487537663767649000",
-        "amountReceived": "1553487537663767649000",
+        "holderTested": "0xd9f9a4f9c10a9195d2910950aa0544f1f394be3c",
+        "amountSent": "819179936059629574296",
+        "amountReceived": "819179936059629574296",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1479,14 +1486,14 @@
         "codeSize": 45
       },
       "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0x365bdaed76964d495dbb3b53a48a2c155be4b700",
-        "amountSent": "35403598136033698816027",
-        "amountReceived": "35403598136033698816027",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
+        "tested": false,
+        "holderTested": null,
+        "amountSent": null,
+        "amountReceived": null,
+        "feeBps": null,
+        "callSucceeded": null,
+        "returnsBoolTrue": null,
+        "note": "No code-less holder found in the scanned log window — transfer behaviour UNVERIFIED."
       },
       "marketSnapshot": {
         "volume24hUsd": 257600,
@@ -1503,15 +1510,18 @@
         "exposesDecimals": true,
         "hasNonZeroSupply": true,
         "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
+        "transferVerified": false,
+        "noTransferFee": false,
+        "standardBoolReturn": false,
         "meetsLiquidity": false,
         "meetsVolume": true,
         "meetsHolders": true,
         "meetsAge": true
       },
       "failureReasons": [
+        "transferVerified",
+        "noTransferFee",
+        "standardBoolReturn",
         "meetsLiquidity"
       ],
       "eligible": false,
@@ -1529,9 +1539,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0xa74a75c9aa55dbc0827241af0df6f6cb0a4106d6",
-        "amountSent": "3901023769430709564080220",
-        "amountReceived": "3901023769430709564080220",
+        "holderTested": "0x9ef30fb0df1dbabae5c1e2fd96635271047ce863",
+        "amountSent": "924971142603212481200",
+        "amountReceived": "924971142603212481200",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1634,9 +1644,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x000000000000000000000000000000000000dead",
-        "amountSent": "10519003084295253986312853",
-        "amountReceived": "10519003084295253986312853",
+        "holderTested": "0xbde6583505e368e8fda650056c782bde4ddb68d1",
+        "amountSent": "17785203669171648394837",
+        "amountReceived": "17785203669171648394837",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1667,6 +1677,58 @@
       },
       "failureReasons": [
         "meetsLiquidity"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6",
+      "onchain": {
+        "name": "Arcade",
+        "symbol": "ARCADE",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x284ca9247b974dfcc14a9bd010111244d41d6c4a",
+        "amountSent": "11001527971890933352270405",
+        "amountReceived": "11001527971890933352270405",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 2309,
+        "liquidityUsd": 7026,
+        "holders": 0,
+        "ageDays": 2,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "meetsAge"
       ],
       "eligible": false,
       "tickerCollision": false

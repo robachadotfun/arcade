@@ -24,7 +24,7 @@
  * Usage: pnpm verify:tokens
  */
 
-import {readFileSync, writeFileSync, mkdirSync} from 'node:fs'
+import {readFileSync, writeFileSync, mkdirSync, existsSync} from 'node:fs'
 import {dirname, resolve} from 'node:path'
 import {fileURLToPath} from 'node:url'
 
@@ -250,12 +250,31 @@ function encodeUint(value: bigint): string {
  * code could change how the token treats it (pool hooks, allowlists) and would make
  * the measurement meaningless.
  */
-async function findHolder(token: string, latestBlock: bigint): Promise<string | null> {
-  // Arc produces blocks sub-second, so even 400k blocks is a short wall-clock window.
-  const windows = [5_000n, 50_000n, 400_000n]
+/** Largest range Arc's RPC accepts for eth_getLogs. Wider is rejected outright. */
+const HOLDER_SCAN_CHUNK = 5_000n
+/** ~200k blocks, roughly 29 hours at Arc's sub-second blocks. */
+const HOLDER_SCAN_CHUNKS = 40
 
-  for (const span of windows) {
-    const fromBlock = latestBlock > span ? latestBlock - span : 0n
+/**
+ * Finds a code-less holder whose balance can be used for the transfer probe.
+ *
+ * Walks backwards in fixed chunks rather than trying ever-wider single windows. The previous
+ * approach asked for 5k, then 50k, then 400k blocks in one call — but Arc rejects anything
+ * over ~5,000, so the two wider attempts always failed and the scan only ever covered the
+ * last 5,000 blocks. That is about 44 minutes. Any token without a transfer in that window
+ * reported "transfer behaviour UNVERIFIED", which read like a finding about the token when it
+ * was really a limitation of the search.
+ *
+ * An EOA is required because the probe replaces the holder's code with TransferProbe; doing
+ * that to a contract would test the probe against the wrong caller semantics.
+ */
+async function findHolder(token: string, latestBlock: bigint): Promise<string | null> {
+  const seen = new Set<string>()
+  let toBlock = latestBlock
+
+  for (let chunk = 0; chunk < HOLDER_SCAN_CHUNKS; chunk += 1) {
+    const fromBlock = toBlock > HOLDER_SCAN_CHUNK ? toBlock - HOLDER_SCAN_CHUNK : 0n
+
     let logs: Array<{topics: string[]}> | null = null
     try {
       logs = await rpc<Array<{topics: string[]}>>('eth_getLogs', [
@@ -263,33 +282,35 @@ async function findHolder(token: string, latestBlock: bigint): Promise<string | 
           address: token,
           topics: [TRANSFER_TOPIC],
           fromBlock: `0x${fromBlock.toString(16)}`,
-          toBlock: `0x${latestBlock.toString(16)}`,
+          toBlock: `0x${toBlock.toString(16)}`,
         },
       ])
     } catch (err) {
-      // A range that is too wide is an expected node limit; keep trying smaller sets.
-      if (err instanceof RpcExecutionError) continue
-      throw err
-    }
-    if (!logs || logs.length === 0) continue
-
-    const seen = new Set<string>()
-    const recipients: string[] = []
-    for (let i = logs.length - 1; i >= 0 && recipients.length < 24; i -= 1) {
-      const topic = logs[i]?.topics?.[2]
-      if (!topic) continue
-      const addr = `0x${topic.slice(26)}`.toLowerCase()
-      if (addr === ZERO_ADDRESS || addr === token.toLowerCase() || seen.has(addr)) continue
-      seen.add(addr)
-      recipients.push(addr)
+      if (!(err instanceof RpcExecutionError)) throw err
+      logs = null
     }
 
-    for (const who of recipients) {
-      const code = await rpc<string>('eth_getCode', [who, 'latest'])
-      if (code && code !== '0x') continue
-      const bal = decodeUint(await tryCall(token, SELECTORS.balanceOf + encodeAddress(who)))
-      if (bal !== null && bal > 0n) return who
+    if (logs && logs.length > 0) {
+      const recipients: string[] = []
+      for (let i = logs.length - 1; i >= 0 && recipients.length < 24; i -= 1) {
+        const topic = logs[i]?.topics?.[2]
+        if (!topic) continue
+        const addr = `0x${topic.slice(26)}`.toLowerCase()
+        if (addr === ZERO_ADDRESS || addr === token.toLowerCase() || seen.has(addr)) continue
+        seen.add(addr)
+        recipients.push(addr)
+      }
+
+      for (const who of recipients) {
+        const code = await rpc<string>('eth_getCode', [who, 'latest'])
+        if (code && code !== '0x') continue
+        const bal = decodeUint(await tryCall(token, SELECTORS.balanceOf + encodeAddress(who)))
+        if (bal !== null && bal > 0n) return who
+      }
     }
+
+    if (fromBlock === 0n) break
+    toBlock = fromBlock - 1n
   }
   return null
 }
@@ -395,6 +416,20 @@ async function main() {
   }
   const probe = JSON.parse(readFileSync(PROBE_PATH, 'utf8')) as {deployedBytecode: string}
 
+  /*
+   * `--only <address>` re-verifies a single token and merges the result into the existing
+   * report, leaving every other record untouched.
+   *
+   * Re-running all of them to re-check one is 30-odd tokens of probes against a public
+   * endpoint that rate-limits, and it rewrites verifiedAtBlock for records that were not
+   * actually re-read. This keeps a targeted re-check honest about what it touched.
+   */
+  const onlyFlag = process.argv.indexOf('--only')
+  const only = onlyFlag === -1 ? null : (process.argv[onlyFlag + 1] ?? '').toLowerCase()
+  if (onlyFlag !== -1 && !/^0x[0-9a-f]{40}$/.test(only ?? '')) {
+    throw new Error('--only needs a token address')
+  }
+
   process.stdout.write(`Arcade token verification\nRPC: ${RPC_URL}\n`)
 
   const chainId = Number(BigInt(await rpc<string>('eth_chainId', [])))
@@ -417,7 +452,12 @@ async function main() {
   const symbolCounts = new Map<string, number>()
   const results: Verified[] = []
 
-  for (const c of candidatesFile.candidates) {
+  const queue = only
+    ? candidatesFile.candidates.filter((c) => c.address.toLowerCase() === only)
+    : candidatesFile.candidates
+  if (only && queue.length === 0) throw new Error(`${only} is not in the candidates file`)
+
+  for (const c of queue) {
     const addr = c.address.toLowerCase()
     process.stdout.write(`. ${c.label} (${c.ticker}) ${addr}\n`)
 
@@ -538,6 +578,45 @@ async function main() {
   }
 
   mkdirSync(dirname(OUT_PATH), {recursive: true})
+
+  if (only) {
+    // Merge: keep every record this run did not re-read, including the block they were
+    // verified at. Overwriting them with today's block would claim a freshness that a
+    // single-token run did not establish.
+    const previous = existsSync(OUT_PATH)
+      ? (JSON.parse(readFileSync(OUT_PATH, 'utf8')) as typeof out)
+      : null
+    if (previous) {
+      const merged = previous.tokens.filter((t) => t.address.toLowerCase() !== only)
+      merged.push(...out.tokens)
+      const eligibleAll = merged.filter((t) => t.eligible)
+      const rejectedAll = merged.filter((t) => !t.eligible)
+      const mergedOut = {
+        ...previous,
+        generatedAt: out.generatedAt,
+        summary: {
+          candidates: merged.length,
+          eligible: eligibleAll.length,
+          rejected: rejectedAll.length,
+          rejectedReasonTally: rejectedAll
+            .flatMap((r) => r.failureReasons)
+            .reduce<Record<string, number>>((acc, reason) => {
+              acc[reason] = (acc[reason] ?? 0) + 1
+              return acc
+            }, {}),
+        },
+        tokens: merged.sort(
+          (a, b) =>
+            Number(b.eligible) - Number(a.eligible) ||
+            b.marketSnapshot.liquidityUsd - a.marketSnapshot.liquidityUsd,
+        ),
+      }
+      writeFileSync(OUT_PATH, `${JSON.stringify(mergedOut, null, 2)}\n`)
+      process.stdout.write(`\nmerged ${only} into the existing report; other records untouched\n`)
+      return
+    }
+  }
+
   writeFileSync(OUT_PATH, `${JSON.stringify(out, null, 2)}\n`)
 
   process.stdout.write(`\n${'='.repeat(70)}\n`)
