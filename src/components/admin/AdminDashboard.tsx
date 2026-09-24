@@ -4,12 +4,14 @@ import {useEffect, useState} from 'react'
 import {AdminLogin} from './AdminLogin'
 import {MachineRiskPanel} from './MachineRiskPanel'
 import {AdminOverview} from './AdminOverview'
+import {TreasuryPanel} from './TreasuryPanel'
 import {Label, SectionHead, Button, Pill} from '../ui/Primitives'
 
-type Tab = 'overview' | 'machines' | 'registry' | 'risk' | 'controls'
+type Tab = 'overview' | 'treasury' | 'machines' | 'registry' | 'risk' | 'controls'
 
 const TABS: Array<{key: Tab; label: string}> = [
   {key: 'overview', label: 'Overview'},
+  {key: 'treasury', label: 'Treasury'},
   {key: 'machines', label: 'Machines'},
   {key: 'registry', label: 'Reward registry'},
   {key: 'risk', label: 'Risk'},
@@ -112,6 +114,7 @@ export function AdminDashboard() {
 
       <div className="mt-10">
         {tab === 'overview' ? <AdminOverview /> : null}
+        {tab === 'treasury' ? <TreasuryPanel /> : null}
         {tab === 'machines' || tab === 'risk' ? <MachineRiskPanel /> : null}
         {tab === 'registry' ? <RegistryPanel /> : null}
         {tab === 'controls' ? <ControlsPanel /> : null}
