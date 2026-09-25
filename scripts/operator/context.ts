@@ -98,7 +98,7 @@ export async function loadContext({
       ? arcChain(ARC_MAINNET_ID, 'Arc', rpc)
       : arcChain(ARC_TESTNET_ID, 'Arc Testnet', rpc)
 
-  const publicClient = createPublicClient({chain, transport: http(rpc, {retryCount: 3})})
+  const publicClient = createPublicClient({chain, transport: http(rpc, {retryCount: 5, retryDelay: 1000})})
 
   let walletClient: OperatorContext['walletClient'] = null
   let account: Address | null = null

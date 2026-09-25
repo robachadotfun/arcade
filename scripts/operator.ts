@@ -1656,14 +1656,20 @@ async function settleSpinFor(
 }
 
 /**
- * How often the daemon looks for new requests.
+ * How fast the daemon looks for new requests, at its fastest.
  *
  * Arc produces a block every ~0.53s, so a 2s tick added up to two seconds of dead time to
  * every spin — the single largest avoidable delay between paying and seeing a reward. At
- * 300ms the loop is faster than the chain it watches. Tune with ARC_REVEAL_POLL_MS if the
- * endpoint complains; it is one process, and the per-tick range is small.
+ * 300ms the loop is faster than the chain it watches.
+ *
+ * This is a floor, not a fixed rate: the loop backs off on its own when the endpoint rate
+ * limits and returns here when it stops. So this value does not have to be padded for the
+ * worst minute of the day, which is what picking a single safe interval would cost.
  */
 const POLL_MS = Number.parseInt(process.env.ARC_REVEAL_POLL_MS ?? '300', 10)
+
+/** Slowest the loop will back off to when the endpoint is refusing work. */
+const POLL_MAX_MS = Number.parseInt(process.env.ARC_REVEAL_POLL_MAX_MS ?? '4000', 10)
 
 /**
  * The reveal daemon.
@@ -1711,14 +1717,15 @@ async function reveal(): Promise<void> {
 
   /*
    * A request is only revealable inside its window, so looking back further than the window
-   * (plus slack for a restart) only re-examines requests that are already resolved.
+   * only re-examines requests that are already resolved. A small margin is kept on top so a
+   * slow tick cannot let one slip out of view between scans.
    *
    * That full range is scanned on the first tick and periodically afterwards, to catch
    * anything a dropped connection missed. Between sweeps only new blocks are read: at the
    * tick rate below, re-reading 862 blocks every time would be most of a second of work
    * spent re-deriving what the previous tick already knew, which is latency a player feels.
    */
-  const lookback = BigInt(delay) + BigInt(window) * 2n + 500n
+  const lookback = BigInt(delay) + BigInt(window) + 50n
   const seen = new Set<string>()
   let lastScanned: bigint | null = null
   let tickCount = 0
@@ -1828,13 +1835,37 @@ async function reveal(): Promise<void> {
     }
   }
 
+  /*
+   * Adaptive pacing.
+   *
+   * A fixed interval has to be chosen for the worst case, which means running slowly all the
+   * time to survive the occasional bad minute — and reveal latency is the thing a player
+   * actually feels. So the loop runs fast, backs off when the endpoint pushes back, and
+   * walks the interval down again once it stops.
+   *
+   * Only rate limiting widens the gap. An ordinary failure is a fixed pause: retrying a
+   * genuine error faster does not help, and treating it as congestion would slow the loop
+   * for a reason that has nothing to do with load.
+   */
+  let interval = POLL_MS
   for (;;) {
     try {
       await tick()
+      // Successful tick: ease back toward the floor rather than snapping, so one good tick
+      // in a bad patch does not put the loop straight back into the limiter.
+      interval = Math.max(POLL_MS, Math.floor(interval * 0.7))
+      await new Promise((r) => setTimeout(r, interval))
     } catch (err) {
-      log(`  ! tick failed: ${err instanceof Error ? err.message.slice(0, 160) : String(err)}`)
+      const message = err instanceof Error ? err.message : String(err)
+      const rateLimited = /\b429\b|rate limit|exceeds defined limit/i.test(message)
+      if (rateLimited) {
+        interval = Math.min(POLL_MAX_MS, Math.max(POLL_MS * 2, interval * 2))
+        log(`  … endpoint is rate limiting; backing off to ${interval}ms`)
+      } else {
+        log(`  ! tick failed: ${message.slice(0, 160)}`)
+      }
+      await new Promise((r) => setTimeout(r, rateLimited ? interval : 4_000))
     }
-    await new Promise((r) => setTimeout(r, POLL_MS))
   }
 }
 
