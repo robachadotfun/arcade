@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-24T00:17:20.670Z",
+  "generatedAt": "2026-09-25T17:11:19.144Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,14 +39,14 @@
     }
   ],
   "summary": {
-    "candidates": 36,
-    "eligible": 13,
-    "rejected": 23,
+    "candidates": 37,
+    "eligible": 15,
+    "rejected": 22,
     "rejectedReasonTally": {
       "transferVerified": 10,
       "noTransferFee": 10,
       "standardBoolReturn": 10,
-      "meetsAge": 17,
+      "meetsAge": 16,
       "tickerCollision": 6,
       "meetsHolders": 4,
       "researchFlag": 5,
@@ -291,6 +291,53 @@
       "tickerCollision": false
     },
     {
+      "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
+      "onchain": {
+        "name": "Faze",
+        "symbol": "FAZE",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 2665
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xdeefde4b95a4ce8fe4068c4636be8bc069059800",
+        "amountSent": "4230770288003378615158396",
+        "amountReceived": "4230770288003378615158396",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 664564,
+        "liquidityUsd": 264508,
+        "holders": 3100,
+        "ageDays": 9,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
       "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
       "onchain": {
         "name": "Matrixdock Gold",
@@ -409,6 +456,53 @@
         "liquidityUsd": 203600,
         "holders": 7000,
         "ageDays": 39,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e",
+      "onchain": {
+        "name": "Arcflow",
+        "symbol": "AF",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 2665
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xf150b01fda30b0f84b30fe90aa78c07413e2224a",
+        "amountSent": "198523289669501705348439",
+        "amountReceived": "198523289669501705348439",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1338115,
+        "liquidityUsd": 139381,
+        "holders": 1162,
+        "ageDays": 8,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },
@@ -713,55 +807,6 @@
         "transferVerified",
         "noTransferFee",
         "standardBoolReturn"
-      ],
-      "eligible": false,
-      "tickerCollision": false
-    },
-    {
-      "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
-      "onchain": {
-        "name": "Faze",
-        "symbol": "FAZE",
-        "decimals": 18,
-        "totalSupply": "1000000000000000000000000000",
-        "hasCode": true,
-        "codeSize": 2665
-      },
-      "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0xe0a28ae6667725cff0e17a98a51cb42d56eba595",
-        "amountSent": "5330334906866323717002",
-        "amountReceived": "5330334906866323717002",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
-      },
-      "marketSnapshot": {
-        "volume24hUsd": 756600,
-        "liquidityUsd": 203300,
-        "holders": 3100,
-        "ageDays": 1,
-        "source": "https://www.arcscreener.live/",
-        "capturedAt": "2026-09-18"
-      },
-      "checks": {
-        "hasContractCode": true,
-        "exposesSymbol": true,
-        "exposesName": true,
-        "exposesDecimals": true,
-        "hasNonZeroSupply": true,
-        "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
-        "meetsLiquidity": true,
-        "meetsVolume": true,
-        "meetsHolders": true,
-        "meetsAge": false
-      },
-      "failureReasons": [
-        "meetsAge"
       ],
       "eligible": false,
       "tickerCollision": false

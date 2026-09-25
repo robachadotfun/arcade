@@ -183,10 +183,10 @@
       "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
       "label": "Faze",
       "ticker": "FAZE",
-      "volume24hUsd": 756600,
-      "liquidityUsd": 203300,
+      "volume24hUsd": 664564,
+      "liquidityUsd": 264508,
       "holders": 3100,
-      "ageDays": 1
+      "ageDays": 9
     },
     {
       "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
@@ -354,6 +354,15 @@
       "liquidityUsd": 7026,
       "holders": 0,
       "ageDays": 2
+    },
+    {
+      "address": "0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e",
+      "label": "AF",
+      "ticker": "AF",
+      "volume24hUsd": 1338115,
+      "liquidityUsd": 139381,
+      "holders": 1162,
+      "ageDays": 8
     }
   ]
 }
