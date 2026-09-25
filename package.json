@@ -2,7 +2,7 @@
   "name": "arcade",
   "version": "0.1.0",
   "private": true,
-  "description": "Arcade — an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
+  "description": "Arcade \u2014 an onchain gacha built on Arc. Pay in USDC, spin, win Arc-native tokens.",
   "packageManager": "pnpm@12.4.2",
   "engines": {
     "node": ">=22"
@@ -52,12 +52,5 @@
     "tsx": "4.21.1",
     "typescript": "5.9.3",
     "vitest": "5.0.1"
-  },
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "bufferutil",
-      "keccak",
-      "utf-8-validate"
-    ]
   }
 }
