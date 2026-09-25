@@ -103,8 +103,15 @@ const PENDING_SPIN_KEY = 'arcade.pendingSpinId.v1'
 const MANUAL_SETTLE_AFTER_MS = 25_000
 /** How long to wait for randomness before surfacing a timeout with recovery options. */
 const RANDOMNESS_DEADLINE_MS = 90_000
-/** Poll interval while waiting for the reveal. */
-const SETTLE_POLL_MS = 3_000
+/**
+ * Poll interval while waiting for the reveal.
+ *
+ * Arc settles in about half a second, so a 3s poll meant the result could sit finished on
+ * chain for most of three seconds before the screen changed — dead time a player reads as
+ * the machine being slow. 800ms tracks the chain closely without hammering the endpoint,
+ * and only runs while a spin is actually in flight.
+ */
+const SETTLE_POLL_MS = 800
 
 /** Contract `SpinStatus` enum: 0 None, 1 Pending, 2 Settled, 3 Refunded. */
 const SPIN_SETTLED = 2

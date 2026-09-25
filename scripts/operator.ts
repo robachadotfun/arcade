@@ -1656,6 +1656,16 @@ async function settleSpinFor(
 }
 
 /**
+ * How often the daemon looks for new requests.
+ *
+ * Arc produces a block every ~0.53s, so a 2s tick added up to two seconds of dead time to
+ * every spin — the single largest avoidable delay between paying and seeing a reward. At
+ * 300ms the loop is faster than the chain it watches. Tune with ARC_REVEAL_POLL_MS if the
+ * endpoint complains; it is one process, and the per-tick range is small.
+ */
+const POLL_MS = Number.parseInt(process.env.ARC_REVEAL_POLL_MS ?? '300', 10)
+
+/**
  * The reveal daemon.
  *
  * Watches for randomness requests, waits for each one's anchor block, and reveals the
@@ -1699,14 +1709,34 @@ async function reveal(): Promise<void> {
   log(`  seed store   ${store.entries.filter((e) => e.index !== null && e.revealedFor === null).length} unrevealed pairs`)
   log('\n  Watching. Ctrl-C to stop — spins requested while this is down may expire.\n')
 
-  // A request is only revealable inside its window, so looking back further than the window
-  // (plus slack for a restart) would only re-examine requests that are already resolved.
+  /*
+   * A request is only revealable inside its window, so looking back further than the window
+   * (plus slack for a restart) only re-examines requests that are already resolved.
+   *
+   * That full range is scanned on the first tick and periodically afterwards, to catch
+   * anything a dropped connection missed. Between sweeps only new blocks are read: at the
+   * tick rate below, re-reading 862 blocks every time would be most of a second of work
+   * spent re-deriving what the previous tick already knew, which is latency a player feels.
+   */
   const lookback = BigInt(delay) + BigInt(window) * 2n + 500n
   const seen = new Set<string>()
+  let lastScanned: bigint | null = null
+  let tickCount = 0
+  /** Full re-sweep every this many ticks, as a safety net against a missed range. */
+  const SWEEP_EVERY = 200
 
   async function tick(): Promise<void> {
     const head = await ctx.publicClient.getBlockNumber()
-    const fromBlock = head > lookback ? head - lookback : 0n
+    const sweeping = lastScanned === null || tickCount % SWEEP_EVERY === 0
+    const fromBlock = sweeping
+      ? head > lookback
+        ? head - lookback
+        : 0n
+      : // Re-read the previous head too: a log in the block being read as `head` last tick
+        // may not have been indexed yet when that request was served.
+        lastScanned!
+    tickCount += 1
+    if (head < fromBlock) return
 
     const logs = await ctx.publicClient.getLogs({
       address: ctx.contracts.randomness,
@@ -1724,6 +1754,9 @@ async function reveal(): Promise<void> {
       fromBlock,
       toBlock: head,
     })
+
+    // Only advance after getLogs returned: if it threw, the range must be read again.
+    lastScanned = head
 
     for (const entry of logs) {
       const args = entry.args as {
@@ -1801,7 +1834,7 @@ async function reveal(): Promise<void> {
     } catch (err) {
       log(`  ! tick failed: ${err instanceof Error ? err.message.slice(0, 160) : String(err)}`)
     }
-    await new Promise((r) => setTimeout(r, 2_000))
+    await new Promise((r) => setTimeout(r, POLL_MS))
   }
 }
 
