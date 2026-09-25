@@ -1,7 +1,7 @@
 'use client'
 
 import {useState} from 'react'
-import {useConnection} from 'wagmi'
+import {useAccount} from 'wagmi'
 import {ActivityTape} from './ActivityTape'
 import {Label, Pill} from './ui/Primitives'
 import {useActivity, useActivityChainId} from '@/hooks/useActivity'
@@ -12,7 +12,7 @@ type Filter = 'all' | 'mine' | string
 /** The full activity tape, with filters. */
 export function ActivityFeed() {
   const [filter, setFilter] = useState<Filter>('all')
-  const {address} = useConnection()
+  const {address} = useAccount()
   const {records, loading, error} = useActivity({limit: 100})
   const chainId = useActivityChainId()
 

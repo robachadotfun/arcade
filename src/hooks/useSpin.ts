@@ -2,7 +2,7 @@
 
 import {useEffect, useRef, useState} from 'react'
 import {
-  useConnection,
+  useAccount,
   useBalance,
   usePublicClient,
   useWriteContract,
@@ -286,7 +286,7 @@ function deriveRestingState(
 
 export function useSpin(machine: MachineConfig) {
   const status = resolveMode()
-  const {address, isConnected, chainId} = useConnection()
+  const {address, isConnected, chainId} = useAccount()
   const publicClient = usePublicClient()
   const {writeContractAsync} = useWriteContract()
 

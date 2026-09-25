@@ -3,7 +3,7 @@
 import {useState} from 'react'
 import {
   useBalance,
-  useConnection,
+  useAccount,
   useReadContracts,
   useWaitForTransactionReceipt,
   useWriteContract,
@@ -37,7 +37,7 @@ import {WalletButton} from '../WalletButton'
  */
 export function TreasuryPanel() {
   const status = resolveMode()
-  const {address, isConnected, chainId} = useConnection()
+  const {address, isConnected, chainId} = useAccount()
   const router = status.kind === 'ready' ? status.contracts.feeRouter : undefined
   const explorerChain = status.kind === 'ready' ? status.chainId : expectedChain.id
 

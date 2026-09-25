@@ -1,6 +1,6 @@
 'use client'
 
-import {useConnection, useReadContracts} from 'wagmi'
+import {useAccount, useReadContracts} from 'wagmi'
 import {prizeVaultAbi, arcadeMachineManagerAbi} from '@/abi'
 import {ActivityTape} from './ActivityTape'
 import {TokenGlyph} from './OrbitMachine'
@@ -25,7 +25,7 @@ import {formatDecimalAmount, formatUsdc} from '@/lib/format'
  */
 export function MyArcade() {
   const status = resolveMode()
-  const {address, isConnected} = useConnection()
+  const {address, isConnected} = useAccount()
   const {records, loading} = useActivity({limit: 100, player: address})
   const chainId = useActivityChainId()
 

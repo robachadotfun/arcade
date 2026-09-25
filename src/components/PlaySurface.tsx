@@ -2,7 +2,7 @@
 
 import {useMemo, useState} from 'react'
 import Link from 'next/link'
-import {useConnection} from 'wagmi'
+import {useAccount} from 'wagmi'
 import {OrbitMachine, TokenGlyph, type OrbitPhase} from './OrbitMachine'
 import {OddsRail, RarityTag} from './OddsRail'
 import {Button, ButtonLink, Label, Pill, DataRow, ExternalLink, Dot} from './ui/Primitives'
@@ -132,7 +132,7 @@ const ORBIT_PHASE: Record<SpinPhase, OrbitPhase> = {
 
 function SpinConsole({machine}: {machine: MachineConfig}) {
   const status = resolveMode()
-  const {isConnected} = useConnection()
+  const {isConnected} = useAccount()
   const spin = useSpin(machine)
   const [spendBlocked, setSpendBlocked] = useState<string | null>(null)
 

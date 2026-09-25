@@ -11,6 +11,8 @@ allowBuilds:
   # modal. Its postinstall is not needed for the modal to work — verified by
   # loading it with scripts blocked — so it stays off.
   '@reown/appkit': false
+  bufferutil: set this to true or false
+  utf-8-validate: set this to true or false
 
 # minimumReleaseAge: pnpm's default supply-chain guard rejects very fresh
 # releases. Arc mainnet launched 2026-09-16 and this project pins current

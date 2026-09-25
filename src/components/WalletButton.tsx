@@ -1,7 +1,8 @@
 'use client'
 
 import {useState} from 'react'
-import {useConnection, useConnect, useDisconnect, useBalance, useSwitchChain} from 'wagmi'
+import {useAccount, useDisconnect, useBalance, useSwitchChain} from 'wagmi'
+import {useAppKit} from '@reown/appkit/react'
 import {Button, Modal, DataRow, Dot} from './ui/Primitives'
 import {expectedChain} from '@/config/wagmi'
 import {formatUsdc, shortAddress} from '@/lib/format'
@@ -10,31 +11,23 @@ import {useIsMounted} from '@/hooks/useClientState'
 /**
  * Wallet connect / account control.
  *
- * ## Why this picks a connector instead of connecting straight away
+ * ## Connecting is Reown AppKit's dialog
  *
- * This used to connect to `connectors[0]`, which is always WalletConnect. On a desktop with
- * MetaMask installed that is the wrong answer: the relay can only offer a QR code, so the
- * extension sitting in the toolbar was unreachable and the only way through was to scan with
- * a phone. wagmi already discovers extensions over EIP-6963, so they were present as
- * connectors the whole time — nothing ever offered them.
+ * `open()` raises AppKit's modal, which lists installed browser extensions, the WalletConnect
+ * QR for phones, and Reown's wallet catalogue. Arcade used to connect straight to the
+ * WalletConnect connector, which on desktop could only ever draw a QR code — an extension in
+ * the same browser has no way to answer a relay meant for a second device.
  *
- * So: extensions are listed when any are installed, with WalletConnect kept as the option for
- * phones and for wallets that have no extension. With none installed there is nothing to
- * choose between and it connects straight to WalletConnect, as before.
- *
- * The earlier reason for removing the picker was that several installed extensions overflowed
- * the viewport and the dialog could not scroll. `Modal` caps its height and scrolls internally
- * now, so a long list is no longer a trap.
- *
- * The account view below is still ours — it is product surface, not wallet plumbing.
+ * The account view below stays ours. It is product surface — balance in native USDC, the
+ * network Arcade expects — not wallet plumbing, and AppKit's account screen says none of it.
  */
 export function WalletButton() {
-  const {address, isConnected, chainId, connector} = useConnection()
-  const {connect, connectors, isPending, error} = useConnect()
+  const {address, isConnected, chainId, connector} = useAccount()
   const {disconnect} = useDisconnect()
+  // Named to keep it distinct from the account dialog's own `open` state below.
+  const {open: openAppKit} = useAppKit()
   const {switchChain, isPending: isSwitching} = useSwitchChain()
   const [open, setOpen] = useState(false)
-  const [picking, setPicking] = useState(false)
   // Wallet state only exists on the client; render a stable shell until hydration so the
   // server and client markup agree.
   const mounted = useIsMounted()
@@ -55,96 +48,10 @@ export function WalletButton() {
   }
 
   if (!isConnected) {
-    /*
-     * Extensions are discovered over EIP-6963, so each announces itself as its own connector
-     * with its real name and icon. Anything that is not an extension is the relay.
-     */
-    const extensions = connectors.filter((c) => c.type === 'injected')
-    const relay = connectors.find((c) => c.type !== 'injected')
-    const onlyRelay = extensions.length === 0
-
     return (
-      <>
-        <Button
-          size="sm"
-          disabled={isPending || connectors.length === 0}
-          onClick={() => {
-            // Nothing to choose between with no extension installed, so skip the dialog.
-            if (onlyRelay) {
-              if (relay) connect({connector: relay})
-            } else {
-              setPicking(true)
-            }
-          }}
-        >
-          {isPending ? 'Connecting…' : 'Connect Wallet'}
-        </Button>
-
-        <Modal
-          open={picking}
-          onClose={() => setPicking(false)}
-          title="Connect a wallet"
-          description="Arcade never sees your keys. It only asks your wallet to sign."
-        >
-          <ul className="divide-y divide-hairline-faint border-y border-hairline-faint">
-            {extensions.map((c) => (
-              <li key={c.uid}>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 px-1 py-3 text-left transition-colors hover:bg-paper-deep disabled:opacity-50"
-                  disabled={isPending}
-                  onClick={() => {
-                    connect({connector: c})
-                    setPicking(false)
-                  }}
-                >
-                  {c.icon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.icon} alt="" aria-hidden="true" className="h-6 w-6 shrink-0" />
-                  ) : (
-                    <span aria-hidden="true" className="h-6 w-6 shrink-0 border border-hairline" />
-                  )}
-                  <span className="text-[0.9375rem] text-ink">{c.name}</span>
-                  <span className="ml-auto font-mono text-[0.6875rem] uppercase tracking-wide text-ink-faint">
-                    Extension
-                  </span>
-                </button>
-              </li>
-            ))}
-
-            {relay ? (
-              <li>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 px-1 py-3 text-left transition-colors hover:bg-paper-deep disabled:opacity-50"
-                  disabled={isPending}
-                  onClick={() => {
-                    connect({connector: relay})
-                    setPicking(false)
-                  }}
-                >
-                  <span aria-hidden="true" className="h-6 w-6 shrink-0 border border-hairline" />
-                  <span className="text-[0.9375rem] text-ink">{relay.name}</span>
-                  <span className="ml-auto font-mono text-[0.6875rem] uppercase tracking-wide text-ink-faint">
-                    QR code
-                  </span>
-                </button>
-              </li>
-            ) : null}
-          </ul>
-
-          <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-muted">
-            Scanning the QR code connects a wallet on your phone. Use it only if the wallet you
-            want has no browser extension.
-          </p>
-        </Modal>
-
-        {error ? (
-          <p role="alert" className="sr-only">
-            {error.message}
-          </p>
-        ) : null}
-      </>
+      <Button size="sm" onClick={() => void openAppKit()}>
+        Connect Wallet
+      </Button>
     )
   }
 
