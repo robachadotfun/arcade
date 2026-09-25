@@ -1,12 +1,32 @@
 {
   "note": "Real, published logos for verified Arcade reward tokens, keyed by contract address. No logo here is drawn, generated or approximated — a token with no published mark keeps a typographic monogram instead. Regenerate with: pnpm fetch:logos",
-  "generatedAt": "2026-09-18T02:30:49.726Z",
+  "generatedAt": "2026-09-25T17:44:08.338Z",
   "summary": {
-    "verifiedTokens": 13,
-    "withLogo": 12,
+    "verifiedTokens": 17,
+    "withLogo": 16,
     "withMonogram": 1
   },
   "logos": [
+    {
+      "address": "0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e",
+      "symbol": "AF",
+      "file": "0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e.png",
+      "contentType": "image/webp",
+      "bytes": 4248,
+      "fetchedAt": "2026-09-25T17:43:53.572Z"
+    },
+    {
+      "address": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6",
+      "symbol": "ARCADE",
+      "file": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6.webp",
+      "source": "DexScreener token info (api.dexscreener.com)",
+      "sourceUrl": "https://cdn.dexscreener.com/cms/images/9dhxTRXjhTmOl5Ua?width=800&height=800&quality=95&format=auto",
+      "contentType": "image/jpeg",
+      "bytes": 9654,
+      "fetchedAt": "2026-09-25T17:44:08.036Z"
+    },
     {
       "address": "0x07704b06981ea962b87296362a1281484d160000",
       "symbol": "ARCAT",
@@ -15,7 +35,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x07704b06981ea962b87296362a1281484d160000.png",
       "contentType": "image/png",
       "bytes": 82787,
-      "fetchedAt": "2026-09-18T02:30:45.515Z"
+      "fetchedAt": "2026-09-25T17:43:56.682Z"
     },
     {
       "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
@@ -25,7 +45,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbe0cad585ea2d13de2f4e36376be755c0afd8b97.png",
       "contentType": "image/webp",
       "bytes": 20912,
-      "fetchedAt": "2026-09-18T02:30:49.424Z"
+      "fetchedAt": "2026-09-25T17:43:58.859Z"
     },
     {
       "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52",
@@ -35,17 +55,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52.png",
       "contentType": "image/png",
       "bytes": 68700,
-      "fetchedAt": "2026-09-18T02:30:47.650Z"
-    },
-    {
-      "address": "0x12ce1f970722ca6e08364b60099b3d25c09b5434",
-      "symbol": "ARCX10",
-      "file": "0x12ce1f970722ca6e08364b60099b3d25c09b5434.webp",
-      "source": "Arc token image service (api.tollylabs.com)",
-      "sourceUrl": "https://api.tollylabs.com/token-image/0x12ce1f970722ca6e08364b60099b3d25c09b5434.png",
-      "contentType": "image/png",
-      "bytes": 13120,
-      "fetchedAt": "2026-09-18T02:30:48.478Z"
+      "fetchedAt": "2026-09-25T17:43:57.776Z"
     },
     {
       "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
@@ -55,7 +65,17 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xece5ca8bf9220718e5727754026757512212cb3c.png",
       "contentType": "image/png",
       "bytes": 100128,
-      "fetchedAt": "2026-09-18T02:30:39.299Z"
+      "fetchedAt": "2026-09-25T17:43:44.533Z"
+    },
+    {
+      "address": "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d",
+      "symbol": "BCAT",
+      "file": "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d.webp",
+      "source": "DexScreener token info (api.dexscreener.com)",
+      "sourceUrl": "https://cdn.dexscreener.com/cms/images/mYllrf8vWmPItjyD?width=800&height=800&quality=95&format=auto",
+      "contentType": "image/jpeg",
+      "bytes": 21265,
+      "fetchedAt": "2026-09-25T17:44:00.179Z"
     },
     {
       "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
@@ -66,7 +86,7 @@
       "contentType": null,
       "bytes": null,
       "note": "Circle Wrapped Bitcoin (cirBTC) publishes no logo through any source checked, including the Arc token image service and CoinGecko. It keeps its typographic monogram rather than being given an invented mark.",
-      "fetchedAt": "2026-09-18T02:30:37.866Z"
+      "fetchedAt": "2026-09-25T17:43:42.756Z"
     },
     {
       "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
@@ -76,7 +96,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xeb64987643db71c76b2a2be7e723decc995e5b37.png",
       "contentType": "image/png",
       "bytes": 91929,
-      "fetchedAt": "2026-09-18T02:30:44.472Z"
+      "fetchedAt": "2026-09-25T17:43:53.017Z"
     },
     {
       "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b",
@@ -86,7 +106,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b.png",
       "contentType": "image/png",
       "bytes": 25872,
-      "fetchedAt": "2026-09-18T02:30:44.952Z"
+      "fetchedAt": "2026-09-25T17:43:54.661Z"
     },
     {
       "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
@@ -96,7 +116,17 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1.png",
       "contentType": "image/png",
       "bytes": 3080,
-      "fetchedAt": "2026-09-18T02:30:43.393Z"
+      "fetchedAt": "2026-09-25T17:43:48.659Z"
+    },
+    {
+      "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
+      "symbol": "FAZE",
+      "file": "0x394d38f807ee0027a182216f5e67a15ae441fa2e.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0x394d38f807ee0027a182216f5e67a15ae441fa2e.png",
+      "contentType": "image/webp",
+      "bytes": 12266,
+      "fetchedAt": "2026-09-25T17:43:49.458Z"
     },
     {
       "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
@@ -106,7 +136,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x2164bb17a2d38c1b5170e987b2c0416df1efc752.png",
       "contentType": "image/png",
       "bytes": 79282,
-      "fetchedAt": "2026-09-18T02:30:43.929Z"
+      "fetchedAt": "2026-09-25T17:43:52.110Z"
     },
     {
       "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
@@ -116,18 +146,17 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbc43ce8dec648ea298c4275559b81d6261c90b67.png",
       "contentType": "image/png",
       "bytes": 32205,
-      "fetchedAt": "2026-09-18T02:30:39.783Z"
+      "fetchedAt": "2026-09-25T17:43:45.188Z"
     },
     {
-      "address": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7",
-      "symbol": "VIRTUAL",
-      "file": "0x8c4252c87081c88c6ad57d6dd97e1cafebf842b7.webp",
-      "source": "CoinGecko — virtual-protocol",
-      "sourceUrl": "https://coin-images.coingecko.com/coins/images/34057/large/LOGOMARK.png",
-      "contentType": "image/png",
-      "bytes": 32842,
-      "note": "Virtuals Protocol (VIRTUAL). Verified against the CoinGecko entry for that project.",
-      "fetchedAt": "2026-09-18T02:30:42.356Z"
+      "address": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9",
+      "symbol": "USDC",
+      "file": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9.webp",
+      "source": "DexScreener token info (api.dexscreener.com)",
+      "sourceUrl": "https://cdn.dexscreener.com/cms/images/T5lG67HWbVIY1rkx?width=800&height=800&quality=95&format=auto",
+      "contentType": "image/jpeg",
+      "bytes": 262576,
+      "fetchedAt": "2026-09-25T17:44:04.928Z"
     },
     {
       "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
@@ -138,7 +167,17 @@
       "contentType": "image/png",
       "bytes": 67346,
       "note": "Wrapped Ether (WETH). The canonical WETH mark.",
-      "fetchedAt": "2026-09-18T02:30:42.931Z"
+      "fetchedAt": "2026-09-25T17:43:47.856Z"
+    },
+    {
+      "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
+      "symbol": "XAUM",
+      "file": "0x178b01f61cbea1d2a5581fe1621be607835ec349.webp",
+      "source": "DexScreener token info (api.dexscreener.com)",
+      "sourceUrl": "https://cdn.dexscreener.com/cms/images/Yjsv52RwLPprvUJn?width=800&height=800&quality=95&format=auto",
+      "contentType": "image/jpeg",
+      "bytes": 349207,
+      "fetchedAt": "2026-09-25T17:43:50.972Z"
     }
   ]
 }

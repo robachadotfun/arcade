@@ -23,6 +23,7 @@
 import {mkdirSync, writeFileSync, readFileSync} from 'node:fs'
 import {dirname, resolve} from 'node:path'
 import {fileURLToPath} from 'node:url'
+import {REWARD_ASSETS} from '../src/config/rewards'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const VERIFIED_PATH = resolve(HERE, 'data/arc-token-verified.json')
@@ -33,10 +34,45 @@ const MANIFEST_PATH = resolve(OUT_DIR, 'logo-manifest.json')
  * Logo sources, tried in order.
  *
  * `tollyLabs` serves Arc token images keyed by contract address and covers most of the
- * ecosystem. CoinGecko covers the bridged majors it does not.
+ * ecosystem. DexScreener covers newer listings it does not — several reward tokens added
+ * after the first run had no tollyLabs entry and rendered as monogram placeholders.
+ * CoinGecko covers the bridged majors neither has.
  */
 const ARC_TOKEN_IMAGE = (address: string) =>
   `https://api.tollylabs.com/token-image/${address.toLowerCase()}.png`
+
+/**
+ * Resolves a DexScreener image URL from its API rather than guessing a CDN path.
+ *
+ * The obvious `dd.dexscreener.com/ds-data/tokens/arc/<address>.png` 301-redirects to a
+ * hashed CMS object and, followed, yields a 64px thumbnail. The pair API returns the same
+ * asset at 800px under `info.imageUrl`, which is what a 2x reward glyph needs.
+ *
+ * Returns null rather than throwing: a token with no DexScreener listing is an ordinary
+ * outcome, and the caller records the miss with its reason.
+ */
+async function dexscreenerImage(address: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`, {
+      signal: AbortSignal.timeout(20_000),
+    })
+    if (!res.ok) return null
+    const body = (await res.json()) as {
+      pairs?: Array<{info?: {imageUrl?: string}; liquidity?: {usd?: number}}>
+    }
+    const pairs = body.pairs ?? []
+    // Deepest pool first: the most-traded listing is the one most likely to carry the
+    // project's real artwork rather than a placeholder someone uploaded to a side pool.
+    const sorted = [...pairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))
+    for (const pair of sorted) {
+      const url = pair.info?.imageUrl
+      if (typeof url === 'string' && url.length > 0) return url
+    }
+    return null
+  } catch {
+    return null
+  }
+}
 
 /**
  * Canonical fallbacks for assets with no Arc-native image entry.
@@ -125,7 +161,18 @@ async function tryDownload(
 
 async function main() {
   const report = JSON.parse(readFileSync(VERIFIED_PATH, 'utf8')) as {tokens: VerifiedToken[]}
-  const eligible = report.tokens.filter((t) => t.eligible)
+  /*
+   * Eligible tokens, plus any admitted despite failing a market threshold.
+   *
+   * Filtering on `eligible` alone silently skipped every admitted token — ARCADE and
+   * UpSideDownCat are both paid out by a live machine and both rendered as monogram
+   * placeholders, because this list never reached them. What decides whether a token needs
+   * artwork is whether a player can win it, not which branch of the report it sits in.
+   */
+  const admitted = new Set(REWARD_ASSETS.map((a) => a.address.toLowerCase()))
+  const eligible = report.tokens.filter(
+    (t) => t.eligible || admitted.has(t.address.toLowerCase()),
+  )
 
   mkdirSync(OUT_DIR, {recursive: true})
   process.stdout.write(`Arcade token logos\nverified tokens: ${eligible.length}\n\n`)
@@ -158,6 +205,8 @@ async function main() {
     const attempts: Array<{url: string; source: string; note?: string}> = [
       {url: ARC_TOKEN_IMAGE(address), source: 'Arc token image service (api.tollylabs.com)'},
     ]
+    const dex = await dexscreenerImage(address)
+    if (dex) attempts.push({url: dex, source: 'DexScreener token info (api.dexscreener.com)'})
     const fallback = CANONICAL_FALLBACKS[address]
     if (fallback) attempts.push({url: fallback.url, source: fallback.source, note: fallback.note})
 

@@ -1,46 +1,30 @@
+/* eslint-disable no-console */
 /**
- * buy-tokens.ts — acquires reward inventory via Uniswap v3 on Arc.
+ * buy-tokens.ts — acquires reward inventory via Uniswap v4 (UniversalRouter) and v3 on Arc.
  *
- * Not written as part of the operator CLI; kept because it ran successfully and documents
- * how the current vault inventory was acquired. Two things to know before reusing it:
- *
- *   - It routes every swap through the fee-10000 **v3** pool. ARGUS and UpSideDownCat have
- *     deeper **v4** pools this router cannot reach — UDCAT's v3 pool held only ~1,471 USDC
- *     when this was written, against ~$154k in v4. Topping up UDCAT here will cost far more
- *     than the quoted price.
- *   - `amountInMaximum` is a flat 15 USDC per swap against ~10 USDC of intent, i.e. roughly
- *     50% slippage tolerance. That is loose; tighten it per-token for larger buys.
- *
- * It also grants the router an unlimited USDC allowance.
+ * Arc Mainnet uses Uniswap v4 pools for primary liquidity on many tokens (including FAZE and AF).
+ * Native USDC (18 decimals) is passed as value to the UniversalRouter, which executes
+ * the V4 swap against the canonical pool hook (0x47e7936ae9891e61c5123db720593c05de7120cc).
  */
 import './operator/env'
-import {parseUnits, formatUnits, maxUint256, type Address} from 'viem'
+import {
+  parseUnits,
+  formatUnits,
+  encodeAbiParameters,
+  parseAbiParameters,
+  type Address,
+  type Hex,
+} from 'viem'
 import {loadContext} from './operator/context'
 
-const SWAP_ROUTER: Address = '0x53bf6b0684ec7ef91e1387da3d1a1769bc5a6f77'
-const USDC_ERC20: Address = '0x3600000000000000000000000000000000000000'
+const UNIVERSAL_ROUTER: Address = '0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1'
+const V4_POOL_HOOK: Address = '0x47e7936ae9891e61c5123db720593c05de7120cc'
+const NATIVE_CURRENCY: Address = '0x0000000000000000000000000000000000000000'
+
+const FAZE: Address = '0x394d38f807ee0027a182216f5e67a15ae441fa2e'
+const AF: Address = '0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e'
 
 const erc20Abi = [
-  {
-    type: 'function',
-    name: 'approve',
-    stateMutability: 'nonpayable',
-    inputs: [
-      {name: 'spender', type: 'address'},
-      {name: 'amount', type: 'uint256'},
-    ],
-    outputs: [{name: '', type: 'bool'}],
-  },
-  {
-    type: 'function',
-    name: 'allowance',
-    stateMutability: 'view',
-    inputs: [
-      {name: 'owner', type: 'address'},
-      {name: 'spender', type: 'address'},
-    ],
-    outputs: [{name: '', type: 'uint256'}],
-  },
   {
     type: 'function',
     name: 'balanceOf',
@@ -50,65 +34,39 @@ const erc20Abi = [
   },
 ] as const
 
-const swapRouterAbi = [
+const universalRouterAbi = [
   {
     type: 'function',
-    name: 'exactOutputSingle',
+    name: 'execute',
     stateMutability: 'payable',
     inputs: [
-      {
-        name: 'params',
-        type: 'tuple',
-        components: [
-          {name: 'tokenIn', type: 'address'},
-          {name: 'tokenOut', type: 'address'},
-          {name: 'fee', type: 'uint24'},
-          {name: 'recipient', type: 'address'},
-          {name: 'amountOut', type: 'uint256'},
-          {name: 'amountInMaximum', type: 'uint256'},
-          {name: 'sqrtPriceLimitX96', type: 'uint160'},
-        ],
-      },
+      {name: 'commands', type: 'bytes'},
+      {name: 'inputs', type: 'bytes[]'},
+      {name: 'deadline', type: 'uint256'},
     ],
-    outputs: [{name: 'amountIn', type: 'uint256'}],
+    outputs: [],
   },
 ] as const
 
-const PURCHASES = [
+interface V4Purchase {
+  name: string
+  address: Address
+  amountInNativeUsdc: bigint // 18 decimals
+  minAmountOut: bigint // 18 decimals
+}
+
+const PURCHASES: V4Purchase[] = [
   {
-    name: 'ARGUS',
-    address: '0xeCe5cA8bf9220718E5727754026757512212cb3c' as Address,
-    amountOut: parseUnits('600', 18),
-    amountInMax: parseUnits('15', 6), // 15 USDC max
-    fee: 10000,
+    name: 'FAZE',
+    address: FAZE,
+    amountInNativeUsdc: parseUnits('5', 18), // 5 native USDC
+    minAmountOut: parseUnits('860', 18), // 860 FAZE required for vault funding
   },
   {
-    name: 'COOL',
-    address: '0xEb64987643db71c76b2a2BE7E723DECC995E5b37' as Address,
-    amountOut: parseUnits('5400', 18),
-    amountInMax: parseUnits('15', 6),
-    fee: 10000,
-  },
-  {
-    name: 'TOLLY',
-    address: '0xBc43CE8DEc648EA298C4275559b81D6261c90b67' as Address,
-    amountOut: parseUnits('1600', 18),
-    amountInMax: parseUnits('15', 6),
-    fee: 10000,
-  },
-  {
-    name: 'UDCAT',
-    address: '0x8E98A62a995A50eca9979bfa016f91bf36A8F9D9' as Address,
-    amountOut: parseUnits('5200', 18),
-    amountInMax: parseUnits('15', 6),
-    fee: 10000,
-  },
-  {
-    name: 'BCAT',
-    address: '0x258bbb25fB1bc34C87212F8dAB34838854eF2D5D' as Address,
-    amountOut: parseUnits('86000', 18),
-    amountInMax: parseUnits('15', 6),
-    fee: 10000,
+    name: 'AF',
+    address: AF,
+    amountInNativeUsdc: parseUnits('5', 18), // 5 native USDC
+    minAmountOut: parseUnits('2000', 18), // 2000 AF required for vault funding
   },
 ]
 
@@ -118,65 +76,104 @@ async function main() {
   const walletClient = ctx.walletClient!
   const publicClient = ctx.publicClient!
 
-  console.log(`\nBuying tokens on Arc Mainnet using Uniswap V3 SwapRouter02 (${SWAP_ROUTER})`)
-  console.log(`Buyer wallet: ${account}`)
+  console.log(`\n======================================================`)
+  console.log(`Acquiring Tokens on Arc Mainnet via Uniswap V4`)
+  console.log(`UniversalRouter: ${UNIVERSAL_ROUTER}`)
+  console.log(`Buyer wallet:    ${account}`)
+  console.log(`======================================================\n`)
 
-  const usdcBal = await publicClient.readContract({
-    address: USDC_ERC20,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: [account],
-  })
-  console.log(`Current USDC balance: ${formatUnits(usdcBal, 6)} USDC`)
-
-  // Check allowance
-  const allowance = await publicClient.readContract({
-    address: USDC_ERC20,
-    abi: erc20Abi,
-    functionName: 'allowance',
-    args: [account, SWAP_ROUTER],
-  })
-
-  if (allowance < parseUnits('100', 6)) {
-    console.log(`Approving SwapRouter02 for USDC...`)
-    const approveTx = await walletClient.writeContract({
-      address: USDC_ERC20,
-      abi: erc20Abi,
-      functionName: 'approve',
-      args: [SWAP_ROUTER, maxUint256],
-      chain: ctx.chain,
-      account: walletClient.account!,
-    })
-    console.log(`Approve tx submitted: ${approveTx}. Waiting for confirmation...`)
-    const receipt = await publicClient.waitForTransactionReceipt({hash: approveTx})
-    console.log(`Approve confirmed in block ${receipt.blockNumber}`)
-  } else {
-    console.log(`SwapRouter02 already approved for USDC.`)
-  }
+  const initialNativeBal = await publicClient.getBalance({address: account})
+  console.log(`Current native USDC balance: ${formatUnits(initialNativeBal, 18)} USDC\n`)
 
   for (const item of PURCHASES) {
-    console.log(`\nSwapping USDC for exact ${formatUnits(item.amountOut, 18)} ${item.name}...`)
-    try {
-      const swapTx = await walletClient.writeContract({
-        address: SWAP_ROUTER,
-        abi: swapRouterAbi,
-        functionName: 'exactOutputSingle',
-        args: [
-          {
-            tokenIn: USDC_ERC20,
-            tokenOut: item.address,
-            fee: item.fee,
-            recipient: account,
-            amountOut: item.amountOut,
-            amountInMaximum: item.amountInMax,
-            sqrtPriceLimitX96: 0n,
+    const prevBal = await publicClient.readContract({
+      address: item.address,
+      abi: erc20Abi,
+      functionName: 'balanceOf',
+      args: [account],
+    })
+    console.log(`\n--- Buying ${item.name} ---`)
+    console.log(`  Current balance: ${formatUnits(prevBal, 18)} ${item.name}`)
+    console.log(`  Spending:        ${formatUnits(item.amountInNativeUsdc, 18)} native USDC`)
+    console.log(`  Minimum output:  ${formatUnits(item.minAmountOut, 18)} ${item.name}`)
+
+    // Action 0x06: SWAP_EXACT_IN_SINGLE
+    const param0 = encodeAbiParameters(
+      [
+        {
+          type: 'tuple',
+          components: [
+            {
+              name: 'poolKey',
+              type: 'tuple',
+              components: [
+                {name: 'currency0', type: 'address'},
+                {name: 'currency1', type: 'address'},
+                {name: 'fee', type: 'uint24'},
+                {name: 'tickSpacing', type: 'int24'},
+                {name: 'hooks', type: 'address'},
+              ],
+            },
+            {name: 'zeroForOne', type: 'bool'},
+            {name: 'amountIn', type: 'uint128'},
+            {name: 'amountOutMinimum', type: 'uint128'},
+            {name: 'hookData', type: 'bytes'},
+          ],
+        },
+      ],
+      [
+        {
+          poolKey: {
+            currency0: NATIVE_CURRENCY,
+            currency1: item.address,
+            fee: 0,
+            tickSpacing: 200,
+            hooks: V4_POOL_HOOK,
           },
-        ],
+          zeroForOne: true,
+          amountIn: item.amountInNativeUsdc,
+          amountOutMinimum: item.minAmountOut,
+          hookData: '0x' as Hex,
+        },
+      ],
+    )
+
+    // Action 0x0c: SETTLE_ALL (settle input currency from msg.value)
+    const param1 = encodeAbiParameters(parseAbiParameters('address currency, uint256 maxAmount'), [
+      NATIVE_CURRENCY,
+      item.amountInNativeUsdc,
+    ])
+
+    // Action 0x0f: TAKE_ALL (take all output tokens to caller)
+    const param2 = encodeAbiParameters(parseAbiParameters('address currency, uint256 minAmount'), [
+      item.address,
+      item.minAmountOut,
+    ])
+
+    // V4_SWAP input payload: (bytes actions, bytes[] params)
+    const v4Input = encodeAbiParameters(parseAbiParameters('bytes actions, bytes[] params'), [
+      '0x060c0f' as Hex,
+      [param0, param1, param2],
+    ])
+
+    const commands: Hex = '0x10' // V4_SWAP
+    const inputs: Hex[] = [v4Input]
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200)
+
+    try {
+      console.log(`  Submitting swap tx to UniversalRouter...`)
+      const hash = await walletClient.writeContract({
+        address: UNIVERSAL_ROUTER,
+        abi: universalRouterAbi,
+        functionName: 'execute',
+        args: [commands, inputs, deadline],
+        value: item.amountInNativeUsdc,
         chain: ctx.chain,
         account: walletClient.account!,
       })
-      console.log(`  Tx submitted: ${swapTx}. Waiting for confirmation...`)
-      const receipt = await publicClient.waitForTransactionReceipt({hash: swapTx})
+      console.log(`  Tx hash: ${hash}`)
+      console.log(`  Waiting for confirmation...`)
+      const receipt = await publicClient.waitForTransactionReceipt({hash})
       console.log(`  ✓ Confirmed in block ${receipt.blockNumber}`)
 
       const newBal = await publicClient.readContract({
@@ -185,13 +182,20 @@ async function main() {
         functionName: 'balanceOf',
         args: [account],
       })
-      console.log(`  Holding now: ${formatUnits(newBal, 18)} ${item.name}`)
+      const acquired = newBal - prevBal
+      console.log(`  ✓ Received:     ${formatUnits(acquired, 18)} ${item.name}`)
+      console.log(`  ✓ New balance:  ${formatUnits(newBal, 18)} ${item.name}`)
     } catch (err: unknown) {
       console.error(`  ✗ Error buying ${item.name}:`, err instanceof Error ? err.message : err)
+      throw err
     }
   }
 
-  console.log(`\n=== All swaps finished! ===`)
+  const finalNativeBal = await publicClient.getBalance({address: account})
+  console.log(`\n======================================================`)
+  console.log(`All purchases completed successfully!`)
+  console.log(`Remaining native USDC: ${formatUnits(finalNativeBal, 18)} USDC`)
+  console.log(`======================================================\n`)
 }
 
 main().catch((err) => {
