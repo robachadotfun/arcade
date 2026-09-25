@@ -19,14 +19,20 @@ import {rawMode} from './mode'
  * (`@x402/evm/upto/client`) and breaks the build. Nothing here uses those connectors; the
  * subpath means nothing has to load them.
  *
- * Reown's own modal handles wallet selection, so Arcade no longer opens a dialog of its own
- * to pick a connector. `components/WalletButton.tsx` connects directly.
+ * ## Browser extensions are not listed here, and do not need to be
  *
- * ## The tradeoff this makes
+ * There is no `injected` connector in this array on purpose. wagmi discovers extensions over
+ * EIP-6963 — `multiInjectedProviderDiscovery` defaults to true — so every installed wallet
+ * already appears in `useConnect().connectors` with its own name and icon, deduplicated by
+ * the wallet itself. Adding `injected()` on top would list a generic duplicate of whichever
+ * extension happens to own `window.ethereum`.
  *
- * The `injected` connector is deliberately gone, so a desktop browser extension is no longer
- * a one-click connect — it goes through Reown's modal like any other wallet. Re-adding it is
- * one import and one array entry if that turns out to matter more than a single code path.
+ * This is worth stating because the previous note here claimed the opposite: that removing
+ * `injected` meant extensions went "through Reown's modal like any other wallet". They cannot.
+ * WalletConnect is a relay between two separate devices, so on desktop it can only render a
+ * QR code — an extension in the same browser has no way to answer it. `WalletButton` lists
+ * the discovered extensions itself and keeps this connector for phones and for wallets that
+ * ship no extension.
  */
 
 /**

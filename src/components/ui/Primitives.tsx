@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import {forwardRef, useEffect, useId, useRef, type ReactNode} from 'react'
+import {createPortal} from 'react-dom'
+import {useIsMounted} from '@/hooks/useClientState'
 
 /**
  * The small set of primitives the whole product is built from.
@@ -184,6 +186,19 @@ export function SectionHead({
 /**
  * An accessible modal dialog: focus is moved in, trapped while open, and restored on close.
  * Escape and backdrop both dismiss. Scroll is locked on the body.
+ *
+ * ## Why this renders through a portal
+ *
+ * `position: fixed` is only relative to the viewport while no ancestor establishes a
+ * containing block, and `transform`, `filter` and `backdrop-filter` all do. `SiteHeader` uses
+ * `backdrop-blur-md`, so a dialog opened from the header — the wallet button — was laid out
+ * inside a 64px-tall box and centred there: its heading sat about 130px above the top of the
+ * screen, unreachable, because a fixed overlay cannot be scrolled back into view.
+ *
+ * Rendering into `document.body` puts the dialog outside every such ancestor, so it is
+ * positioned against the viewport wherever it is opened from. This is a property of where the
+ * dialog is mounted, not of its own styles — no combination of classes here can fix it, which
+ * is why it is worth the portal.
  */
 export function Modal({
   open,
@@ -256,9 +271,12 @@ export function Modal({
     }
   }, [open, onClose])
 
-  if (!open) return null
+  // `document` only exists on the client, so the portal waits for hydration.
+  const mounted = useIsMounted()
 
-  return (
+  if (!open || !mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
       <button
         type="button"
@@ -303,7 +321,8 @@ export function Modal({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
