@@ -32,10 +32,9 @@
  * token on every spin and rejects one it could not cover. `status` reports where you are.
  */
 
-// Must stay the first import: it loads .env.local before config modules read it.
 import './operator/env'
-import {existsSync, readFileSync} from 'node:fs'
-import {resolve} from 'node:path'
+import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'node:fs'
+import {resolve, dirname} from 'node:path'
 import {
   formatUnits,
   parseUnits,
@@ -46,12 +45,16 @@ import {
 } from 'viem'
 import {
   ARCADE_POOL_KEY,
+  ARCADE_DEX_ROUTER,
+  ARCADE_APPROVE_PROXY,
   UNIVERSAL_ROUTER,
   assertPoolKey,
   encodeExactInSingle,
+  encodeDagSwap,
+  PERMIT2,
+  PERMIT2_ABI,
 } from './operator/uniswap-v4'
 import {ERC20_USDC_DECIMALS} from '../src/config/network'
-import {PERMIT2, PERMIT2_ABI} from './operator/uniswap-v4'
 import {
   arcadeMachineManagerAbi,
   commitRevealRandomnessAbi,
@@ -107,6 +110,19 @@ const ERC20_APPROVE = [
     stateMutability: 'nonpayable',
     inputs: [
       {name: 'spender', type: 'address'},
+      {name: 'amount', type: 'uint256'},
+    ],
+    outputs: [{type: 'bool'}],
+  },
+] as const
+
+const ERC20_TRANSFER = [
+  {
+    type: 'function',
+    name: 'transfer',
+    stateMutability: 'nonpayable',
+    inputs: [
+      {name: 'recipient', type: 'address'},
       {name: 'amount', type: 'uint256'},
     ],
     outputs: [{type: 'bool'}],
@@ -1204,11 +1220,12 @@ async function buyback(): Promise<void> {
   }
 
   /*
-   * The router defaults to the Universal Router the pool's own traffic uses, and can still be
+   * The router defaults to the Arc DEX Router for the ARCADE pool (custom delta hook), and can still be
    * overridden. The override is kept because this is the one address whose being wrong costs
    * money rather than reverting.
    */
-  const swapRouter = router ?? UNIVERSAL_ROUTER
+  const swapRouter = router ?? ARCADE_DEX_ROUTER
+  const isDexRouter = swapRouter.toLowerCase() === ARCADE_DEX_ROUTER.toLowerCase()
   const code = await ctx.publicClient.getBytecode({address: swapRouter})
   if (!code || code === '0x') fail(`Router ${swapRouter} has no contract code.`)
   log(`\n  router             ${swapRouter} (${code.length / 2 - 1} bytes)${router ? ' [overridden]' : ''}`)
@@ -1219,74 +1236,39 @@ async function buyback(): Promise<void> {
   log('  pool key           verified against the pool id')
 
   /*
-   * Permit2 approvals.
+   * Router and spender approvals.
    *
-   * The Universal Router never pulls an ERC-20 directly — it goes through Permit2, so two
-   * approvals stand between a funded wallet and a working swap: the token must approve
-   * Permit2, and Permit2 must approve the router. Both are zero on a wallet that has never
-   * swapped, and the resulting revert says nothing about why, so they are read and reported
-   * explicitly rather than left to be discovered from a failed simulation.
+   * The Arc DEX Router pulls tokens via its approve proxy (ARCADE_APPROVE_PROXY), while
+   * the Universal Router pulls ERC-20s through Permit2. Both are handled appropriately.
    */
   const usdcErc20 = ARCADE_POOL_KEY.currency1
-  const [allowanceToPermit2, permit2Allowance] = await Promise.all([
-    ctx.publicClient.readContract({
-      address: usdcErc20,
-      abi: ERC20_ALLOWANCE,
-      functionName: 'allowance',
-      args: [ctx.account!, PERMIT2],
-    }),
-    ctx.publicClient.readContract({
+  const amountIn = parseUnits(budgetUsd.toFixed(6), ERC20_USDC_DECIMALS)
+
+  const spender = isDexRouter ? ARCADE_APPROVE_PROXY : PERMIT2
+  const allowanceToSpender = await ctx.publicClient.readContract({
+    address: usdcErc20,
+    abi: ERC20_ALLOWANCE,
+    functionName: 'allowance',
+    args: [ctx.account!, spender],
+  })
+
+  let permit2Allowance: readonly [bigint, number, number] = [0n, 0, 0]
+  if (!isDexRouter) {
+    permit2Allowance = (await ctx.publicClient.readContract({
       address: PERMIT2,
       abi: PERMIT2_ABI,
       functionName: 'allowance',
       args: [ctx.account!, usdcErc20, swapRouter],
-    }) as Promise<readonly [bigint, number, number]>,
-  ])
-
-  log(`  USDC -> Permit2    ${formatUnits(allowanceToPermit2, ERC20_USDC_DECIMALS)} USDC`)
-  log(`  Permit2 -> router  ${formatUnits(permit2Allowance[0], ERC20_USDC_DECIMALS)} USDC`)
-
-  if (process.argv.includes('--approve')) {
-    heading('Approvals needed')
-    log('  Two transactions, both signed by you. Neither moves funds; they authorise the')
-    log('  router to pull USDC when the swap runs.')
-    log('')
-    log(`  1. ${usdcErc20}`)
-    log(`     approve(${PERMIT2}, <amount>)`)
-    log(`     calldata: ${encodeFunctionData({
-      abi: ERC20_APPROVE,
-      functionName: 'approve',
-      args: [PERMIT2, amountInForApproval(budgetUsd)],
-    })}`)
-    log('')
-    log(`  2. ${PERMIT2}`)
-    log(`     approve(${usdcErc20}, ${swapRouter}, <amount>, <expiry>)`)
-    log(`     calldata: ${encodeFunctionData({
-      abi: PERMIT2_ABI,
-      functionName: 'approve',
-      args: [
-        usdcErc20,
-        swapRouter,
-        amountInForApproval(budgetUsd),
-        Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-      ],
-    })}`)
-    log('')
-    log('  Approve only what you intend to spend. An unlimited approval on a treasury wallet')
-    log('  outlives the reason it was granted.')
-    return
+    })) as readonly [bigint, number, number]
   }
 
-  /*
-   * The budget is measured in USDC-the-unit, but the pool quotes the 6-decimal USDC ERC-20
-   * while the wallet's balance above is the 18-decimal native asset. Same money, two
-   * precisions; the swap has to be sized in the pool's.
-   */
-  const amountIn = parseUnits(budgetUsd.toFixed(6), ERC20_USDC_DECIMALS)
-  const erc20Usdc = ARCADE_POOL_KEY.currency1
+  log(`  USDC -> ${isDexRouter ? 'approveProxy' : 'Permit2'} ${formatUnits(allowanceToSpender, ERC20_USDC_DECIMALS)} USDC`)
+  if (!isDexRouter) {
+    log(`  Permit2 -> router  ${formatUnits(permit2Allowance[0], ERC20_USDC_DECIMALS)} USDC`)
+  }
 
   const usdcHeld = await ctx.publicClient.readContract({
-    address: erc20Usdc,
+    address: usdcErc20,
     abi: ERC20_MINI,
     functionName: 'balanceOf',
     args: [ctx.account!],
@@ -1295,6 +1277,49 @@ async function buyback(): Promise<void> {
   log(`  wallet holds       ${formatUnits(usdcHeld, ERC20_USDC_DECIMALS)} USDC`)
   if (usdcHeld < amountIn) {
     fail('Wallet does not hold enough USDC at the ERC-20 interface to cover the budget.')
+  }
+
+  const now = Math.floor(Date.now() / 1000)
+  const needsSpender = allowanceToSpender < amountIn
+  const needsRouter = !isDexRouter && (permit2Allowance[0] < amountIn || permit2Allowance[1] <= now + 60)
+
+  if (process.argv.includes('--approve') || (confirm && (needsSpender || needsRouter))) {
+    if (!ctx.walletClient) fail('No signer configured for approvals.')
+    heading('Approvals')
+    if (needsSpender) {
+      await send(ctx, `approve(${isDexRouter ? 'approveProxy' : 'Permit2'}, ${formatUnits(amountIn, ERC20_USDC_DECIMALS)} USDC)`, () =>
+        ctx.walletClient!.writeContract({
+          address: usdcErc20,
+          abi: ERC20_APPROVE,
+          functionName: 'approve',
+          args: [spender, amountIn],
+          chain: ctx.chain,
+          account: ctx.walletClient!.account!,
+        }),
+      )
+    }
+    if (needsRouter) {
+      const expiry = now + 30 * 24 * 60 * 60
+      await send(ctx, `Permit2.approve(USDC, router, ${formatUnits(amountIn, ERC20_USDC_DECIMALS)} USDC)`, () =>
+        ctx.walletClient!.writeContract({
+          address: PERMIT2,
+          abi: PERMIT2_ABI,
+          functionName: 'approve',
+          args: [usdcErc20, swapRouter, amountIn, expiry],
+          chain: ctx.chain,
+          account: ctx.walletClient!.account!,
+        }),
+      )
+    }
+    log('  Approvals in place.')
+    if (process.argv.includes('--approve') && !confirm) {
+      return
+    }
+  } else if (needsSpender || needsRouter) {
+    heading('Approvals needed')
+    log(`  Approvals have not been granted yet.`)
+    log('  Run with --confirm to automatically submit approvals and execute the buyback,')
+    log('  or run with --approve to submit only the approvals.')
   }
 
   /*
@@ -1317,23 +1342,26 @@ async function buyback(): Promise<void> {
   log(`  minimum accepted   ${formatUnits(minOut, ARCADE_TOKEN.decimals)} ARCADE (${slippagePct}% slippage)`)
 
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 600)
-  const data = encodeExactInSingle({
-    key: ARCADE_POOL_KEY,
-    // Buying currency0 (ARCADE) by paying currency1 (USDC) is the one-for-zero direction.
-    zeroForOne: false,
-    amountIn,
-    amountOutMinimum: minOut,
-    deadline,
-  })
+  const data = isDexRouter
+    ? encodeDagSwap({
+        tokenIn: usdcErc20,
+        tokenOut: ARCADE_TOKEN.address,
+        amountIn,
+        minAmountOut: minOut,
+        receiver: ctx.account!,
+        deadline,
+        key: ARCADE_POOL_KEY,
+      })
+    : encodeExactInSingle({
+        key: ARCADE_POOL_KEY,
+        // Buying currency0 (ARCADE) by paying currency1 (USDC) is the one-for-zero direction.
+        zeroForOne: false,
+        amountIn,
+        amountOutMinimum: minOut,
+        deadline,
+      })
 
   heading('Simulation')
-  /*
-   * Simulated before anything is sent, and a failure here stops the run.
-   *
-   * This is also where a missing Permit2 approval surfaces: the Universal Router pulls ERC-20s
-   * through Permit2, never directly, so an unapproved wallet reverts here rather than after
-   * spending gas.
-   */
   try {
     await ctx.publicClient.call({
       account: ctx.account!,
@@ -1343,12 +1371,24 @@ async function buyback(): Promise<void> {
     })
     log('  swap simulates cleanly')
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    log(`  swap REVERTS in simulation:\n    ${message.slice(0, 400)}`)
+    /*
+     * The revert reason matters more than the stack here, and viem buries it: the useful text
+     * is on `shortMessage`/`details`, while `message` is the pretty-printed call wrapper. Both
+     * are surfaced through `log` rather than console so the failure reads like the rest of the
+     * command's output.
+     */
+    const e = err as {shortMessage?: string; details?: string; message?: string}
+    log('  swap REVERTS in simulation:')
+    for (const [label, value] of [
+      ['reason ', e.shortMessage],
+      ['details', e.details],
+    ] as const) {
+      if (value) log(`    ${label}  ${value}`)
+    }
+    if (!e.shortMessage && !e.details) log(`    ${e.message ?? String(err)}`)
     log('')
-    log('  Nothing was sent. The usual cause is Permit2: the Universal Router pulls ERC-20s')
-    log('  through it, so the wallet must approve Permit2 for USDC, then Permit2 must approve')
-    log('  the router. Run `pnpm operator buyback --approve` to do both.')
+    log('  Nothing was sent. Check the Permit2 allowances printed above first; if both are')
+    log('  funded, the next suspect is the slippage floor or the pool hook rejecting the swap.')
     return
   }
 
@@ -1359,11 +1399,63 @@ async function buyback(): Promise<void> {
     return
   }
 
-  fail(
-    'Broadcasting is left to you deliberately: this command builds and simulates the swap, ' +
-      'but signing stays with whoever holds the key. Send the simulated calldata yourself, ' +
-      'or run it from a wallet you control.',
+  if (!ctx.walletClient) fail('No signer configured to execute the swap.')
+
+  heading('Execution')
+  const arcadeBefore = await ctx.publicClient.readContract({
+    address: ARCADE_TOKEN.address,
+    abi: ERC20_MINI,
+    functionName: 'balanceOf',
+    args: [ctx.account!],
+  })
+
+  await send(ctx, `swap ${formatUnits(amountIn, ERC20_USDC_DECIMALS)} USDC for ARCADE`, () =>
+    ctx.walletClient!.sendTransaction({
+      account: ctx.walletClient!.account!,
+      to: swapRouter,
+      data,
+      value: 0n,
+      chain: ctx.chain,
+    }),
   )
+
+  const arcadeAfter = await ctx.publicClient.readContract({
+    address: ARCADE_TOKEN.address,
+    abi: ERC20_MINI,
+    functionName: 'balanceOf',
+    args: [ctx.account!],
+  })
+
+  const arcadeBought = arcadeAfter > arcadeBefore ? arcadeAfter - arcadeBefore : 0n
+  log(`  received           ${formatUnits(arcadeBought, ARCADE_TOKEN.decimals)} ARCADE`)
+
+  if (arcadeBought > 0n) {
+    await new Promise((r) => setTimeout(r, 2000))
+    await send(ctx, `burn ${formatUnits(arcadeBought, ARCADE_TOKEN.decimals)} ARCADE`, () =>
+      ctx.walletClient!.writeContract({
+        address: ARCADE_TOKEN.address,
+        abi: ERC20_TRANSFER,
+        functionName: 'transfer',
+        args: [BURN_ADDRESS, arcadeBought],
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
+  }
+
+  ledger.spentUsd += budgetUsd
+  ledger.runs += 1
+  ledger.updatedAt = new Date().toISOString()
+  writeBuybackLedger(ledger)
+  log(`\n  Ledger updated: ${ledger.spentUsd.toFixed(4)} USDC total spent across ${ledger.runs} run(s).`)
+
+  const burnedAfter = await ctx.publicClient.readContract({
+    address: ARCADE_TOKEN.address,
+    abi: ERC20_MINI,
+    functionName: 'balanceOf',
+    args: [BURN_ADDRESS],
+  })
+  log(`  Total ARCADE burned to date: ${formatUnits(burnedAfter, ARCADE_TOKEN.decimals)} ARCADE`)
 }
 
 /** Cumulative USDC already spent on buybacks, so profit is never spent twice. */
@@ -1388,6 +1480,12 @@ function readBuybackLedger(): BuybackLedger {
     // the same profit again.
     fail(`Buyback ledger at ${path} is unreadable. Fix or remove it deliberately.`)
   }
+}
+
+function writeBuybackLedger(ledger: BuybackLedger): void {
+  const path = buybackLedgerPath()
+  mkdirSync(dirname(path), {recursive: true})
+  writeFileSync(path, `${JSON.stringify(ledger, null, 2)}\n`, 'utf8')
 }
 
 // ────────────────────────────────────────────────────────────────── distribute
@@ -1901,7 +1999,7 @@ async function reveal(): Promise<void> {
    * tick rate below, re-reading 862 blocks every time would be most of a second of work
    * spent re-deriving what the previous tick already knew, which is latency a player feels.
    */
-  const lookback = BigInt(delay) + BigInt(window) + 50n
+  const lookback = 90n
   const seen = new Set<string>()
   let lastScanned: bigint | null = null
   let tickCount = 0
