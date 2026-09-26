@@ -315,6 +315,24 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Tokenised AVGO exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
   },
+  /*
+   * Builders, added at the operator's direction.
+   *
+   * Clears every contract-level check: transfer probed against live mainnet state moved the
+   * full amount, zero fee, standard bool return, 18 decimals, no ticker collision. It is also
+   * the oldest admission here by a distance — roughly two months, where the others were days.
+   *
+   * It is admitted on thinner market data than REGI or AKIT, which both cleared the volume
+   * threshold. This one clears neither: liquidity is about a third of the floor and 24h volume
+   * roughly a fifteenth of it. At that depth a winner selling a whole prize is a visible
+   * fraction of a day's trade, so the disclosure says volume explicitly rather than hiding it
+   * behind the general liquidity wording.
+   */
+  '0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2': {
+    reason: 'Admitted by the operator despite failing both liquidity and volume thresholds.',
+    disclose:
+      'Admitted despite failing the liquidity, volume and holder-count thresholds. It passes every contract check, but both the pool and daily volume are thin — selling a full win may move the price against you.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

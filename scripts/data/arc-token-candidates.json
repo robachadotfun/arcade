@@ -503,6 +503,16 @@
       "holders": 0,
       "ageDays": 1,
       "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2",
+      "label": "Builders",
+      "ticker": "BUILDERS",
+      "volume24hUsd": 6568,
+      "liquidityUsd": 15589,
+      "holders": 0,
+      "ageDays": 60,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data from DexScreener 2026-09-27; Uniswap v3 pool against USDC."
     }
   ]
 }
