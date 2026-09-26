@@ -101,10 +101,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Renders only once tokens have actually been sent to the burn address. */}
-      <section className="shell">
-        <BurnCounter className="mx-auto max-w-[36rem]" />
-      </section>
+      {/* Renders only once tokens have actually been sent to the burn address. It is a
+          full-width band of its own, so no wrapper section here. */}
+      <BurnCounter />
 
       {/* ================================================================== leaderboard */}
       <section className="section-y">
