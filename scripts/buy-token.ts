@@ -17,12 +17,30 @@
  *   - proceed without `--max-usdc`, since an uncapped buy in a thin pool is an invitation
  *   - broadcast without `--confirm`
  *
+ * ## Two venues
+ *
+ * Uniswap v3 by default. `--venue arctide` uses Arc's own V2 AMM, which is the only place
+ * some tokens trade at all — TIDE has no Uniswap pool on any fee tier. The two differ in more
+ * than the router address: Arctide is exact-*input* (V2 fee-supporting swaps cannot promise an
+ * exact output), pays with native USDC as `msg.value`, and takes ~1.5% before the pool sees
+ * the trade. So on that venue the caller states what they will spend, and the token amount is
+ * quoted rather than demanded.
+ *
  * Usage:
  *   pnpm buy:token <tokenAddress> <amountOut> --max-usdc <usdc> [--fee 10000] [--confirm]
+ *   pnpm buy:token <tokenAddress> --venue arctide --spend <usdc> [--slippage 5] [--confirm]
  */
 import './operator/env'
 import {formatUnits, getAddress, parseAbi, parseUnits, type Address} from 'viem'
 import {loadContext} from './operator/context'
+import {
+  ARCTIDE_ROUTER,
+  ARCTIDE_WETH,
+  ROUTER_ABI as ARCTIDE_ROUTER_ABI,
+  encodeArctideBuy,
+  quoteInputAfterFees,
+  requirePair,
+} from './operator/arctide'
 
 /** Uniswap v3 SwapRouter02 on Arc, the router the existing inventory buys already use. */
 const V3_ROUTER: Address = getAddress('0x53BF6B0684Ec7eF91e1387Da3D1a1769bC5A6F77')
@@ -46,8 +64,82 @@ function flag(name: string): string | undefined {
   return i === -1 ? undefined : process.argv[i + 1]
 }
 
+async function buyOnArctide(tokenArg: string): Promise<void> {
+  const spend = flag('spend')
+  if (!spend) throw new Error('Arctide buys are exact-input: pass --spend <usdc>.')
+  const slippagePct = BigInt(Number.parseInt(flag('slippage') ?? '5', 10))
+  const confirm = process.argv.includes('--confirm')
+
+  const token = getAddress(tokenArg)
+  const ctx = await loadContext()
+  const {publicClient, account} = ctx
+  if (!account) throw new Error('No signer configured.')
+
+  const read = ((a: never) => publicClient.readContract(a)) as unknown as (a: never) => Promise<unknown>
+  const pair = await requirePair(read, token)
+
+  const [symbol, decimals] = await Promise.all([
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'symbol'}),
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'decimals'}),
+  ])
+
+  // The pool is quoted on what reaches it, not on what leaves the wallet.
+  const spent6 = parseUnits(spend, USDC_DECIMALS)
+  const amounts = (await publicClient.readContract({
+    address: ARCTIDE_ROUTER, abi: ARCTIDE_ROUTER_ABI, functionName: 'getAmountsOut',
+    args: [quoteInputAfterFees(spent6), [ARCTIDE_WETH, token]],
+  })) as readonly bigint[]
+  const expected = amounts[amounts.length - 1]!
+  const amountOutMin = (expected * (100n - slippagePct)) / 100n
+
+  const before = await publicClient.readContract({
+    address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [account],
+  })
+
+  process.stdout.write(
+    `\nBuying ${symbol} on Arctide\n` +
+      `  pair         ${pair}\n` +
+      `  spending     ${spend} USDC (native, ~1.5% router fee before the pool)\n` +
+      `  expected     ${formatUnits(expected, Number(decimals))} ${symbol}\n` +
+      `  floor        ${formatUnits(amountOutMin, Number(decimals))} ${symbol} (${slippagePct}% slippage)\n` +
+      `  held now     ${formatUnits(before, Number(decimals))} ${symbol}\n`,
+  )
+
+  const data = encodeArctideBuy({
+    token, amountOutMin, recipient: account,
+    deadline: BigInt(Math.floor(Date.now() / 1000) + 1200),
+  })
+  // msg.value is the SAME money at 18 decimals. Mixing the two scales is the trap here.
+  const value = parseUnits(spend, 18)
+
+  await publicClient.call({account, to: ARCTIDE_ROUTER, data, value})
+  process.stdout.write('  simulates cleanly\n')
+
+  if (!confirm) {
+    process.stdout.write('\n  --confirm not passed; nothing was broadcast.\n')
+    return
+  }
+
+  const hash = await ctx.walletClient!.sendTransaction({
+    to: ARCTIDE_ROUTER, data, value, chain: ctx.chain, account: ctx.walletClient!.account!,
+  })
+  const receipt = await publicClient.waitForTransactionReceipt({hash})
+  if (receipt.status !== 'success') throw new Error(`Swap reverted: ${hash}`)
+  const after = await publicClient.readContract({
+    address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [account],
+  })
+  process.stdout.write(
+    `  ✓ ${hash}\n  received ${formatUnits(after - before, Number(decimals))} ${symbol}\n`,
+  )
+}
+
 async function main(): Promise<void> {
   const [tokenArg, amountArg] = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+
+  if (flag('venue') === 'arctide') {
+    if (!tokenArg) throw new Error('Usage: pnpm buy:token <tokenAddress> --venue arctide --spend <usdc>')
+    return buyOnArctide(tokenArg)
+  }
   const maxUsdcArg = flag('max-usdc')
   const fee = Number.parseInt(flag('fee') ?? '10000', 10)
   const confirm = process.argv.includes('--confirm')
