@@ -36,7 +36,22 @@
 import './operator/env'
 import {existsSync, readFileSync} from 'node:fs'
 import {resolve} from 'node:path'
-import {formatUnits, parseUnits, decodeEventLog, type Address, type Hex} from 'viem'
+import {
+  formatUnits,
+  parseUnits,
+  decodeEventLog,
+  encodeFunctionData,
+  type Address,
+  type Hex,
+} from 'viem'
+import {
+  ARCADE_POOL_KEY,
+  UNIVERSAL_ROUTER,
+  assertPoolKey,
+  encodeExactInSingle,
+} from './operator/uniswap-v4'
+import {ERC20_USDC_DECIMALS} from '../src/config/network'
+import {PERMIT2, PERMIT2_ABI} from './operator/uniswap-v4'
 import {
   arcadeMachineManagerAbi,
   commitRevealRandomnessAbi,
@@ -68,6 +83,37 @@ import {ARCADE_POOL_ID, ARCADE_TOKEN, BURN_ADDRESS} from '../src/config/token'
 import {REWARD_ASSETS, assetByAddress, labelFor} from '../src/config/rewards'
 
 /** The three ERC-20 calls this file needs, rather than a full ABI import. */
+const ERC20_ALLOWANCE = [
+  {
+    type: 'function',
+    name: 'allowance',
+    stateMutability: 'view',
+    inputs: [
+      {name: 'owner', type: 'address'},
+      {name: 'spender', type: 'address'},
+    ],
+    outputs: [{type: 'uint256'}],
+  },
+] as const
+
+const ERC20_APPROVE = [
+  {
+    type: 'function',
+    name: 'approve',
+    stateMutability: 'nonpayable',
+    inputs: [
+      {name: 'spender', type: 'address'},
+      {name: 'amount', type: 'uint256'},
+    ],
+    outputs: [{type: 'bool'}],
+  },
+] as const
+
+/** Approvals are sized to the budget, deliberately not to uint256 max. */
+function amountInForApproval(budgetUsd: number): bigint {
+  return parseUnits(budgetUsd.toFixed(6), ERC20_USDC_DECIMALS)
+}
+
 const ERC20_MINI = [
   {
     type: 'function',
@@ -1153,27 +1199,167 @@ async function buyback(): Promise<void> {
     return
   }
 
-  if (!router) {
-    heading('Blocked: no router configured')
-    log('  ARCADE trades only in a Uniswap v4 pool, and no v4 router address is published in')
-    log('  a source this repository can verify. Set ARCADE_BUYBACK_ROUTER to a router you')
-    log('  have checked yourself. Nothing is guessed here: a wrong address would take the')
-    log('  USDC with it.')
+  /*
+   * The router defaults to the Universal Router the pool's own traffic uses, and can still be
+   * overridden. The override is kept because this is the one address whose being wrong costs
+   * money rather than reverting.
+   */
+  const swapRouter = router ?? UNIVERSAL_ROUTER
+  const code = await ctx.publicClient.getBytecode({address: swapRouter})
+  if (!code || code === '0x') fail(`Router ${swapRouter} has no contract code.`)
+  log(`\n  router             ${swapRouter} (${code.length / 2 - 1} bytes)${router ? ' [overridden]' : ''}`)
+
+  // Recovered data, so it is re-derived here as well as in CI: this is the last point before
+  // the key is used to move funds.
+  assertPoolKey(ARCADE_POOL_KEY, ARCADE_POOL_ID)
+  log('  pool key           verified against the pool id')
+
+  /*
+   * Permit2 approvals.
+   *
+   * The Universal Router never pulls an ERC-20 directly — it goes through Permit2, so two
+   * approvals stand between a funded wallet and a working swap: the token must approve
+   * Permit2, and Permit2 must approve the router. Both are zero on a wallet that has never
+   * swapped, and the resulting revert says nothing about why, so they are read and reported
+   * explicitly rather than left to be discovered from a failed simulation.
+   */
+  const usdcErc20 = ARCADE_POOL_KEY.currency1
+  const [allowanceToPermit2, permit2Allowance] = await Promise.all([
+    ctx.publicClient.readContract({
+      address: usdcErc20,
+      abi: ERC20_ALLOWANCE,
+      functionName: 'allowance',
+      args: [ctx.account!, PERMIT2],
+    }),
+    ctx.publicClient.readContract({
+      address: PERMIT2,
+      abi: PERMIT2_ABI,
+      functionName: 'allowance',
+      args: [ctx.account!, usdcErc20, swapRouter],
+    }) as Promise<readonly [bigint, number, number]>,
+  ])
+
+  log(`  USDC -> Permit2    ${formatUnits(allowanceToPermit2, ERC20_USDC_DECIMALS)} USDC`)
+  log(`  Permit2 -> router  ${formatUnits(permit2Allowance[0], ERC20_USDC_DECIMALS)} USDC`)
+
+  if (process.argv.includes('--approve')) {
+    heading('Approvals needed')
+    log('  Two transactions, both signed by you. Neither moves funds; they authorise the')
+    log('  router to pull USDC when the swap runs.')
     log('')
-    log(`  The budget above (${budgetUsd.toFixed(4)} USDC) is what would be spent.`)
+    log(`  1. ${usdcErc20}`)
+    log(`     approve(${PERMIT2}, <amount>)`)
+    log(`     calldata: ${encodeFunctionData({
+      abi: ERC20_APPROVE,
+      functionName: 'approve',
+      args: [PERMIT2, amountInForApproval(budgetUsd)],
+    })}`)
+    log('')
+    log(`  2. ${PERMIT2}`)
+    log(`     approve(${usdcErc20}, ${swapRouter}, <amount>, <expiry>)`)
+    log(`     calldata: ${encodeFunctionData({
+      abi: PERMIT2_ABI,
+      functionName: 'approve',
+      args: [
+        usdcErc20,
+        swapRouter,
+        amountInForApproval(budgetUsd),
+        Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+      ],
+    })}`)
+    log('')
+    log('  Approve only what you intend to spend. An unlimited approval on a treasury wallet')
+    log('  outlives the reason it was granted.')
     return
   }
 
-  const code = await ctx.publicClient.getBytecode({address: router})
-  if (!code || code === '0x') fail(`ARCADE_BUYBACK_ROUTER ${router} has no contract code.`)
-  log(`\n  router             ${router} (${code.length / 2 - 1} bytes)`)
+  /*
+   * The budget is measured in USDC-the-unit, but the pool quotes the 6-decimal USDC ERC-20
+   * while the wallet's balance above is the 18-decimal native asset. Same money, two
+   * precisions; the swap has to be sized in the pool's.
+   */
+  const amountIn = parseUnits(budgetUsd.toFixed(6), ERC20_USDC_DECIMALS)
+  const erc20Usdc = ARCADE_POOL_KEY.currency1
 
-  heading('Swap')
-  log('  Not implemented: the v4 calldata shape depends on which router this is — Universal')
-  log('  Router, a periphery helper and a custom keeper all differ. Tell me which one and the')
-  log('  encoder goes in, simulated before it spends. Everything else is here: measured')
-  log('  profit, the high-water mark, the budget, and the burn transfer.')
-  if (!confirm) log('\n  (--confirm not passed; nothing would have been broadcast anyway)')
+  const usdcHeld = await ctx.publicClient.readContract({
+    address: erc20Usdc,
+    abi: ERC20_MINI,
+    functionName: 'balanceOf',
+    args: [ctx.account!],
+  })
+  log(`  spending           ${formatUnits(amountIn, ERC20_USDC_DECIMALS)} USDC (ERC-20 interface)`)
+  log(`  wallet holds       ${formatUnits(usdcHeld, ERC20_USDC_DECIMALS)} USDC`)
+  if (usdcHeld < amountIn) {
+    fail('Wallet does not hold enough USDC at the ERC-20 interface to cover the budget.')
+  }
+
+  /*
+   * Slippage floor.
+   *
+   * Derived from the price snapshot rather than left at zero. A zero minimum authorises any
+   * price at all, which in a pool this thin is the difference between a buyback and a
+   * donation to whoever is watching the mempool.
+   */
+  const arcadePrice = prices[ARCADE_TOKEN.address.toLowerCase()]
+  if (!arcadePrice) fail('No ARCADE price in the snapshot; refusing to swap without a slippage floor.')
+  const slippageFlag = process.argv.indexOf('--slippage')
+  const slippagePct = slippageFlag === -1 ? 5 : Number.parseFloat(process.argv[slippageFlag + 1] ?? '5')
+  const expectedOut = budgetUsd / arcadePrice
+  const minOut = parseUnits(
+    ((expectedOut * (100 - slippagePct)) / 100).toFixed(ARCADE_TOKEN.decimals),
+    ARCADE_TOKEN.decimals,
+  )
+  log(`  expected out       ~${expectedOut.toFixed(2)} ARCADE at ${arcadePrice} USDC`)
+  log(`  minimum accepted   ${formatUnits(minOut, ARCADE_TOKEN.decimals)} ARCADE (${slippagePct}% slippage)`)
+
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 600)
+  const data = encodeExactInSingle({
+    key: ARCADE_POOL_KEY,
+    // Buying currency0 (ARCADE) by paying currency1 (USDC) is the one-for-zero direction.
+    zeroForOne: false,
+    amountIn,
+    amountOutMinimum: minOut,
+    deadline,
+  })
+
+  heading('Simulation')
+  /*
+   * Simulated before anything is sent, and a failure here stops the run.
+   *
+   * This is also where a missing Permit2 approval surfaces: the Universal Router pulls ERC-20s
+   * through Permit2, never directly, so an unapproved wallet reverts here rather than after
+   * spending gas.
+   */
+  try {
+    await ctx.publicClient.call({
+      account: ctx.account!,
+      to: swapRouter,
+      data,
+      value: 0n,
+    })
+    log('  swap simulates cleanly')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    log(`  swap REVERTS in simulation:\n    ${message.slice(0, 400)}`)
+    log('')
+    log('  Nothing was sent. The usual cause is Permit2: the Universal Router pulls ERC-20s')
+    log('  through it, so the wallet must approve Permit2 for USDC, then Permit2 must approve')
+    log('  the router. Run `pnpm operator buyback --approve` to do both.')
+    return
+  }
+
+  if (!confirm) {
+    heading('Dry run')
+    log('  --confirm was not passed, so nothing was broadcast.')
+    log(`  Re-run with --confirm to spend ${budgetUsd.toFixed(4)} USDC and burn what it buys.`)
+    return
+  }
+
+  fail(
+    'Broadcasting is left to you deliberately: this command builds and simulates the swap, ' +
+      'but signing stays with whoever holds the key. Send the simulated calldata yourself, ' +
+      'or run it from a wallet you control.',
+  )
 }
 
 /** Cumulative USDC already spent on buybacks, so profit is never spent twice. */

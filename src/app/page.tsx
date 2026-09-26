@@ -6,6 +6,7 @@ import {HeroOrbit} from '@/components/HeroOrbit'
 import {FeaturedMachine} from '@/components/FeaturedMachine'
 import {ActivityPreview} from '@/components/ActivityPreview'
 import {BurnCounter} from '@/components/BurnCounter'
+import {Leaderboard} from '@/components/Leaderboard'
 import {FaqAccordion} from '@/components/FaqAccordion'
 import {machineBySlug, rarityOdds, LIVE_MACHINES, assetsOnMachine} from '@/config/machines'
 import {REWARD_ASSETS, VERIFICATION_META} from '@/config/rewards'
@@ -103,6 +104,13 @@ export default function HomePage() {
       {/* Renders only once tokens have actually been sent to the burn address. */}
       <section className="shell">
         <BurnCounter className="mx-auto max-w-[36rem]" />
+      </section>
+
+      {/* ================================================================== leaderboard */}
+      <section className="section-y">
+        <div className="shell">
+          <Leaderboard />
+        </div>
       </section>
 
       {/* ================================================================== machine row */}
