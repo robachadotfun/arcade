@@ -72,6 +72,8 @@ const FAZE = '0x394d38f807ee0027a182216f5e67a15ae441fa2e' as const
 /** Arcflow. Same — verified with nothing failing. */
 const AF = '0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e' as const
 const COOL = '0xeb64987643db71c76b2a2be7e723decc995e5b37' as const
+const REGI = '0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae' as const
+const AKIT = '0xbc3764348131fe1962f267f442a8fe30459ededd' as const
 const ARCAT = '0x07704b06981ea962b87296362a1281484d160000' as const
 const LONG = '0x2164bb17a2d38c1b5170e987b2c0416df1efc752' as const
 const CRCL = '0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b' as const
@@ -175,12 +177,15 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: COOL, weight: 1600, rarity: 'common', minAmount: '450', maxAmount: '930'},
-      {token: ARCADE_TOKEN_ADDR, weight: 1600, rarity: 'common', minAmount: '40000', maxAmount: '80000'},
-      {token: FAZE, weight: 1400, rarity: 'common', minAmount: '200', maxAmount: '430'},
-      {token: AF, weight: 1400, rarity: 'common', minAmount: '470', maxAmount: '1000'},
-      {token: BCAT, weight: 1400, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
-      {token: UDCAT, weight: 1100, rarity: 'common', minAmount: '480', maxAmount: '980'},
+      {token: COOL, weight: 1250, rarity: 'common', minAmount: '450', maxAmount: '930'},
+      {token: ARCADE_TOKEN_ADDR, weight: 1250, rarity: 'common', minAmount: '40000', maxAmount: '80000'},
+      {token: FAZE, weight: 1050, rarity: 'common', minAmount: '200', maxAmount: '430'},
+      {token: AF, weight: 1050, rarity: 'common', minAmount: '470', maxAmount: '1000'},
+      {token: BCAT, weight: 1050, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
+      // Sized to the same ~$0.95–$2.00 band as every other common, at 2026-09-26 prices.
+      {token: REGI, weight: 1000, rarity: 'common', minAmount: '5900', maxAmount: '12500'},
+      {token: AKIT, weight: 1000, rarity: 'common', minAmount: '5000', maxAmount: '10500'},
+      {token: UDCAT, weight: 850, rarity: 'common', minAmount: '480', maxAmount: '980'},
       {token: TOLLY, weight: 900, rarity: 'rare', minAmount: '160', maxAmount: '334'},
       {token: ARGUS, weight: 550, rarity: 'ultra', minAmount: '110', maxAmount: '220'},
       {token: ARGUS, weight: 50, rarity: 'jackpot', minAmount: '180', maxAmount: '300'},

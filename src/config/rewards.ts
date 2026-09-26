@@ -212,6 +212,29 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted by the operator despite failing the liquidity, volume and age thresholds. It passes every contract check, but the pool is thin — a large win may not be sellable near the quoted price.',
   },
+  /*
+   * REGI and AKIT, added at the operator's direction.
+   *
+   * Both clear every contract-level check — transfer probed against live mainnet state moved
+   * the full amount, zero fee, standard bool return, 18 decimals, real supply. Both fail on
+   * market depth: liquidity is below the published floor (REGI ~$38k, AKIT ~$41k against a
+   * $50k bar), and neither has a measured holder count, which is recorded as zero rather than
+   * estimated and so fails that check too.
+   *
+   * Volume and age both pass, which is the difference between these and $ARCADE: they trade,
+   * they are just thin. A large win still moves the price against whoever won it, and saying
+   * so is the condition for paying them out.
+   */
+  '0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae': {
+    reason: 'Admitted by the operator despite liquidity below the published floor.',
+    disclose:
+      'Admitted despite failing the liquidity and holder-count thresholds. It passes every contract check and trades actively, but the pool is shallow — a large win may not be sellable near the quoted price.',
+  },
+  '0xbc3764348131fe1962f267f442a8fe30459ededd': {
+    reason: 'Admitted by the operator despite liquidity below the published floor.',
+    disclose:
+      'Admitted despite failing the liquidity and holder-count thresholds. It passes every contract check and trades actively, but the pool is shallow — a large win may not be sellable near the quoted price.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

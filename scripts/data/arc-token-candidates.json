@@ -363,6 +363,26 @@
       "liquidityUsd": 139381,
       "holders": 1162,
       "ageDays": 8
+    },
+    {
+      "address": "0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae",
+      "label": "Registrai",
+      "ticker": "REGI",
+      "volume24hUsd": 109415,
+      "liquidityUsd": 37657,
+      "holders": 0,
+      "ageDays": 3,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data from DexScreener 2026-09-26."
+    },
+    {
+      "address": "0xbc3764348131fe1962f267f442a8fe30459ededd",
+      "label": "ArcKit",
+      "ticker": "AKIT",
+      "volume24hUsd": 104055,
+      "liquidityUsd": 41089,
+      "holders": 0,
+      "ageDays": 10,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data from DexScreener 2026-09-26."
     }
   ]
 }

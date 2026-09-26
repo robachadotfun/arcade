@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-25T17:11:19.144Z",
+  "generatedAt": "2026-09-26T08:50:26.704Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,18 +39,18 @@
     }
   ],
   "summary": {
-    "candidates": 37,
+    "candidates": 39,
     "eligible": 15,
-    "rejected": 22,
+    "rejected": 24,
     "rejectedReasonTally": {
       "transferVerified": 10,
       "noTransferFee": 10,
       "standardBoolReturn": 10,
       "meetsAge": 16,
       "tickerCollision": 6,
-      "meetsHolders": 4,
-      "researchFlag": 5,
-      "meetsLiquidity": 8,
+      "meetsHolders": 6,
+      "researchFlag": 7,
+      "meetsLiquidity": 10,
       "meetsVolume": 3
     }
   },
@@ -1571,6 +1571,110 @@
       ],
       "eligible": false,
       "tickerCollision": false
+    },
+    {
+      "address": "0xbc3764348131fe1962f267f442a8fe30459ededd",
+      "onchain": {
+        "name": "ArcKit",
+        "symbol": "AKIT",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x2ee87b0c1406ec331cffc6cea1d163a67316db3a",
+        "amountSent": "521970257054978605065101",
+        "amountReceived": "521970257054978605065101",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 104055,
+        "liquidityUsd": 41089,
+        "holders": 0,
+        "ageDays": 10,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data from DexScreener 2026-09-26."
+    },
+    {
+      "address": "0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae",
+      "onchain": {
+        "name": "Registrai",
+        "symbol": "REGI",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xe2ce6ae24c0513866570d935cf144eb5f593bf7d",
+        "amountSent": "74640996186818210825151",
+        "amountReceived": "74640996186818210825151",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 109415,
+        "liquidityUsd": 37657,
+        "holders": 0,
+        "ageDays": 3,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": true,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data from DexScreener 2026-09-26."
     },
     {
       "address": "0x384c60f98ecd4c26345499345c03d677e40f115e",
