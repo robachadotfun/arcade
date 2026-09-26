@@ -6,10 +6,10 @@
     "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9": 0.001903,
     "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d": 0.0001148,
     "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1": 1.13,
-    "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6": 9.127e-06,
+    "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6": 0.00002858,
     "0x394d38f807ee0027a182216f5e67a15ae441fa2e": 0.004853,
     "0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e": 0.002081
   },
-  "capturedAt": "2026-09-25",
+  "capturedAt": "2026-09-26",
   "source": "dexscreener.com/arc, USDC pairs"
 }

@@ -228,3 +228,122 @@ export function encodeExactInSingle({
     args: [COMMAND_V4_SWAP, [v4Input], deadline],
   })
 }
+
+/**
+ * DEX Router on Arc for pools with custom delta hooks (such as ARCADE).
+ * The ARCADE pool uses hook 0xceb3... which returns delta on beforeSwap;
+ * live swaps in this pool route through ARCADE_DEX_ROUTER via ARCADE_SWAPPER.
+ */
+export const ARCADE_DEX_ROUTER = '0x4E3bcCE28cAf98A143Fd8BD9e4875ccAb3E7bBE0' as const
+export const ARCADE_APPROVE_PROXY = '0x2B9899bC46Bf0eE094225995f4bD496d42f261Af' as const
+export const ARCADE_SWAPPER = '0x42170295F1173c9e5874ea9d00c6d137E1a4f53d' as const
+
+export const DAG_SWAP_ABI = [
+  {
+    type: 'function',
+    name: 'dagSwapTo',
+    stateMutability: 'payable',
+    inputs: [
+      {name: 'amountIn', type: 'uint256'},
+      {name: 'receiver', type: 'address'},
+      {
+        name: 'desc',
+        type: 'tuple',
+        components: [
+          {name: 'srcToken', type: 'uint256'},
+          {name: 'dstToken', type: 'address'},
+          {name: 'amount', type: 'uint256'},
+          {name: 'minReturn', type: 'uint256'},
+          {name: 'flags', type: 'uint256'},
+        ],
+      },
+      {
+        name: 'routes',
+        type: 'tuple[]',
+        components: [
+          {name: 'target', type: 'address[]'},
+          {name: 'tokens', type: 'address[]'},
+          {name: 'amounts', type: 'uint256[]'},
+          {name: 'data', type: 'bytes[]'},
+          {name: 'flags', type: 'uint256'},
+        ],
+      },
+    ],
+    outputs: [{name: '', type: 'uint256'}],
+  },
+] as const
+
+/**
+ * Calldata for swapping USDC for ARCADE via the Arc DEX Router.
+ */
+export function encodeDagSwap({
+  tokenIn,
+  tokenOut,
+  amountIn,
+  minAmountOut,
+  receiver,
+  deadline,
+  key,
+}: {
+  tokenIn: Address
+  tokenOut: Address
+  amountIn: bigint
+  minAmountOut: bigint
+  receiver: Address
+  deadline: bigint
+  key: PoolKey
+}): Hex {
+  const poolKeyData = encodeAbiParameters(
+    [
+      {
+        type: 'tuple[]',
+        components: [
+          {name: 'currency0', type: 'address'},
+          {name: 'currency1', type: 'address'},
+          {name: 'fee', type: 'uint24'},
+          {name: 'tickSpacing', type: 'int24'},
+          {name: 'hooks', type: 'address'},
+          {name: 'hookData', type: 'bytes'},
+        ],
+      },
+    ],
+    [
+      [
+        {
+          currency0: tokenIn,
+          currency1: tokenOut,
+          fee: key.fee,
+          tickSpacing: key.tickSpacing,
+          hooks: key.hooks,
+          hookData: '0x',
+        },
+      ],
+    ],
+  )
+
+  const tokenInUint = BigInt(tokenIn)
+  const routes = [
+    {
+      target: [ARCADE_SWAPPER],
+      tokens: [ARCADE_SWAPPER],
+      amounts: [BigInt('57896044618658097711785602900331631353717821766357806076882964734477131055104')],
+      data: [poolKeyData],
+      flags: tokenInUint,
+    },
+  ]
+
+  const desc = {
+    srcToken: tokenInUint,
+    dstToken: tokenOut,
+    amount: amountIn,
+    minReturn: minAmountOut,
+    flags: deadline,
+  }
+
+  return encodeFunctionData({
+    abi: DAG_SWAP_ABI,
+    functionName: 'dagSwapTo',
+    args: [0n, receiver, desc, routes],
+  })
+}
+
