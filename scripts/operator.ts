@@ -87,6 +87,7 @@ import {REWARD_ASSETS, assetByAddress, labelFor} from '../src/config/rewards'
 
 /** The three ERC-20 calls this file needs, rather than a full ABI import. */
 /** `ArcadeMachineManager.SpinStatus`. Named so a bare 2 never has to be read as "settled". */
+const SPIN_STATUS_PENDING = 1
 const SPIN_STATUS_SETTLED = 2
 const SPIN_STATUS_REFUNDED = 3
 
@@ -1187,6 +1188,9 @@ async function buyback(): Promise<void> {
   heading('Realised result')
   log(`  prices             ${source}`)
   log(`  spins settled      ${measured.settled}`)
+  if (measured.pending > 0) {
+    log(`  spins pending      ${measured.pending}  (excluded — paid for, not yet paid out)`)
+  }
   log(`  revenue            ${measured.revenue.toFixed(4)} USDC`)
   log(`  payouts            ${measured.payoutUsd.toFixed(4)} USDC`)
   log(`  settle gas         ${measured.gas.toFixed(6)} USDC`)
@@ -1544,6 +1548,8 @@ const SCAN_INTERVAL_MS = Number.parseInt(process.env.ARC_SCAN_INTERVAL_MS ?? '12
 type Measured = {
   spins: number
   settled: number
+  /** Paid for but not yet settled. Excluded from revenue; reported so it is visible. */
+  pending: number
   revenue: number
   payoutUsd: number
   gas: number
@@ -1572,6 +1578,7 @@ async function measureResult(
   const byToken = new Map<string, bigint>()
   let settledCount = 0
   let refundedCount = 0
+  let pendingCount = 0
 
   for (let i = 1; i <= total; i++) {
     const s = await pc.readContract({
@@ -1581,21 +1588,32 @@ async function measureResult(
       args: [BigInt(i)],
     })
 
-    // SpinStatus: 0 None, 1 Pending, 2 Settled, 3 Refunded.
-    if (s.status === SPIN_STATUS_REFUNDED) {
-      // A refund hands the player their money back, so it was never revenue. Counting it
-      // would inflate profit, and profit is what authorises buyback spending.
-      refundedCount++
+    /*
+     * SpinStatus: 0 None, 1 Pending, 2 Settled, 3 Refunded.
+     *
+     * Only SETTLED spins count, on both sides of the ledger.
+     *
+     * A refund hands the player their money back, so it was never revenue. A pending spin is
+     * subtler and was the more expensive mistake: its payment is still sitting in the machine
+     * manager — it has not even reached the fee router — and its payout has not happened yet.
+     * Counting its revenue while its liability is still unknown books a profit that the next
+     * settlement immediately spends.
+     *
+     * That is not hypothetical. With 7 settled and 3 pending spins this reported +9.2889 USDC
+     * of profit and a 3.2744 buyback budget, when the three outstanding spins were about to
+     * pay out roughly 4.66 between them. A buyback run at that moment would have spent around
+     * three times what the machine had actually earned.
+     */
+    if (s.status !== SPIN_STATUS_SETTLED) {
+      if (s.status === SPIN_STATUS_REFUNDED) refundedCount++
+      else if (s.status === SPIN_STATUS_PENDING) pendingCount++
       continue
     }
 
     revenueWei += s.pricePaid
-
-    if (s.status === SPIN_STATUS_SETTLED) {
-      settledCount++
-      const key = s.rewardToken.toLowerCase()
-      byToken.set(key, (byToken.get(key) ?? 0n) + s.rewardAmount)
-    }
+    settledCount++
+    const key = s.rewardToken.toLowerCase()
+    byToken.set(key, (byToken.get(key) ?? 0n) + s.rewardAmount)
   }
 
   let payoutUsd = 0
@@ -1628,9 +1646,10 @@ async function measureResult(
   const gasWei = BigInt(settledCount) * parseUnits(SETTLE_GAS_UPPER_BOUND_USDC, NATIVE_USDC_DECIMALS)
 
   return {
-    // Refunded spins are excluded from both sides: no revenue kept, no payout made.
-    spins: total - refundedCount,
+    // Only settled spins are counted, so revenue and payouts always describe the same spins.
+    spins: settledCount,
     settled: settledCount,
+    pending: pendingCount,
     revenue: Number(formatUnits(revenueWei, NATIVE_USDC_DECIMALS)),
     payoutUsd,
     gas: Number(formatUnits(gasWei, NATIVE_USDC_DECIMALS)),
