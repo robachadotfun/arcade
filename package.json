@@ -27,7 +27,8 @@
     "fetch:logos": "tsx scripts/fetch-token-logos.ts",
     "optimize:images": "tsx scripts/optimize-images.ts",
     "assets": "pnpm fetch:media && pnpm fetch:logos && pnpm generate:art && pnpm optimize:images",
-    "operator": "tsx scripts/operator.ts"
+    "operator": "tsx scripts/operator.ts",
+    "buy:token": "tsx scripts/buy-token.ts"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.24",
