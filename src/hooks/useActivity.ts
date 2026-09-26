@@ -70,6 +70,72 @@ function machineNameFor(machineId: bigint): {slug: string; name: string} {
 const NO_RECORDS: ActivityRecord[] = []
 
 /**
+ * One activity read, shared by every component on the page.
+ *
+ * The homepage mounts both the leaderboard and the activity tape, and each used to run its
+ * own chunked scan — up to twelve `eth_getLogs` calls for one page load, against a public
+ * endpoint shared by every visitor. That is what rate-limited the tape into an error box.
+ *
+ * Callers now share a single in-flight request per (deployment, player). A caller wanting
+ * more rows than the cached read covers triggers a fresh one; everyone else reuses it and
+ * slices locally, which is what they were doing with the result anyway.
+ */
+type ActivityCacheEntry = {
+  limit: number
+  fetchedAt: number
+  records: ActivityRecord[] | null
+  inFlight: Promise<ActivityRecord[]> | null
+}
+
+const activityCache = new Map<string, ActivityCacheEntry>()
+
+/** Long enough to cover a page's components mounting, far shorter than the 45s poll. */
+const SHARED_FRESH_MS = 30_000
+
+async function sharedActivity(
+  key: string,
+  limit: number,
+  fetcher: () => Promise<ActivityRecord[]>,
+): Promise<ActivityRecord[]> {
+  const entry = activityCache.get(key)
+  const covers = entry !== undefined && entry.limit >= limit
+
+  if (covers && entry.records && Date.now() - entry.fetchedAt < SHARED_FRESH_MS) {
+    return entry.records
+  }
+  if (covers && entry.inFlight) return entry.inFlight
+
+  const inFlight = fetcher()
+  activityCache.set(key, {limit, fetchedAt: Date.now(), records: null, inFlight})
+
+  try {
+    const records = await inFlight
+    activityCache.set(key, {limit, fetchedAt: Date.now(), records, inFlight: null})
+    return records
+  } catch (err) {
+    // A failed read must not be cached as an answer, or every later caller inherits it.
+    activityCache.delete(key)
+    throw err
+  }
+}
+
+/**
+ * Turns a transport failure into something a player can act on.
+ *
+ * viem's message carries the endpoint URL, the full request body and its own version. That
+ * is the right amount of detail in a terminal and the wrong amount on a page someone is
+ * trying to read their spin off — it looks like the site broke open. The distinction that
+ * actually matters to a reader is kept: this is a failure to read, not an empty tape.
+ */
+function describeReadFailure(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err)
+  if (/\b429\b|rate limit|exceeds defined limit/i.test(raw)) {
+    return 'Arc’s public RPC is rate-limiting this page right now. The tape reloads on its own — nothing has been lost.'
+  }
+  return 'Could not reach Arc to read activity. This is a connection problem, not an empty tape.'
+}
+
+/**
  * The shape of a decoded log this hook relies on.
  *
  * Fetching two events in one `getLogs` returns a union viem cannot narrow for us, so the
@@ -111,8 +177,7 @@ export function useActivity({
 
     const manager = managerAddress
 
-    async function load() {
-      try {
+    async function fetchRecords(): Promise<ActivityRecord[]> {
         const latest = await publicClient!.getBlockNumber()
 
         const settled: SpinLog[] = []
@@ -123,7 +188,6 @@ export function useActivity({
         // an `eventName` discriminator, which halves the request count for free.
         let toBlock = latest
         for (let chunk = 0; chunk < MAX_CHUNKS; chunk += 1) {
-          if (cancelled) return
           const fromBlock = toBlock > MAX_LOG_RANGE ? toBlock - MAX_LOG_RANGE : 0n
 
           const logs = await publicClient!.getLogs({
@@ -150,7 +214,9 @@ export function useActivity({
           toBlock = fromBlock - 1n
         }
 
-        if (cancelled) return
+        // No cancellation check here: this read is shared, so one component unmounting must
+        // not discard a result the others are waiting on. Cancellation is applied where the
+        // result reaches state instead.
 
         // Settled spins carry the outcome; requested-only spins are still pending.
         const settledIds = new Set(
@@ -243,15 +309,18 @@ export function useActivity({
         }
 
         records.sort((a, b) => b.timestamp - a.timestamp)
+        return records
+    }
+
+    async function load() {
+      try {
+        const records = await sharedActivity(`${manager}|${player ?? ''}`, limit, fetchRecords)
+        if (cancelled) return
         setChainState({records, loading: false, error: null})
       } catch (err) {
         if (cancelled) return
-        setChainState({
-          records: NO_RECORDS,
-          loading: false,
-          // Distinguishing "we could not read" from "nothing happened" is the point.
-          error: err instanceof Error ? err.message : 'Could not read activity from Arc.',
-        })
+        // Distinguishing "we could not read" from "nothing happened" is the point.
+        setChainState({records: NO_RECORDS, loading: false, error: describeReadFailure(err)})
       }
     }
 
