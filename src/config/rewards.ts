@@ -333,6 +333,24 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite failing the liquidity, volume and holder-count thresholds. It passes every contract check, but both the pool and daily volume are thin — selling a full win may move the price against you.',
   },
+  /*
+   * TIDE, added at the operator's direction.
+   *
+   * Clears every contract-level check — transfer probed against live mainnet state moved the
+   * full amount, zero fee, standard bool return, 18 decimals, no ticker collision — and clears
+   * the liquidity floor comfortably at roughly $83k. Volume is what it fails, at about a third
+   * of the threshold.
+   *
+   * It is also the only reward here that trades on a single venue. There is no Uniswap pool
+   * for it at any fee tier; it exists on Arc's own AMM and nowhere else. That matters to a
+   * winner in a way the liquidity number alone does not say: selling means using that one
+   * market, so the disclosure names it rather than leaving the reader to discover it.
+   */
+  '0x92395d0cd51bb504a39e53105cb6862948af1b8e': {
+    reason: 'Admitted by the operator despite volume below the published floor.',
+    disclose:
+      'Admitted despite failing the volume and holder-count thresholds. It passes every contract check and the pool is reasonably deep, but it trades on one venue only — Arc’s own AMM — so selling a win means using that single market.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

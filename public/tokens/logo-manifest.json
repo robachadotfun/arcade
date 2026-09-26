@@ -1,9 +1,9 @@
 {
   "note": "Real, published logos for verified Arcade reward tokens, keyed by contract address. No logo here is drawn, generated or approximated — a token with no published mark keeps a typographic monogram instead. Regenerate with: pnpm fetch:logos",
-  "generatedAt": "2026-09-26T23:02:55.307Z",
+  "generatedAt": "2026-09-26T23:54:39.019Z",
   "summary": {
-    "verifiedTokens": 22,
-    "withLogo": 20,
+    "verifiedTokens": 23,
+    "withLogo": 21,
     "withMonogram": 2
   },
   "logos": [
@@ -15,7 +15,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e.png",
       "contentType": "image/webp",
       "bytes": 4248,
-      "fetchedAt": "2026-09-26T23:02:44.522Z"
+      "fetchedAt": "2026-09-26T23:54:25.668Z"
     },
     {
       "address": "0xbc3764348131fe1962f267f442a8fe30459ededd",
@@ -25,7 +25,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/L6QtegT2yJZIwVtz?width=800&height=800&quality=95&format=auto",
       "contentType": "image/jpeg",
       "bytes": 63564,
-      "fetchedAt": "2026-09-26T23:02:51.737Z"
+      "fetchedAt": "2026-09-26T23:54:33.797Z"
     },
     {
       "address": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6",
@@ -35,7 +35,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/9dhxTRXjhTmOl5Ua?width=800&height=800&quality=95&format=auto",
       "contentType": "image/jpeg",
       "bytes": 9654,
-      "fetchedAt": "2026-09-26T23:02:54.149Z"
+      "fetchedAt": "2026-09-26T23:54:37.268Z"
     },
     {
       "address": "0x07704b06981ea962b87296362a1281484d160000",
@@ -45,7 +45,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x07704b06981ea962b87296362a1281484d160000.png",
       "contentType": "image/png",
       "bytes": 82787,
-      "fetchedAt": "2026-09-26T23:02:47.271Z"
+      "fetchedAt": "2026-09-26T23:54:27.989Z"
     },
     {
       "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
@@ -55,7 +55,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbe0cad585ea2d13de2f4e36376be755c0afd8b97.png",
       "contentType": "image/webp",
       "bytes": 20912,
-      "fetchedAt": "2026-09-26T23:02:49.064Z"
+      "fetchedAt": "2026-09-26T23:54:29.273Z"
     },
     {
       "address": "0xa3de1dda14e4b3ce2eee2f8c1e49315effc15be2",
@@ -65,7 +65,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/UFEZCviZkGZAdWmq?width=800&height=800&quality=95&format=auto",
       "contentType": "image/png",
       "bytes": 11900,
-      "fetchedAt": "2026-09-26T23:02:45.387Z"
+      "fetchedAt": "2026-09-26T23:54:26.306Z"
     },
     {
       "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52",
@@ -75,7 +75,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52.png",
       "contentType": "image/png",
       "bytes": 68700,
-      "fetchedAt": "2026-09-26T23:02:48.060Z"
+      "fetchedAt": "2026-09-26T23:54:28.699Z"
     },
     {
       "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
@@ -85,7 +85,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xece5ca8bf9220718e5727754026757512212cb3c.png",
       "contentType": "image/png",
       "bytes": 100128,
-      "fetchedAt": "2026-09-26T23:02:36.448Z"
+      "fetchedAt": "2026-09-26T23:54:18.635Z"
     },
     {
       "address": "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d",
@@ -95,7 +95,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/mYllrf8vWmPItjyD?width=800&height=800&quality=95&format=auto",
       "contentType": "image/jpeg",
       "bytes": 21265,
-      "fetchedAt": "2026-09-26T23:02:50.154Z"
+      "fetchedAt": "2026-09-26T23:54:29.938Z"
     },
     {
       "address": "0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2",
@@ -105,7 +105,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2.png",
       "contentType": "image/webp",
       "bytes": 26900,
-      "fetchedAt": "2026-09-26T23:02:53.529Z"
+      "fetchedAt": "2026-09-26T23:54:35.490Z"
     },
     {
       "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
@@ -116,7 +116,7 @@
       "contentType": null,
       "bytes": null,
       "note": "Circle Wrapped Bitcoin (cirBTC) publishes no logo through any source checked, including the Arc token image service and CoinGecko. It keeps its typographic monogram rather than being given an invented mark.",
-      "fetchedAt": "2026-09-26T23:02:34.699Z"
+      "fetchedAt": "2026-09-26T23:54:16.931Z"
     },
     {
       "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
@@ -126,7 +126,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xeb64987643db71c76b2a2be7e723decc995e5b37.png",
       "contentType": "image/png",
       "bytes": 91929,
-      "fetchedAt": "2026-09-26T23:02:43.367Z"
+      "fetchedAt": "2026-09-26T23:54:24.859Z"
     },
     {
       "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b",
@@ -136,7 +136,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b.png",
       "contentType": "image/png",
       "bytes": 25872,
-      "fetchedAt": "2026-09-26T23:02:46.148Z"
+      "fetchedAt": "2026-09-26T23:54:26.976Z"
     },
     {
       "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
@@ -146,7 +146,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1.png",
       "contentType": "image/png",
       "bytes": 3080,
-      "fetchedAt": "2026-09-26T23:02:39.677Z"
+      "fetchedAt": "2026-09-26T23:54:21.767Z"
     },
     {
       "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
@@ -156,7 +156,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x394d38f807ee0027a182216f5e67a15ae441fa2e.png",
       "contentType": "image/webp",
       "bytes": 12266,
-      "fetchedAt": "2026-09-26T23:02:40.240Z"
+      "fetchedAt": "2026-09-26T23:54:22.348Z"
     },
     {
       "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
@@ -166,7 +166,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0x2164bb17a2d38c1b5170e987b2c0416df1efc752.png",
       "contentType": "image/png",
       "bytes": 79282,
-      "fetchedAt": "2026-09-26T23:02:42.563Z"
+      "fetchedAt": "2026-09-26T23:54:24.112Z"
     },
     {
       "address": "0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae",
@@ -176,7 +176,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/NfOt1s6lpm328OaK?width=800&height=800&quality=95&format=auto",
       "contentType": "image/png",
       "bytes": 11013,
-      "fetchedAt": "2026-09-26T23:02:52.692Z"
+      "fetchedAt": "2026-09-26T23:54:34.654Z"
     },
     {
       "address": "0x5b7fd6e1dd3b1b47888252cad8eef3ae2b4fc6d7",
@@ -187,7 +187,17 @@
       "contentType": null,
       "bytes": null,
       "note": "No logo retrieved. Tried: Arc token image service (api.tollylabs.com): HTTP 404. Falls back to a typographic monogram rather than an invented mark.",
-      "fetchedAt": "2026-09-26T23:02:55.005Z"
+      "fetchedAt": "2026-09-26T23:54:38.717Z"
+    },
+    {
+      "address": "0x92395d0cd51bb504a39e53105cb6862948af1b8e",
+      "symbol": "TIDE",
+      "file": "0x92395d0cd51bb504a39e53105cb6862948af1b8e.png",
+      "source": "DexScreener token info (api.dexscreener.com)",
+      "sourceUrl": "https://cdn.dexscreener.com/cms/images/aewL1HOJj2r1mS45?width=800&height=800&quality=95&format=auto",
+      "contentType": "image/png",
+      "bytes": 100583,
+      "fetchedAt": "2026-09-26T23:54:32.672Z"
     },
     {
       "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
@@ -197,7 +207,7 @@
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbc43ce8dec648ea298c4275559b81d6261c90b67.png",
       "contentType": "image/png",
       "bytes": 32205,
-      "fetchedAt": "2026-09-26T23:02:37.206Z"
+      "fetchedAt": "2026-09-26T23:54:19.263Z"
     },
     {
       "address": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9",
@@ -207,7 +217,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/T5lG67HWbVIY1rkx?width=800&height=800&quality=95&format=auto",
       "contentType": "image/jpeg",
       "bytes": 262576,
-      "fetchedAt": "2026-09-26T23:02:50.852Z"
+      "fetchedAt": "2026-09-26T23:54:30.597Z"
     },
     {
       "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
@@ -218,7 +228,7 @@
       "contentType": "image/png",
       "bytes": 67346,
       "note": "Wrapped Ether (WETH). The canonical WETH mark.",
-      "fetchedAt": "2026-09-26T23:02:38.660Z"
+      "fetchedAt": "2026-09-26T23:54:20.621Z"
     },
     {
       "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
@@ -228,7 +238,7 @@
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/Yjsv52RwLPprvUJn?width=800&height=800&quality=95&format=auto",
       "contentType": "image/jpeg",
       "bytes": 349207,
-      "fetchedAt": "2026-09-26T23:02:41.413Z"
+      "fetchedAt": "2026-09-26T23:54:23.250Z"
     }
   ]
 }
