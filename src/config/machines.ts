@@ -75,6 +75,7 @@ const COOL = '0xeb64987643db71c76b2a2be7e723decc995e5b37' as const
 const REGI = '0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae' as const
 const AKIT = '0xbc3764348131fe1962f267f442a8fe30459ededd' as const
 const BUILDERS = '0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2' as const
+const ARCLIGHT = '0xa3de1dda14e4b3ce2eee2f8c1e49315effc15be2' as const
 const ARCAT = '0x07704b06981ea962b87296362a1281484d160000' as const
 const LONG = '0x2164bb17a2d38c1b5170e987b2c0416df1efc752' as const
 const CRCL = '0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b' as const
@@ -178,16 +179,17 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: COOL, weight: 1120, rarity: 'common', minAmount: '450', maxAmount: '930'},
-      {token: ARCADE_TOKEN_ADDR, weight: 1120, rarity: 'common', minAmount: '40000', maxAmount: '80000'},
-      {token: FAZE, weight: 940, rarity: 'common', minAmount: '200', maxAmount: '430'},
-      {token: AF, weight: 940, rarity: 'common', minAmount: '470', maxAmount: '1000'},
-      {token: BCAT, weight: 940, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
+      {token: COOL, weight: 1000, rarity: 'common', minAmount: '450', maxAmount: '930'},
+      {token: ARCADE_TOKEN_ADDR, weight: 1000, rarity: 'common', minAmount: '40000', maxAmount: '80000'},
+      {token: FAZE, weight: 840, rarity: 'common', minAmount: '200', maxAmount: '430'},
+      {token: AF, weight: 840, rarity: 'common', minAmount: '470', maxAmount: '1000'},
+      {token: BCAT, weight: 840, rarity: 'common', minAmount: '8000', maxAmount: '16400'},
       // Sized to the same ~$0.95–$2.00 band as every other common, at current prices.
-      {token: REGI, weight: 890, rarity: 'common', minAmount: '5900', maxAmount: '12500'},
-      {token: AKIT, weight: 890, rarity: 'common', minAmount: '5000', maxAmount: '10500'},
-      {token: BUILDERS, weight: 900, rarity: 'common', minAmount: '36000', maxAmount: '76000'},
-      {token: UDCAT, weight: 760, rarity: 'common', minAmount: '480', maxAmount: '980'},
+      {token: REGI, weight: 795, rarity: 'common', minAmount: '5900', maxAmount: '12500'},
+      {token: AKIT, weight: 795, rarity: 'common', minAmount: '5000', maxAmount: '10500'},
+      {token: BUILDERS, weight: 805, rarity: 'common', minAmount: '36000', maxAmount: '76000'},
+      {token: ARCLIGHT, weight: 900, rarity: 'common', minAmount: '660', maxAmount: '1380'},
+      {token: UDCAT, weight: 685, rarity: 'common', minAmount: '480', maxAmount: '980'},
       {token: TOLLY, weight: 900, rarity: 'rare', minAmount: '160', maxAmount: '334'},
       {token: ARGUS, weight: 550, rarity: 'ultra', minAmount: '110', maxAmount: '220'},
       {token: ARGUS, weight: 50, rarity: 'jackpot', minAmount: '180', maxAmount: '300'},

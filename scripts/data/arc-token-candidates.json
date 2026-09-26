@@ -513,6 +513,16 @@
       "holders": 0,
       "ageDays": 60,
       "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data from DexScreener 2026-09-27; Uniswap v3 pool against USDC."
+    },
+    {
+      "address": "0xa3de1dda14e4b3ce2eee2f8c1e49315effc15be2",
+      "label": "Arclight Finance",
+      "ticker": "ARCLIGHT",
+      "volume24hUsd": 249700,
+      "liquidityUsd": 117678,
+      "holders": 1023,
+      "ageDays": 6,
+      "note": "Holders measured by replaying every Transfer since launch: 19,097 transfers over 175 log windows with no failed window, 1,023 addresses left holding a positive balance. Market data from DexScreener 2026-09-27."
     }
   ]
 }
