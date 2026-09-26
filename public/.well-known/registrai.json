@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "claim": {
+    "builder": "0x08f538334f68ddbd28cda4d433de7ff9a646236b",
+    "source": "domain:www.myarcade.fun",
+    "deployers": [],
+    "country": "JP",
+    "chain": 5042,
+    "issued": "2026-09-26"
+  },
+  "signatures": {
+    "builder": "0xc6572aeb350899be70f4c7d231c0e320c2079bf84dbd22d4cf1049d1a205256b3cd5385ee5851cea2d3f96e854013d328dc9132433c69e9ae232d4fbb028eb2b1b",
+    "deployers": {}
+  }
+}
