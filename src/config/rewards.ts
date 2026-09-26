@@ -235,6 +235,86 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite failing the liquidity and holder-count thresholds. It passes every contract check and trades actively, but the pool is shallow — a large win may not be sellable near the quoted price.',
   },
+  /*
+   * Synthra sStocks, admitted at the operator's direction.
+   *
+   * Tokenised equity exposure bridged from Robinhood Chain to Arc over LayerZero, backed by
+   * stock tokens locked on the source chain. Unlike every other tokenised-equity product
+   * checked for this project, these are permissionless ERC-20s: sNVDA's transfer was probed
+   * against live mainnet state and moved the full amount, returning true. That is what makes
+   * them payable as a prize at all — a whitelisted security token reverts when the winner is
+   * whoever happened to spin.
+   *
+   * Two things a player is owed here, and neither is waivable by listing them below.
+   *
+   * The contract-level checks still gate entry. Most of these have no bridged supply yet, so
+   * no holder exists to probe, and `contractChecksPass` keeps them out until one does — an
+   * admission cannot vouch for a transfer nobody has observed.
+   *
+   * And Synthra's own documentation calls this a pre-audit release. A reward that depends on
+   * a bridge's backing is exposed to that bridge, which is a different risk from a token that
+   * simply trades thinly, so the disclosure says so rather than reusing the liquidity wording.
+   */
+  '0x5b7fd6e1dd3b1b47888252cad8eef3ae2b4fc6d7': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised NVDA exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x22afca741bba52d1f11f6d10fdf636a4d721458e': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised META exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x74a7456575fb29035077b42c5b2813ca98052358': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised PLTR exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x549288985bfafb9d869f1190615099ebef7a7838': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised GOOGL exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x4abee9e7606e24f1c0e047f315c4189a16bf1eb6': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised AAPL exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0xc5a6e295c1f1a889e92067c81432e8b83cffff81': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised MSFT exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x0dfa611e17c9df6ccacc50f2d444d9518df00942': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised INTC exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x4f4b12590e5f4f85a98e630a133761f324044499': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised AMZN exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0x2f212f3372a83bf9dbeeb5b47bde519e18b80d85': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised AMD exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0xfb7dd9f2f7e4fbac3519601c23db3d65523aa7f0': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised TSLA exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0xbe4d721ea71ae69d7f0c1d119d58899db6b22347': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised COIN exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
+  '0xf8108d3c5f6df74bc4e7aaeed430dc1e53ecde37': {
+    reason: 'Synthra sStock, bridged equity exposure admitted by the operator.',
+    disclose:
+      'Tokenised AVGO exposure bridged to Arc by Synthra and backed by stock tokens locked on Robinhood Chain — not a direct holding, and redeemable only through that bridge. Synthra describe it as a pre-audit release. Thin or absent Arc liquidity means a win may not be sellable near the quoted price.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

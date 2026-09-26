@@ -383,6 +383,126 @@
       "holders": 0,
       "ageDays": 10,
       "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data from DexScreener 2026-09-26."
+    },
+    {
+      "address": "0x5b7fd6e1dd3b1b47888252cad8eef3ae2b4fc6d7",
+      "label": "Synthra NVIDIA",
+      "ticker": "sNVDA",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x22afca741bba52d1f11f6d10fdf636a4d721458e",
+      "label": "Synthra Meta",
+      "ticker": "sMETA",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x74a7456575fb29035077b42c5b2813ca98052358",
+      "label": "Synthra Palantir",
+      "ticker": "sPLTR",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x549288985bfafb9d869f1190615099ebef7a7838",
+      "label": "Synthra Alphabet",
+      "ticker": "sGOOGL",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x4abee9e7606e24f1c0e047f315c4189a16bf1eb6",
+      "label": "Synthra Apple",
+      "ticker": "sAAPL",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0xc5a6e295c1f1a889e92067c81432e8b83cffff81",
+      "label": "Synthra Microsoft",
+      "ticker": "sMSFT",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x0dfa611e17c9df6ccacc50f2d444d9518df00942",
+      "label": "Synthra Intel",
+      "ticker": "sINTC",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x4f4b12590e5f4f85a98e630a133761f324044499",
+      "label": "Synthra Amazon",
+      "ticker": "sAMZN",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0x2f212f3372a83bf9dbeeb5b47bde519e18b80d85",
+      "label": "Synthra AMD",
+      "ticker": "sAMD",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0xfb7dd9f2f7e4fbac3519601c23db3d65523aa7f0",
+      "label": "Synthra Tesla",
+      "ticker": "sTSLA",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0xbe4d721ea71ae69d7f0c1d119d58899db6b22347",
+      "label": "Synthra Coinbase",
+      "ticker": "sCOIN",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
+    },
+    {
+      "address": "0xf8108d3c5f6df74bc4e7aaeed430dc1e53ecde37",
+      "label": "Synthra Broadcom",
+      "ticker": "sAVGO",
+      "volume24hUsd": 0,
+      "liquidityUsd": 0,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Synthra sStock bridged from Robinhood Chain via LayerZero. Contract verified live on Arc 2026-09-27. Market fields are zero because they are genuinely zero: no Arc pool exists and bridged supply is ~0. Pre-audit release per Synthra docs."
     }
   ]
 }
