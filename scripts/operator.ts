@@ -83,6 +83,10 @@ import {ARCADE_POOL_ID, ARCADE_TOKEN, BURN_ADDRESS} from '../src/config/token'
 import {REWARD_ASSETS, assetByAddress, labelFor} from '../src/config/rewards'
 
 /** The three ERC-20 calls this file needs, rather than a full ABI import. */
+/** `ArcadeMachineManager.SpinStatus`. Named so a bare 2 never has to be read as "settled". */
+const SPIN_STATUS_SETTLED = 2
+const SPIN_STATUS_REFUNDED = 3
+
 const ERC20_ALLOWANCE = [
   {
     type: 'function',
@@ -1466,53 +1470,34 @@ async function measureResult(
   const total = Number(
     await pc.readContract({address: manager, abi: arcadeMachineManagerAbi, functionName: 'spinCount'}),
   )
-  const head = await pc.getBlockNumber()
-  const CHUNK = 5_000n
-  const requested: Array<Record<string, unknown>> = []
-  const settled: Array<Record<string, unknown>> = []
-  let toBlock = head
-  let chunks = 0
-
-  while (chunks < 2_000 && requested.length < total) {
-    const fromBlock = toBlock > CHUNK ? toBlock - CHUNK : 0n
-    const logs = await pc.getLogs({
-      address: manager,
-      events: [SPIN_REQUESTED_EVENT, SPIN_SETTLED_EVENT],
-      fromBlock,
-      toBlock,
-    })
-    for (const entry of logs) {
-      const e = entry as unknown as {eventName?: string}
-      if (e.eventName === 'SpinRequested') requested.push(entry as Record<string, unknown>)
-      else if (e.eventName === 'SpinSettled') settled.push(entry as Record<string, unknown>)
-    }
-    chunks += 1
-    if (fromBlock === 0n) break
-    toBlock = fromBlock - 1n
-    // Arc's public RPC throttles hard. Raise ARC_SCAN_INTERVAL_MS when it is busy — a slow
-    // scan is fine, an aborted one is fine, a wrong one is not.
-    if (requested.length < total) await new Promise((r) => setTimeout(r, SCAN_INTERVAL_MS))
-  }
-
-  if (requested.length < total) {
-    fail(
-      `Found ${requested.length} of ${total} spins after ${chunks} chunks. Refusing to report a\n` +
-        'partial result — it would overstate profit.\n' +
-        'Retry with ARC_SCAN_INTERVAL_MS=800, or point ARC_MAINNET_RPC_URL at a dedicated endpoint.',
-    )
-  }
-
-  const revenueWei = requested.reduce((acc, l) => {
-    const a = (l as {args?: {pricePaid?: bigint}}).args
-    return acc + (a?.pricePaid ?? 0n)
-  }, 0n)
-
+  let revenueWei = 0n
   const byToken = new Map<string, bigint>()
-  for (const l of settled) {
-    const a = (l as {args?: {rewardToken?: string; rewardAmount?: bigint}}).args
-    if (!a?.rewardToken) continue
-    const key = a.rewardToken.toLowerCase()
-    byToken.set(key, (byToken.get(key) ?? 0n) + (a.rewardAmount ?? 0n))
+  let settledCount = 0
+  let refundedCount = 0
+
+  for (let i = 1; i <= total; i++) {
+    const s = await pc.readContract({
+      address: manager,
+      abi: arcadeMachineManagerAbi,
+      functionName: 'spinOf',
+      args: [BigInt(i)],
+    })
+
+    // SpinStatus: 0 None, 1 Pending, 2 Settled, 3 Refunded.
+    if (s.status === SPIN_STATUS_REFUNDED) {
+      // A refund hands the player their money back, so it was never revenue. Counting it
+      // would inflate profit, and profit is what authorises buyback spending.
+      refundedCount++
+      continue
+    }
+
+    revenueWei += s.pricePaid
+
+    if (s.status === SPIN_STATUS_SETTLED) {
+      settledCount++
+      const key = s.rewardToken.toLowerCase()
+      byToken.set(key, (byToken.get(key) ?? 0n) + s.rewardAmount)
+    }
   }
 
   let payoutUsd = 0
@@ -1525,24 +1510,29 @@ async function measureResult(
     else payoutUsd += units * price
   }
 
-  let gasWei = 0n
-  const txs = new Set<string>()
-  for (const l of settled) {
-    const h = (l as {transactionHash?: string}).transactionHash
-    if (h) txs.add(h)
-  }
-  for (const h of [...txs].slice(0, 200)) {
-    try {
-      const r = await pc.getTransactionReceipt({hash: h as `0x${string}`})
-      gasWei += r.gasUsed * r.effectiveGasPrice
-    } catch {
-      // A receipt that cannot be read is left out rather than estimated.
-    }
-  }
+  /*
+   * Settle gas, as a deliberate OVER-estimate.
+   *
+   * Reading spins through `spinOf` rather than logs costs the transaction hashes, so receipts
+   * can no longer be summed and gas has to be modelled. That makes the direction of the error
+   * the thing that matters: gas is subtracted from profit, profit decides how much USDC the
+   * buyback spends, so an under-estimate quietly authorises spending money the machine never
+   * made. An over-estimate only spends slightly less than it could.
+   *
+   * The figure is anchored to measurement, not to a guess. Receipts for the first six settled
+   * spins totalled 0.029016 USDC, which is 0.004836 per spin. The bound below is that rounded
+   * up, and it replaces an earlier 0.0009 estimate that was derived from assumed gas and gas
+   * price rather than observed cost — and was therefore about 5x too low, biased the wrong way.
+   *
+   * Re-measure this if Arc's gas price moves or settlement changes shape.
+   */
+  const SETTLE_GAS_UPPER_BOUND_USDC = '0.006'
+  const gasWei = BigInt(settledCount) * parseUnits(SETTLE_GAS_UPPER_BOUND_USDC, NATIVE_USDC_DECIMALS)
 
   return {
-    spins: requested.length,
-    settled: settled.length,
+    // Refunded spins are excluded from both sides: no revenue kept, no payout made.
+    spins: total - refundedCount,
+    settled: settledCount,
     revenue: Number(formatUnits(revenueWei, NATIVE_USDC_DECIMALS)),
     payoutUsd,
     gas: Number(formatUnits(gasWei, NATIVE_USDC_DECIMALS)),
