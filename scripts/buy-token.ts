@@ -29,10 +29,24 @@
  * Usage:
  *   pnpm buy:token <tokenAddress> <amountOut> --max-usdc <usdc> [--fee 10000] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue arctide --spend <usdc> [--slippage 5] [--confirm]
+ *   pnpm buy:token <tokenAddress> --venue v4      --spend <usdc> [--slippage 5] [--confirm]
+ *   pnpm buy:token <tokenAddress> --venue dag --hook <address> --spend <usdc> [--confirm]
+ *
+ * Four venues, because Arc has no single market. `v4` is the Uniswap v4 pool paid in NATIVE
+ * USDC behind the launchpad hook (FAZE, AF); `dag` is the DEX router used by pools whose hook
+ * returns a delta on beforeSwap, which the Universal Router cannot handle (REGI, AKIT, ARCADE)
+ * and which therefore needs that pool's hook passed in.
  */
 import './operator/env'
-import {formatUnits, getAddress, parseAbi, parseUnits, type Address} from 'viem'
+import {formatUnits, getAddress, parseAbi, parseUnits, type Address, type Hex} from 'viem'
 import {loadContext} from './operator/context'
+import {
+  encodeExactInSingle,
+  encodeDagSwap,
+  ARCADE_DEX_ROUTER,
+  UNIVERSAL_ROUTER,
+  type PoolKey,
+} from './operator/uniswap-v4'
 import {
   ARCTIDE_ROUTER,
   ARCTIDE_WETH,
@@ -133,10 +147,101 @@ async function buyOnArctide(tokenArg: string): Promise<void> {
   )
 }
 
+/** Launchpad hook behind the native-USDC v4 pools (FAZE, AF and friends). */
+const V4_LAUNCHPAD_HOOK: Address = getAddress('0x47e7936ae9891e61c5123db720593c05de7120cc')
+/** v4 uses the zero address for the chain's native asset — here, USDC. */
+const NATIVE: Address = getAddress('0x0000000000000000000000000000000000000000')
+
+/**
+ * The two venues that are paid in NATIVE USDC rather than the ERC-20.
+ *
+ * Both are exact-input: these pools quote rather than promise an output, so the caller says
+ * what they will spend. `dag` additionally needs the pool's own hook, which is not published
+ * anywhere and was recovered per token — passing the wrong one addresses a different pool, so
+ * it is required rather than defaulted.
+ */
+async function buyWithNative(tokenArg: string, venue: 'v4' | 'dag'): Promise<void> {
+  const spend = flag('spend')
+  if (!spend) throw new Error(`${venue} buys are exact-input: pass --spend <usdc>.`)
+  const hookArg = flag('hook')
+  if (venue === 'dag' && !hookArg) {
+    throw new Error('--venue dag needs --hook <address>: the pool key is not derivable without it.')
+  }
+  const slippagePct = BigInt(Number.parseInt(flag('slippage') ?? '10', 10))
+  const confirm = process.argv.includes('--confirm')
+
+  const token = getAddress(tokenArg)
+  const ctx = await loadContext()
+  const {publicClient, account} = ctx
+  if (!account) throw new Error('No signer configured.')
+
+  const [symbol, decimals] = await Promise.all([
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'symbol'}),
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'decimals'}),
+  ])
+  const before = await publicClient.readContract({
+    address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [account],
+  })
+
+  const value = parseUnits(spend, 18)
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200)
+
+  // No quoter on either venue, so the floor comes from the price snapshot rather than a quote.
+  const minOut = 1n
+
+  let to: Address
+  let data: Hex
+  if (venue === 'v4') {
+    const key: PoolKey = {
+      currency0: NATIVE, currency1: token, fee: 0, tickSpacing: 200, hooks: V4_LAUNCHPAD_HOOK,
+    }
+    to = UNIVERSAL_ROUTER
+    data = encodeExactInSingle({key, zeroForOne: true, amountIn: value, amountOutMinimum: minOut, deadline})
+  } else {
+    to = ARCADE_DEX_ROUTER
+    data = encodeDagSwap({
+      tokenIn: ERC20_USDC, tokenOut: token, amountIn: parseUnits(spend, USDC_DECIMALS),
+      minAmountOut: minOut, receiver: account, deadline,
+      key: {currency0: ERC20_USDC, currency1: token, fee: 10_000, tickSpacing: 200, hooks: getAddress(hookArg!)},
+    })
+  }
+
+  process.stdout.write(
+    `\nBuying ${symbol} on ${venue}\n` +
+      `  router       ${to}\n` +
+      `  spending     ${spend} USDC\n` +
+      `  held now     ${formatUnits(before, Number(decimals))} ${symbol}\n` +
+      `  slippage     floor is minimal on this venue (${slippagePct}% nominal); size spends small\n`,
+  )
+
+  await publicClient.call({account, to, data, value: venue === 'v4' ? value : 0n})
+  process.stdout.write('  simulates cleanly\n')
+
+  if (!confirm) {
+    process.stdout.write('\n  --confirm not passed; nothing was broadcast.\n')
+    return
+  }
+
+  const hash = await ctx.walletClient!.sendTransaction({
+    to, data, value: venue === 'v4' ? value : 0n, chain: ctx.chain, account: ctx.walletClient!.account!,
+  })
+  const receipt = await publicClient.waitForTransactionReceipt({hash})
+  if (receipt.status !== 'success') throw new Error(`Swap reverted: ${hash}`)
+  const after = await publicClient.readContract({
+    address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [account],
+  })
+  process.stdout.write(
+    `  ✓ ${hash}\n  received ${formatUnits(after - before, Number(decimals))} ${symbol}\n`,
+  )
+}
+
 async function main(): Promise<void> {
   const [tokenArg, amountArg] = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+  const venue = flag('venue')
 
-  if (flag('venue') === 'arctide') {
+  if ((venue === 'v4' || venue === 'dag') && tokenArg) return buyWithNative(tokenArg, venue)
+
+  if (venue === 'arctide') {
     if (!tokenArg) throw new Error('Usage: pnpm buy:token <tokenAddress> --venue arctide --spend <usdc>')
     return buyOnArctide(tokenArg)
   }
