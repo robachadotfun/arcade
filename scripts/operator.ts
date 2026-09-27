@@ -56,6 +56,11 @@ import {
 } from './operator/uniswap-v4'
 import {ERC20_USDC_DECIMALS} from '../src/config/network'
 import {
+  ACHSWAP_NATIVE_USDC_ADAPTER,
+  encodeAchswapBuy,
+  quoteViaSimulation,
+} from './operator/achswap'
+import {
   arcadeMachineManagerAbi,
   commitRevealRandomnessAbi,
   feeRouterAbi,
@@ -1390,6 +1395,127 @@ async function buyback(): Promise<void> {
   )
   log(`  expected out       ~${expectedOut.toFixed(2)} ARCADE at ${arcadePrice} USDC`)
   log(`  minimum accepted   ${formatUnits(minOut, ARCADE_TOKEN.decimals)} ARCADE (${slippagePct}% slippage)`)
+
+  /*
+   * AchSwap route.
+   *
+   * Returns early rather than threading a venue flag through the encoder below: the two pay in
+   * different USDC representations and share nothing but the burn that follows.
+   *
+   * The floor is set by simulating the real call rather than by the price snapshot. That is
+   * strictly better here, not merely different — a stale snapshot is what made the last buyback
+   * demand 51,752 ARCADE for money that bought 35,300, and a simulation cannot go stale because
+   * it IS the swap.
+   */
+  const venueFlag = process.argv.indexOf('--venue')
+  if (venueFlag !== -1 && process.argv[venueFlag + 1] === 'achswap') {
+    /*
+     * Derived from amountIn, never from the float again.
+     *
+     * The adapter reverts with "value" unless msg.value is exactly the route's 6-decimal
+     * amount scaled to 18. Computing both from budgetUsd independently does not guarantee
+     * that: toFixed(6) truncates where toFixed(18) keeps going, so 4.679283137955667193
+     * became 4_679_283 in the route and 4679283137955667193 in the value — off by the tail
+     * that the 6-decimal side had dropped. One is now scaled from the other.
+     */
+    const amountIn18 = amountIn * 10n ** BigInt(NATIVE_USDC_DECIMALS - ERC20_USDC_DECIMALS)
+    const expected = await quoteViaSimulation(
+      (args) => ctx.publicClient.call(args) as Promise<{data?: `0x${string}`}>,
+      {amountIn6: amountIn, amountIn18, account: ctx.account!},
+    )
+    // indexOf returns -1 when the flag is absent, and argv[0] is the node binary — parsing
+    // that gives NaN, which BigInt rejects. Default before indexing, not after.
+    const slipFlag = process.argv.indexOf('--slippage')
+    const slipRaw = slipFlag === -1 ? '5' : (process.argv[slipFlag + 1] ?? '5')
+    const parsedSlip = Number.parseInt(slipRaw, 10)
+    const slipPct = BigInt(Number.isFinite(parsedSlip) ? parsedSlip : 5)
+    const floor = (expected * (100n - slipPct)) / 100n
+
+    heading('AchSwap')
+    log(`  adapter            ${ACHSWAP_NATIVE_USDC_ADAPTER}`)
+    log('  quoted by          simulating the swap, not a price snapshot')
+    log(`  expected out       ${formatUnits(expected, ARCADE_TOKEN.decimals)} ARCADE`)
+    log(`  minimum accepted   ${formatUnits(floor, ARCADE_TOKEN.decimals)} ARCADE (${slipPct}% slippage)`)
+
+    const achData = encodeAchswapBuy({
+      amountIn6: amountIn,
+      amountOutMinimum: floor,
+      recipient: ctx.account!,
+      deadline: BigInt(Math.floor(Date.now() / 1000) + 1200),
+    })
+    await ctx.publicClient.call({
+      account: ctx.account!,
+      to: ACHSWAP_NATIVE_USDC_ADAPTER,
+      data: achData,
+      value: amountIn18,
+    })
+    log('  swap simulates cleanly')
+
+    if (!confirm) {
+      heading('Dry run')
+      log('  --confirm was not passed, so nothing was broadcast.')
+      return
+    }
+
+    const beforeArcade = await ctx.publicClient.readContract({
+      address: ARCADE_TOKEN.address,
+      abi: ERC20_MINI,
+      functionName: 'balanceOf',
+      args: [ctx.account!],
+    })
+    heading('Buy')
+    await send(ctx, `swap ${budgetUsd.toFixed(6)} USDC for ARCADE via AchSwap`, () =>
+      ctx.walletClient!.sendTransaction({
+        to: ACHSWAP_NATIVE_USDC_ADAPTER,
+        data: achData,
+        value: amountIn18,
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
+    const afterArcade = await ctx.publicClient.readContract({
+      address: ARCADE_TOKEN.address,
+      abi: ERC20_MINI,
+      functionName: 'balanceOf',
+      args: [ctx.account!],
+    })
+    const gained = afterArcade - beforeArcade
+    log(`    bought ${formatUnits(gained, ARCADE_TOKEN.decimals)} ARCADE`)
+    if (gained <= 0n) {
+      fail('Swap confirmed but the ARCADE balance did not increase. Not burning anything.')
+    }
+
+    heading('Burn')
+    await send(
+      ctx,
+      `transfer ${formatUnits(gained, ARCADE_TOKEN.decimals)} ARCADE to the burn address`,
+      () =>
+        ctx.walletClient!.writeContract({
+          address: ARCADE_TOKEN.address,
+          abi: ERC20_TRANSFER,
+          functionName: 'transfer',
+          args: [BURN_ADDRESS, gained],
+          chain: ctx.chain,
+          account: ctx.walletClient!.account!,
+        }),
+    )
+    writeBuybackLedger({
+      spentUsd: ledger.spentUsd + budgetUsd,
+      runs: ledger.runs + 1,
+      updatedAt: new Date().toISOString(),
+    })
+    const totalBurned = await ctx.publicClient.readContract({
+      address: ARCADE_TOKEN.address,
+      abi: ERC20_MINI,
+      functionName: 'balanceOf',
+      args: [BURN_ADDRESS],
+    })
+    heading('Done')
+    log(`  spent              ${budgetUsd.toFixed(4)} USDC through AchSwap`)
+    log(`  burned this run    ${formatUnits(gained, ARCADE_TOKEN.decimals)} ARCADE`)
+    log(`  burned in total    ${formatUnits(totalBurned, ARCADE_TOKEN.decimals)} ARCADE`)
+    return
+  }
 
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 600)
   const data = isDexRouter
