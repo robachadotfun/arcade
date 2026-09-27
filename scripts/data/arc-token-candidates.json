@@ -534,6 +534,16 @@
       "holders": 222,
       "ageDays": 11,
       "note": "Holders measured by replaying every Transfer since launch: 222 addresses hold a positive balance \u2014 genuinely below the 1,000 threshold, not merely unmeasured. Trades only on Arctide (its own AMM); no Uniswap pool at any fee tier. Market data DexScreener 2026-09-27."
+    },
+    {
+      "address": "0x3ead4e80e9e5bc0e01682d7ee74c4881b040d3ea",
+      "label": "Kairo",
+      "ticker": "KAIRO",
+      "volume24hUsd": 185499,
+      "liquidityUsd": 180934,
+      "holders": 0,
+      "ageDays": 20,
+      "researchFlag": "Holder count being measured from Transfer logs; recorded as 0 until it is. Market data DexScreener 2026-09-27; Uniswap v3 pool against USDC."
     }
   ]
 }

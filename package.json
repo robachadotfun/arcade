@@ -28,7 +28,8 @@
     "optimize:images": "tsx scripts/optimize-images.ts",
     "assets": "pnpm fetch:media && pnpm fetch:logos && pnpm generate:art && pnpm optimize:images",
     "operator": "tsx scripts/operator.ts",
-    "buy:token": "tsx scripts/buy-token.ts"
+    "buy:token": "tsx scripts/buy-token.ts",
+    "check:bands": "tsx scripts/check-bands.ts"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.24",
