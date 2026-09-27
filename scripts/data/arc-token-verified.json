@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-27T13:16:35.633Z",
+  "generatedAt": "2026-09-27T22:19:37.815Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,19 +39,19 @@
     }
   ],
   "summary": {
-    "candidates": 46,
+    "candidates": 47,
     "eligible": 15,
-    "rejected": 31,
+    "rejected": 32,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
       "meetsAge": 18,
       "tickerCollision": 6,
-      "meetsHolders": 12,
-      "researchFlag": 11,
-      "meetsVolume": 10,
-      "meetsLiquidity": 16,
+      "meetsHolders": 13,
+      "researchFlag": 12,
+      "meetsVolume": 11,
+      "meetsLiquidity": 17,
       "hasNonZeroSupply": 2
     }
   },
@@ -1517,6 +1517,59 @@
       "eligible": false,
       "tickerCollision": true,
       "researchFlag": "DUPLICATE-TICKER: second token also called Architects. Included to prove collision detection."
+    },
+    {
+      "address": "0xf1b72b46e2364356c1d8343590e4c0deefb19c3b",
+      "onchain": {
+        "name": "Wave Protocol",
+        "symbol": "WAVE",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x3db88affb909228a6f134074bdfdeaee28dc207a",
+        "amountSent": "814645387534053511302703",
+        "amountReceived": "814645387534053511302703",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 55501,
+        "liquidityUsd": 47622,
+        "holders": 0,
+        "ageDays": 12,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not yet measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
     },
     {
       "address": "0x8b903a668f39ca057a452041eea60cd7173b9e3c",

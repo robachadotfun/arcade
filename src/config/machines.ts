@@ -80,6 +80,7 @@ const TIDE = '0x92395d0cd51bb504a39e53105cb6862948af1b8e' as const
 const POLL = '0xf76b1d00bd3d63a37246b5f512074e864010e33d' as const
 const KAIRO = '0x3ead4e80e9e5bc0e01682d7ee74c4881b040d3ea' as const
 const ARCBAT = '0xbe0cad585ea2d13de2f4e36376be755c0afd8b97' as const
+const WAVE = '0xf1b72b46e2364356c1d8343590e4c0deefb19c3b' as const
 const ARCAT = '0x07704b06981ea962b87296362a1281484d160000' as const
 const LONG = '0x2164bb17a2d38c1b5170e987b2c0416df1efc752' as const
 const CRCL = '0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b' as const
@@ -183,24 +184,25 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: COOL, weight: 685, rarity: 'common', minAmount: '675', maxAmount: '1421'},
+      {token: COOL, weight: 635, rarity: 'common', minAmount: '855', maxAmount: '1800'},
       // Resized after ARCADE rose ~35%: the token band is fixed, so the VALUE it pays drifts
       // with price. At 40000–80000 it had reached $1.68–$3.35 against the ~$0.95–$2.00 every
       // other common pays, pulling the machine's payout ratio from 77.7% to 81.0%.
-      {token: ARCADE_TOKEN_ADDR, weight: 685, rarity: 'common', minAmount: '16402', maxAmount: '34530'},
-      {token: FAZE, weight: 575, rarity: 'common', minAmount: '200', maxAmount: '430'},
-      {token: AF, weight: 575, rarity: 'common', minAmount: '725', maxAmount: '1526'},
-      {token: BCAT, weight: 575, rarity: 'common', minAmount: '78642', maxAmount: '165563'},
+      {token: ARCADE_TOKEN_ADDR, weight: 635, rarity: 'common', minAmount: '19979', maxAmount: '42061'},
+      {token: FAZE, weight: 535, rarity: 'common', minAmount: '278', maxAmount: '586'},
+      {token: AF, weight: 535, rarity: 'common', minAmount: '725', maxAmount: '1526'},
+      {token: BCAT, weight: 535, rarity: 'common', minAmount: '78642', maxAmount: '165563'},
       // Sized to the same ~$0.95–$2.00 band as every other common, at current prices.
-      {token: REGI, weight: 540, rarity: 'common', minAmount: '12611', maxAmount: '26550'},
-      {token: AKIT, weight: 540, rarity: 'common', minAmount: '7711', maxAmount: '16234'},
-      {token: BUILDERS, weight: 550, rarity: 'common', minAmount: '29150', maxAmount: '61369'},
-      {token: ARCLIGHT, weight: 615, rarity: 'common', minAmount: '660', maxAmount: '1380'},
-      {token: TIDE, weight: 600, rarity: 'common', minAmount: '2.0', maxAmount: '4.2'},
-      {token: POLL, weight: 665, rarity: 'common', minAmount: '1250', maxAmount: '2630'},
-      {token: KAIRO, weight: 735, rarity: 'common', minAmount: '586', maxAmount: '1235'},
-      {token: ARCBAT, weight: 700, rarity: 'common', minAmount: '9100', maxAmount: '19150'},
-      {token: UDCAT, weight: 460, rarity: 'common', minAmount: '480', maxAmount: '980'},
+      {token: REGI, weight: 500, rarity: 'common', minAmount: '12611', maxAmount: '26550'},
+      {token: AKIT, weight: 500, rarity: 'common', minAmount: '9545', maxAmount: '20094'},
+      {token: BUILDERS, weight: 510, rarity: 'common', minAmount: '29150', maxAmount: '61369'},
+      {token: ARCLIGHT, weight: 570, rarity: 'common', minAmount: '660', maxAmount: '1380'},
+      {token: TIDE, weight: 555, rarity: 'common', minAmount: '3.1', maxAmount: '6.5'},
+      {token: POLL, weight: 615, rarity: 'common', minAmount: '1250', maxAmount: '2630'},
+      {token: KAIRO, weight: 680, rarity: 'common', minAmount: '1002', maxAmount: '2109'},
+      {token: ARCBAT, weight: 650, rarity: 'common', minAmount: '9100', maxAmount: '19150'},
+      {token: WAVE, weight: 620, rarity: 'common', minAmount: '5500', maxAmount: '11600'},
+      {token: UDCAT, weight: 425, rarity: 'common', minAmount: '480', maxAmount: '980'},
       {token: TOLLY, weight: 900, rarity: 'rare', minAmount: '160', maxAmount: '334'},
       {token: ARGUS, weight: 550, rarity: 'ultra', minAmount: '110', maxAmount: '220'},
       {token: ARGUS, weight: 50, rarity: 'jackpot', minAmount: '180', maxAmount: '300'},

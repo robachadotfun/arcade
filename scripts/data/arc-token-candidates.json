@@ -551,6 +551,16 @@
       "holders": 798,
       "ageDays": 20,
       "note": "Holders measured by replaying every Transfer since launch: 798 addresses hold a positive balance \u2014 genuinely below the 1,000 threshold, not merely unmeasured. Market data DexScreener 2026-09-27."
+    },
+    {
+      "address": "0xf1b72b46e2364356c1d8343590e4c0deefb19c3b",
+      "label": "Wave Protocol",
+      "ticker": "WAVE",
+      "volume24hUsd": 55501,
+      "liquidityUsd": 47622,
+      "holders": 0,
+      "ageDays": 12,
+      "researchFlag": "Holder count not yet measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
     }
   ]
 }

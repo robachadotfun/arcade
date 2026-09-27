@@ -417,6 +417,24 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted before its market thinned, and kept with that stated: 24h volume has fallen to roughly $1k with about $11k of liquidity. A typical win is small enough to sell today, but this pool is shrinking and may not support one later.',
   },
+  /*
+   * WAVE, admitted at the operator's direction.
+   *
+   * Passes every contract-level check — transfer probed against live mainnet state, full
+   * amount, zero fee, standard bool return, 18 decimals, no ticker collision.
+   *
+   * Misses liquidity narrowly, at about $48k against a $50k floor, and volume by roughly half.
+   * The liquidity figure is close enough that it will cross back and forth on ordinary market
+   * movement, which is worth knowing when reading the disclosure: this is a token near the
+   * line rather than far below it, unlike BCAT or ARCBAT.
+   *
+   * Holder count is unmeasured and recorded as zero rather than estimated.
+   */
+  '0xf1b72b46e2364356c1d8343590e4c0deefb19c3b': {
+    reason: 'Admitted by the operator despite liquidity and volume below the published floors.',
+    disclose:
+      'Admitted despite falling short on liquidity and volume — about $48k and $56k against floors of $50k and $100k — and with an unmeasured holder count. It passes every contract check, and sits near the liquidity line rather than far below it.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */
