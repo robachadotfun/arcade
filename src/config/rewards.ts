@@ -351,6 +351,30 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite failing the volume and holder-count thresholds. It passes every contract check and the pool is reasonably deep, but it trades on one venue only — Arc’s own AMM — so selling a win means using that single market.',
   },
+  /*
+   * KAIRO, added at the operator's direction ahead of its holder count.
+   *
+   * It clears every contract-level check — transfer probed against live mainnet state moved
+   * the full amount, zero fee, standard bool return, 18 decimals, no ticker collision — and
+   * both market thresholds by a wide margin: liquidity around $181k against a $50k floor and
+   * 24h volume around $185k against $100k. At twenty days it is also the oldest token admitted
+   * here.
+   *
+   * The one open check is the holder count, and it is open because counting holders means
+   * replaying twenty days of Transfer events, which had not finished when this went in. It is
+   * recorded as zero rather than estimated: writing a plausible number to make the row pass
+   * would defeat the point of having the check.
+   *
+   * This entry is designed to expire. `admissible` returns true on eligibility before it ever
+   * consults this list, so the moment the count is measured and written the token reads
+   * eligible and this becomes dead weight — at which point it should be deleted rather than
+   * left to publish a disclosure that is no longer true. That is what happened with ARCLIGHT.
+   */
+  '0x3ead4e80e9e5bc0e01682d7ee74c4881b040d3ea': {
+    reason: 'Admitted ahead of a measured holder count; every other check passes.',
+    disclose:
+      'Admitted while its holder count is still being measured — recorded as zero rather than estimated. It passes every contract check and clears both the liquidity and volume thresholds comfortably.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */
