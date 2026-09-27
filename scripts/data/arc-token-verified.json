@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-27T02:55:04.563Z",
+  "generatedAt": "2026-09-27T10:52:07.867Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -40,18 +40,18 @@
   ],
   "summary": {
     "candidates": 45,
-    "eligible": 16,
-    "rejected": 29,
+    "eligible": 17,
+    "rejected": 28,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
-      "meetsAge": 19,
+      "meetsAge": 18,
       "tickerCollision": 6,
       "meetsHolders": 11,
       "researchFlag": 11,
-      "meetsLiquidity": 14,
       "meetsVolume": 8,
+      "meetsLiquidity": 14,
       "hasNonZeroSupply": 2
     }
   },
@@ -645,6 +645,53 @@
         "liquidityUsd": 94100,
         "holders": 6700,
         "ageDays": 99,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [],
+      "eligible": true,
+      "tickerCollision": false
+    },
+    {
+      "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
+      "onchain": {
+        "name": "Polly",
+        "symbol": "POLL",
+        "decimals": 18,
+        "totalSupply": "946359259259259259212665393",
+        "hasCode": true,
+        "codeSize": 2198
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x6146322277b87cee75c06cfb998875ab23b63b4d",
+        "amountSent": "48161081580394262010651",
+        "amountReceived": "48161081580394262010651",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 120661,
+        "liquidityUsd": 77160,
+        "holders": 11500,
+        "ageDays": 12,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },
@@ -1288,55 +1335,6 @@
         "liquidityUsd": 78800,
         "holders": 9800,
         "ageDays": 1,
-        "source": "https://www.arcscreener.live/",
-        "capturedAt": "2026-09-18"
-      },
-      "checks": {
-        "hasContractCode": true,
-        "exposesSymbol": true,
-        "exposesName": true,
-        "exposesDecimals": true,
-        "hasNonZeroSupply": true,
-        "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
-        "meetsLiquidity": true,
-        "meetsVolume": true,
-        "meetsHolders": true,
-        "meetsAge": false
-      },
-      "failureReasons": [
-        "meetsAge"
-      ],
-      "eligible": false,
-      "tickerCollision": false
-    },
-    {
-      "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
-      "onchain": {
-        "name": "Polly",
-        "symbol": "POLL",
-        "decimals": 18,
-        "totalSupply": "946359259259259259212665393",
-        "hasCode": true,
-        "codeSize": 2198
-      },
-      "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0x6faf3c89a39cc29e6c4ada6b8344b61e53e3aa3e",
-        "amountSent": "12719139653840237524911",
-        "amountReceived": "12719139653840237524911",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
-      },
-      "marketSnapshot": {
-        "volume24hUsd": 1830000,
-        "liquidityUsd": 73700,
-        "holders": 11500,
-        "ageDays": 2,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },

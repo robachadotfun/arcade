@@ -192,10 +192,11 @@
       "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
       "label": "Polly",
       "ticker": "POLL",
-      "volume24hUsd": 1830000,
-      "liquidityUsd": 73700,
+      "volume24hUsd": 120661,
+      "liquidityUsd": 77160,
       "holders": 11500,
-      "ageDays": 2
+      "ageDays": 12,
+      "note": "Liquidity, volume and age refreshed from DexScreener 2026-09-27. Holder count (11500) is ARC Screener\u2019s 2026-09-18 capture, not re-measured \u2014 it is an order of magnitude above the 1,000 threshold, so a drift of days does not change the outcome, but it is not a figure taken today. Trades on Synthra\u2019s own DEX."
     },
     {
       "address": "0xa163d7624da3b5d9182c50eab5b8cd247ae861bb",
