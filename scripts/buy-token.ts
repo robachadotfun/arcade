@@ -78,6 +78,25 @@ function flag(name: string): string | undefined {
   return i === -1 ? undefined : process.argv[i + 1]
 }
 
+async function sendWithRetry<T>(fn: () => Promise<T>, retries = 5, delayMs = 3000): Promise<T> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      const rateLimited = /\b429\b|rate limit|exceeds defined limit/i.test(message)
+      if (rateLimited && i < retries - 1) {
+        process.stdout.write(`  … endpoint rate limited; retrying in ${(delayMs / 1000).toFixed(1)}s\n`)
+        await new Promise((r) => setTimeout(r, delayMs))
+        delayMs = Math.floor(delayMs * 1.5)
+        continue
+      }
+      throw err
+    }
+  }
+  throw new Error('Unreachable')
+}
+
 async function buyOnArctide(tokenArg: string): Promise<void> {
   const spend = flag('spend')
   if (!spend) throw new Error('Arctide buys are exact-input: pass --spend <usdc>.')
@@ -134,9 +153,11 @@ async function buyOnArctide(tokenArg: string): Promise<void> {
     return
   }
 
-  const hash = await ctx.walletClient!.sendTransaction({
-    to: ARCTIDE_ROUTER, data, value, chain: ctx.chain, account: ctx.walletClient!.account!,
-  })
+  const hash = await sendWithRetry(() =>
+    ctx.walletClient!.sendTransaction({
+      to: ARCTIDE_ROUTER, data, value, chain: ctx.chain, account: ctx.walletClient!.account!,
+    }),
+  )
   const receipt = await publicClient.waitForTransactionReceipt({hash})
   if (receipt.status !== 'success') throw new Error(`Swap reverted: ${hash}`)
   const after = await publicClient.readContract({
@@ -222,9 +243,11 @@ async function buyWithNative(tokenArg: string, venue: 'v4' | 'dag'): Promise<voi
     return
   }
 
-  const hash = await ctx.walletClient!.sendTransaction({
-    to, data, value: venue === 'v4' ? value : 0n, chain: ctx.chain, account: ctx.walletClient!.account!,
-  })
+  const hash = await sendWithRetry(() =>
+    ctx.walletClient!.sendTransaction({
+      to, data, value: venue === 'v4' ? value : 0n, chain: ctx.chain, account: ctx.walletClient!.account!,
+    }),
+  )
   const receipt = await publicClient.waitForTransactionReceipt({hash})
   if (receipt.status !== 'success') throw new Error(`Swap reverted: ${hash}`)
   const after = await publicClient.readContract({
@@ -306,17 +329,21 @@ async function main(): Promise<void> {
   })
   if (allowance < amountInMaximum) {
     process.stdout.write('  → approving USDC for the router\n')
-    const approveHash = await ctx.walletClient!.writeContract({
-      address: ERC20_USDC, abi: ERC20_ABI, functionName: 'approve',
-      args: [V3_ROUTER, amountInMaximum], chain: ctx.chain, account: ctx.walletClient!.account!,
-    })
+    const approveHash = await sendWithRetry(() =>
+      ctx.walletClient!.writeContract({
+        address: ERC20_USDC, abi: ERC20_ABI, functionName: 'approve',
+        args: [V3_ROUTER, amountInMaximum], chain: ctx.chain, account: ctx.walletClient!.account!,
+      }),
+    )
     await publicClient.waitForTransactionReceipt({hash: approveHash})
   }
 
-  const hash = await ctx.walletClient!.writeContract({
-    address: V3_ROUTER, abi: ROUTER_ABI, functionName: 'exactOutputSingle',
-    args: [params], chain: ctx.chain, account: ctx.walletClient!.account!,
-  })
+  const hash = await sendWithRetry(() =>
+    ctx.walletClient!.writeContract({
+      address: V3_ROUTER, abi: ROUTER_ABI, functionName: 'exactOutputSingle',
+      args: [params], chain: ctx.chain, account: ctx.walletClient!.account!,
+    }),
+  )
   const receipt = await publicClient.waitForTransactionReceipt({hash})
   if (receipt.status !== 'success') throw new Error(`Swap reverted: ${hash}`)
 

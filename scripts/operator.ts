@@ -165,13 +165,30 @@ async function send(
 ): Promise<Hex> {
   if (!ctx.walletClient) throw new ConfigError('No signer configured.')
   log(`  → ${description}`)
-  const hash = await run()
-  const receipt = await ctx.publicClient.waitForTransactionReceipt({hash})
+  let hash: Hex | null = null
+  let delayMs = 2500
+  for (let i = 0; i < 5; i++) {
+    try {
+      hash = await run()
+      break
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      const rateLimited = /\b429\b|rate limit|exceeds defined limit/i.test(message)
+      if (rateLimited && i < 4) {
+        log(`    … endpoint rate limited; retrying in ${(delayMs / 1000).toFixed(1)}s`)
+        await new Promise((r) => setTimeout(r, delayMs))
+        delayMs = Math.floor(delayMs * 1.5)
+        continue
+      }
+      throw err
+    }
+  }
+  const receipt = await ctx.publicClient.waitForTransactionReceipt({hash: hash!})
   if (receipt.status !== 'success') {
     throw new Error(`Transaction reverted: ${hash}`)
   }
   log(`    ✓ ${hash}  (block ${receipt.blockNumber})`)
-  return hash
+  return hash!
 }
 
 // ─────────────────────────────────────────────────────────────────────── status
@@ -1991,7 +2008,7 @@ async function settleSpinFor(
 const POLL_MS = Number.parseInt(process.env.ARC_REVEAL_POLL_MS ?? '300', 10)
 
 /** Slowest the loop will back off to when the endpoint is refusing work. */
-const POLL_MAX_MS = Number.parseInt(process.env.ARC_REVEAL_POLL_MAX_MS ?? '4000', 10)
+const POLL_MAX_MS = Number.parseInt(process.env.ARC_REVEAL_POLL_MAX_MS ?? '10000', 10)
 
 /**
  * The reveal daemon.
@@ -2151,8 +2168,11 @@ async function reveal(): Promise<void> {
         saveStore(store)
         await settleSpinFor(ctx, requestId, fromBlock, head)
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        const rateLimited = /\b429\b|rate limit|exceeds defined limit/i.test(message)
+        if (rateLimited) throw err
         // Another caller may have revealed it first — reveal is permissionless by design.
-        log(`    ! reveal of ${key} failed: ${err instanceof Error ? err.message.slice(0, 160) : String(err)}`)
+        log(`    ! reveal of ${key} failed: ${message.slice(0, 160)}`)
       }
     }
   }
@@ -2175,13 +2195,13 @@ async function reveal(): Promise<void> {
       await tick()
       // Successful tick: ease back toward the floor rather than snapping, so one good tick
       // in a bad patch does not put the loop straight back into the limiter.
-      interval = Math.max(POLL_MS, Math.floor(interval * 0.7))
+      interval = Math.max(POLL_MS, Math.floor(interval * 0.8))
       await new Promise((r) => setTimeout(r, interval))
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       const rateLimited = /\b429\b|rate limit|exceeds defined limit/i.test(message)
       if (rateLimited) {
-        interval = Math.min(POLL_MAX_MS, Math.max(POLL_MS * 2, interval * 2))
+        interval = Math.min(POLL_MAX_MS, Math.max(2_500, interval * 2))
         log(`  … endpoint is rate limiting; backing off to ${interval}ms`)
       } else {
         log(`  ! tick failed: ${message.slice(0, 160)}`)

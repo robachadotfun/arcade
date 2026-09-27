@@ -352,28 +352,27 @@ const ADMITTED_COLLISIONS: Record<
       'Admitted despite failing the volume and holder-count thresholds. It passes every contract check and the pool is reasonably deep, but it trades on one venue only — Arc’s own AMM — so selling a win means using that single market.',
   },
   /*
-   * KAIRO, added at the operator's direction ahead of its holder count.
+   * KAIRO, admitted at the operator's direction.
    *
-   * It clears every contract-level check — transfer probed against live mainnet state moved
-   * the full amount, zero fee, standard bool return, 18 decimals, no ticker collision — and
-   * both market thresholds by a wide margin: liquidity around $181k against a $50k floor and
-   * 24h volume around $185k against $100k. At twenty days it is also the oldest token admitted
-   * here.
+   * Clears every contract-level check — transfer probed against live mainnet state, full
+   * amount, zero fee, standard bool return, 18 decimals, no ticker collision — and clears both
+   * market thresholds by a wide margin: liquidity around $181k against a $50k floor and 24h
+   * volume around $185k against $100k. At twenty days it is the oldest token admitted here.
    *
-   * The one open check is the holder count, and it is open because counting holders means
-   * replaying twenty days of Transfer events, which had not finished when this went in. It is
-   * recorded as zero rather than estimated: writing a plausible number to make the row pass
-   * would defeat the point of having the check.
+   * It fails on holders alone, and that is now a measurement rather than a gap: replaying
+   * every Transfer since launch leaves 798 addresses holding a positive balance, against a
+   * threshold of 1,000. Close, but under it.
    *
-   * This entry is designed to expire. `admissible` returns true on eligibility before it ever
-   * consults this list, so the moment the count is measured and written the token reads
-   * eligible and this becomes dead weight — at which point it should be deleted rather than
-   * left to publish a disclosure that is no longer true. That is what happened with ARCLIGHT.
+   * This entry was first written while the count was still running, saying so. It is rewritten
+   * rather than deleted because the answer came back a fail — had it come back above the
+   * threshold the token would read eligible and this would have been removed outright, which
+   * is what happened with ARCLIGHT. A disclosure has to describe what is actually known at the
+   * time anyone reads it.
    */
   '0x3ead4e80e9e5bc0e01682d7ee74c4881b040d3ea': {
-    reason: 'Admitted ahead of a measured holder count; every other check passes.',
+    reason: 'Admitted by the operator despite a holder count below the published floor.',
     disclose:
-      'Admitted while its holder count is still being measured — recorded as zero rather than estimated. It passes every contract check and clears both the liquidity and volume thresholds comfortably.',
+      'Admitted despite falling short of the holder-count threshold — 798 holders against a floor of 1,000, measured from onchain transfers. It passes every contract check and clears both the liquidity and volume thresholds comfortably.',
   },
 }
 

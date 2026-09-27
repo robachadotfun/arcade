@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-27T12:01:30.349Z",
+  "generatedAt": "2026-09-27T12:53:17.051Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -49,7 +49,7 @@
       "meetsAge": 18,
       "tickerCollision": 6,
       "meetsHolders": 12,
-      "researchFlag": 12,
+      "researchFlag": 11,
       "meetsVolume": 8,
       "meetsLiquidity": 14,
       "hasNonZeroSupply": 2
@@ -968,9 +968,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x8e2a9d954e7c88a00d3571eeab3d5e733a309426",
-        "amountSent": "199116973116378209500",
-        "amountReceived": "199116973116378209500",
+        "holderTested": "0x10668efac28a8f7e475449569d58ad60d1ed0f9f",
+        "amountSent": "630716741949251713486110",
+        "amountReceived": "630716741949251713486110",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -979,7 +979,7 @@
       "marketSnapshot": {
         "volume24hUsd": 185499,
         "liquidityUsd": 180934,
-        "holders": 0,
+        "holders": 798,
         "ageDays": 20,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
@@ -1000,12 +1000,10 @@
         "meetsAge": true
       },
       "failureReasons": [
-        "meetsHolders",
-        "researchFlag"
+        "meetsHolders"
       ],
       "eligible": false,
-      "tickerCollision": false,
-      "researchFlag": "Holder count being measured from Transfer logs; recorded as 0 until it is. Market data DexScreener 2026-09-27; Uniswap v3 pool against USDC."
+      "tickerCollision": false
     },
     {
       "address": "0x5849fd68a097b3ee7d87ce88a0fcbb76857648ff",
