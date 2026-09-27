@@ -374,6 +374,27 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite falling short of the holder-count threshold — 798 holders against a floor of 1,000, measured from onchain transfers. It passes every contract check and clears both the liquidity and volume thresholds comfortably.',
   },
+  /*
+   * ARCBAT, admitted at the operator's direction.
+   *
+   * Passes every contract-level check: transfer probed against live mainnet state moved the
+   * full amount, zero fee, standard bool return, 18 decimals, no ticker collision. At two
+   * months it is the oldest token here.
+   *
+   * It fails liquidity and volume, and the way it came to fail is worth recording. Its
+   * verification record read ELIGIBLE until this was written, on a 2026-09-18 capture showing
+   * $221k of 24h volume and $52.5k of liquidity. Refreshed against live data the same token
+   * shows about $9.5k and $32.8k — volume down roughly 96% in nine days.
+   *
+   * Nothing was wrong with the original check; the market moved underneath it. That is the
+   * same failure mode as a drifting reward band, one level up: an eligibility decision is a
+   * measurement with a date on it, and this one had gone stale while still reading as a pass.
+   */
+  '0xbe0cad585ea2d13de2f4e36376be755c0afd8b97': {
+    reason: 'Admitted by the operator despite liquidity and volume below the published floors.',
+    disclose:
+      'Admitted despite failing the liquidity and volume thresholds. It passes every contract check, but 24h volume is roughly a tenth of the floor — a large win may be hard to sell near the quoted price.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

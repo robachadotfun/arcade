@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-27T12:53:17.051Z",
+  "generatedAt": "2026-09-27T13:03:06.591Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -40,8 +40,8 @@
   ],
   "summary": {
     "candidates": 46,
-    "eligible": 17,
-    "rejected": 29,
+    "eligible": 16,
+    "rejected": 30,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
@@ -50,8 +50,8 @@
       "tickerCollision": 6,
       "meetsHolders": 12,
       "researchFlag": 11,
-      "meetsVolume": 8,
-      "meetsLiquidity": 14,
+      "meetsVolume": 9,
+      "meetsLiquidity": 15,
       "hasNonZeroSupply": 2
     }
   },
@@ -739,53 +739,6 @@
         "liquidityUsd": 70000,
         "holders": 1700,
         "ageDays": 8,
-        "source": "https://www.arcscreener.live/",
-        "capturedAt": "2026-09-18"
-      },
-      "checks": {
-        "hasContractCode": true,
-        "exposesSymbol": true,
-        "exposesName": true,
-        "exposesDecimals": true,
-        "hasNonZeroSupply": true,
-        "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
-        "meetsLiquidity": true,
-        "meetsVolume": true,
-        "meetsHolders": true,
-        "meetsAge": true
-      },
-      "failureReasons": [],
-      "eligible": true,
-      "tickerCollision": false
-    },
-    {
-      "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
-      "onchain": {
-        "name": "ARC BAT",
-        "symbol": "ARCBAT",
-        "decimals": 18,
-        "totalSupply": "1000000000000000000000000000",
-        "hasCode": true,
-        "codeSize": 1896
-      },
-      "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0x67652474943234928b287fee9a3cc6a443adefcd",
-        "amountSent": "12956764474613458477234",
-        "amountReceived": "12956764474613458477234",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
-      },
-      "marketSnapshot": {
-        "volume24hUsd": 221200,
-        "liquidityUsd": 52500,
-        "holders": 2000,
-        "ageDays": 49,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },
@@ -1925,6 +1878,56 @@
       "eligible": false,
       "tickerCollision": true,
       "researchFlag": "DUPLICATE-TICKER + <1h old."
+    },
+    {
+      "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
+      "onchain": {
+        "name": "ARC BAT",
+        "symbol": "ARCBAT",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 1896
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xa032d9816b83cf9ca5f90a26da65fd571a3c7416",
+        "amountSent": "228650356374265689857299",
+        "amountReceived": "228650356374265689857299",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 9511,
+        "liquidityUsd": 32751,
+        "holders": 2000,
+        "ageDays": 60,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume"
+      ],
+      "eligible": false,
+      "tickerCollision": false
     },
     {
       "address": "0x0bffa97f774824e9da843699aedd2835cb1b8022",

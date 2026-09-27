@@ -256,10 +256,11 @@
       "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
       "label": "ARC BAT",
       "ticker": "ARCBAT",
-      "volume24hUsd": 221200,
-      "liquidityUsd": 52500,
+      "volume24hUsd": 9511,
+      "liquidityUsd": 32751,
       "holders": 2000,
-      "ageDays": 49
+      "ageDays": 60,
+      "note": "Liquidity, volume and age refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 showing $221k volume and $52.5k liquidity; volume has since fallen roughly 96%. Holder count is still that 2026-09-18 capture and has not been re-measured."
     },
     {
       "address": "0x0bffa97f774824e9da843699aedd2835cb1b8022",
