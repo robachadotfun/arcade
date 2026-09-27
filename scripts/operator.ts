@@ -543,6 +543,16 @@ async function fund(symbolArg: string | undefined, amountArg: string | undefined
     },
     {
       type: 'function',
+      name: 'transfer',
+      stateMutability: 'nonpayable',
+      inputs: [
+        {name: 'to', type: 'address'},
+        {name: 'amount', type: 'uint256'},
+      ],
+      outputs: [{name: '', type: 'bool'}],
+    },
+    {
+      type: 'function',
       name: 'balanceOf',
       stateMutability: 'view',
       inputs: [{name: 'account', type: 'address'}],
@@ -563,27 +573,46 @@ async function fund(symbolArg: string | undefined, amountArg: string | undefined
     )
   }
 
-  await send(ctx, `approve(vault, ${amountArg} ${labelFor(asset)})`, () =>
-    ctx.walletClient!.writeContract({
-    address: asset.address as Address,
-    abi: erc20,
-    functionName: 'approve',
-    args: [ctx.contracts.prizeVault, amount],
-    chain: ctx.chain,
-    account: ctx.walletClient!.account!,
-    }),
-  )
+  try {
+    await send(ctx, `approve(vault, ${amountArg} ${labelFor(asset)})`, () =>
+      ctx.walletClient!.writeContract({
+        address: asset.address as Address,
+        abi: erc20,
+        functionName: 'approve',
+        args: [ctx.contracts.prizeVault, amount],
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
 
-  await send(ctx, `depositReward(${amountArg} ${labelFor(asset)})`, () =>
-    ctx.walletClient!.writeContract({
-    address: ctx.contracts.prizeVault,
-    abi: prizeVaultAbi,
-    functionName: 'depositReward',
-    args: [asset.address as Address, amount],
-    chain: ctx.chain,
-    account: ctx.walletClient!.account!,
-    }),
-  )
+    await send(ctx, `depositReward(${amountArg} ${labelFor(asset)})`, () =>
+      ctx.walletClient!.writeContract({
+        address: ctx.contracts.prizeVault,
+        abi: prizeVaultAbi,
+        functionName: 'depositReward',
+        args: [asset.address as Address, amount],
+        chain: ctx.chain,
+        account: ctx.walletClient!.account!,
+      }),
+    )
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('FORBIDDEN SPENDER')) {
+      log('  · token contract restricts third-party approvals (FORBIDDEN SPENDER); funding via direct transfer to vault')
+      await send(ctx, `transfer(vault, ${amountArg} ${labelFor(asset)})`, () =>
+        ctx.walletClient!.writeContract({
+          address: asset.address as Address,
+          abi: erc20,
+          functionName: 'transfer',
+          args: [ctx.contracts.prizeVault, amount],
+          chain: ctx.chain,
+          account: ctx.walletClient!.account!,
+        }),
+      )
+    } else {
+      throw err
+    }
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────── machines

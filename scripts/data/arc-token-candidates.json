@@ -530,9 +530,9 @@
       "ticker": "TIDE",
       "volume24hUsd": 35776,
       "liquidityUsd": 83002,
-      "holders": 0,
+      "holders": 222,
       "ageDays": 11,
-      "researchFlag": "Holder count not yet measured \u2014 recorded as 0 rather than estimated. Market data from DexScreener 2026-09-27; trades on its own DEX (dexId arctide), not Uniswap."
+      "note": "Holders measured by replaying every Transfer since launch: 222 addresses hold a positive balance \u2014 genuinely below the 1,000 threshold, not merely unmeasured. Trades only on Arctide (its own AMM); no Uniswap pool at any fee tier. Market data DexScreener 2026-09-27."
     }
   ]
 }

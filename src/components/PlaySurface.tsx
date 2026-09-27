@@ -7,6 +7,7 @@ import {OrbitMachine, TokenGlyph, type OrbitPhase} from './OrbitMachine'
 import {OddsRail, RarityTag} from './OddsRail'
 import {Button, ButtonLink, Label, Pill, DataRow, ExternalLink, Dot} from './ui/Primitives'
 import {WalletButton} from './WalletButton'
+import {ArcadePaymentNotice} from './ArcadePaymentNotice'
 import {SpendGuard} from './SpendGuard'
 import {ArcadeArt, MACHINE_ART, RARITY_ART} from './ArcadeArt'
 import {
@@ -230,6 +231,13 @@ function SpinConsole({machine}: {machine: MachineConfig}) {
           phase={spin.phase}
           onBlockedChange={setSpendBlocked}
         />
+
+        {/*
+          In the controls column rather than the connected-only panel: the question "what can
+          I pay with" arrives before a wallet does, and the detail panel it sat in only renders
+          once one is connected.
+        */}
+        <ArcadePaymentNotice />
 
         <StickySpinBar
           machine={machine}

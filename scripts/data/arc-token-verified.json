@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-26T23:29:36.580Z",
+  "generatedAt": "2026-09-27T02:55:04.563Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -49,7 +49,7 @@
       "meetsAge": 19,
       "tickerCollision": 6,
       "meetsHolders": 11,
-      "researchFlag": 12,
+      "researchFlag": 11,
       "meetsLiquidity": 14,
       "meetsVolume": 8,
       "hasNonZeroSupply": 2
@@ -1127,9 +1127,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0x756651322898e0405ef85b5af09e225101baa862",
-        "amountSent": "84319102707122954570",
-        "amountReceived": "84319102707122954570",
+        "holderTested": "0x96dc0932a2c24793617501bba950273cc7912d9b",
+        "amountSent": "322474029504036070740",
+        "amountReceived": "322474029504036070740",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
@@ -1138,7 +1138,7 @@
       "marketSnapshot": {
         "volume24hUsd": 35776,
         "liquidityUsd": 83002,
-        "holders": 0,
+        "holders": 222,
         "ageDays": 11,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
@@ -1160,12 +1160,10 @@
       },
       "failureReasons": [
         "meetsVolume",
-        "meetsHolders",
-        "researchFlag"
+        "meetsHolders"
       ],
       "eligible": false,
-      "tickerCollision": false,
-      "researchFlag": "Holder count not yet measured — recorded as 0 rather than estimated. Market data from DexScreener 2026-09-27; trades on its own DEX (dexId arctide), not Uniswap."
+      "tickerCollision": false
     },
     {
       "address": "0x2e554c802e6b3a0ea4793f2267e0c4dcb28721e0",
