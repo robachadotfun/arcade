@@ -29,19 +29,21 @@
       "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
       "label": "Argus",
       "ticker": "ARGUS",
-      "volume24hUsd": 8490000,
-      "liquidityUsd": 1130000,
+      "volume24hUsd": 2073067,
+      "liquidityUsd": 958155,
       "holders": 16300,
-      "ageDays": 15
+      "ageDays": 15,
+      "note": "Liquidity and volume refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 and had gone stale. Holder count and age are still from that capture and have not been re-measured."
     },
     {
       "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
       "label": "Tolly",
       "ticker": "TOLLY",
-      "volume24hUsd": 2830000,
-      "liquidityUsd": 577700,
+      "volume24hUsd": 336539,
+      "liquidityUsd": 593024,
       "holders": 13100,
-      "ageDays": 45
+      "ageDays": 45,
+      "note": "Liquidity and volume refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 and had gone stale. Holder count and age are still from that capture and have not been re-measured."
     },
     {
       "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
@@ -56,10 +58,11 @@
       "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
       "label": "usdc is cool",
       "ticker": "COOL",
-      "volume24hUsd": 1120000,
-      "liquidityUsd": 203600,
+      "volume24hUsd": 133919,
+      "liquidityUsd": 191919,
       "holders": 7000,
-      "ageDays": 39
+      "ageDays": 39,
+      "note": "Liquidity and volume refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 and had gone stale. Holder count and age are still from that capture and have not been re-measured."
     },
     {
       "address": "0x07704b06981ea962b87296362a1281484d160000",
@@ -183,10 +186,11 @@
       "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
       "label": "Faze",
       "ticker": "FAZE",
-      "volume24hUsd": 664564,
-      "liquidityUsd": 264508,
+      "volume24hUsd": 162566,
+      "liquidityUsd": 243871,
       "holders": 3100,
-      "ageDays": 9
+      "ageDays": 9,
+      "note": "Liquidity and volume refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 and had gone stale. Holder count and age are still from that capture and have not been re-measured."
     },
     {
       "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
@@ -343,10 +347,11 @@
       "address": "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d",
       "label": "Beancat",
       "ticker": "BCAT",
-      "volume24hUsd": 336040,
-      "liquidityUsd": 51637,
+      "volume24hUsd": 1066,
+      "liquidityUsd": 10792,
       "holders": 2706,
-      "ageDays": 4
+      "ageDays": 4,
+      "note": "Liquidity and volume refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 and had gone stale. Holder count and age are still from that capture and have not been re-measured."
     },
     {
       "address": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6",
@@ -361,10 +366,11 @@
       "address": "0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e",
       "label": "AF",
       "ticker": "AF",
-      "volume24hUsd": 1338115,
-      "liquidityUsd": 139381,
+      "volume24hUsd": 310295,
+      "liquidityUsd": 112711,
       "holders": 1162,
-      "ageDays": 8
+      "ageDays": 8,
+      "note": "Liquidity and volume refreshed from DexScreener 2026-09-27. The previous figures were an ARC Screener capture from 2026-09-18 and had gone stale. Holder count and age are still from that capture and have not been re-measured."
     },
     {
       "address": "0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae",

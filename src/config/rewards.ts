@@ -395,6 +395,28 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite failing the liquidity and volume thresholds. It passes every contract check, but 24h volume is roughly a tenth of the floor — a large win may be hard to sell near the quoted price.',
   },
+  /*
+   * BCAT, which was admitted by the thresholds and then failed them while already in the
+   * machine.
+   *
+   * Its record read eligible on a 2026-09-18 capture showing $336k of 24h volume and $51.6k of
+   * liquidity. Refreshed on 2026-09-27 the same token shows about $1.1k and $10.8k — volume
+   * down essentially to nothing in nine days. It was paying out on 5.75% of Discovery spins
+   * that whole time on a pass that had stopped being true.
+   *
+   * Kept rather than removed, on a judgement worth writing down. The thresholds are sized for
+   * a token to absorb a large win; the actual payout here is about two dollars, which is under
+   * 0.02% of the remaining pool and moves the price barely at all. So a winner can still sell.
+   * What they cannot rely on is that being true next week, and that is what the disclosure has
+   * to say rather than the generic thin-pool wording.
+   *
+   * If volume keeps falling this should come out of the table, not get a longer caveat.
+   */
+  '0x258bbb25fb1bc34c87212f8dab34838854ef2d5d': {
+    reason: 'Passed the thresholds when admitted, then fell below them while live.',
+    disclose:
+      'Admitted before its market thinned, and kept with that stated: 24h volume has fallen to roughly $1k with about $11k of liquidity. A typical win is small enough to sell today, but this pool is shrinking and may not support one later.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */
