@@ -4,6 +4,8 @@ import {Label} from './ui/Primitives'
 import {resolveMode} from '@/config/mode'
 import {explorerUrl} from '@/config/network'
 import {ARC_MAINNET_ID} from '@/config/network'
+import {ARCADE_TOKEN} from '@/config/token'
+import {CopyAddress} from './CopyAddress'
 
 const PLAY_LINKS = [
   {href: '/play', label: 'Play'},
@@ -15,6 +17,7 @@ const PLAY_LINKS = [
 ]
 
 const LEGAL_LINKS = [
+  {href: '/token', label: '$ARCADE'},
   {href: '/contracts', label: 'Contracts'},
   {href: '/legal/terms', label: 'Terms'},
   {href: '/legal/privacy', label: 'Privacy'},
@@ -41,6 +44,26 @@ export function SiteFooter() {
             <span aria-hidden="true" className="h-px w-6 bg-hairline-strong" />
             <Label>Built on Arc</Label>
           </p>
+
+          {/*
+            The contract address in the footer, on every page.
+            It is the value people are sent looking for and the one a lookalike token cannot
+            copy, so it should never be more than a scroll away — and it links to /token rather
+            than only sitting here, because an address without context invites buying first and
+            checking second.
+          */}
+          <div className="mt-8 border border-hairline bg-paper-raised p-4">
+            <Label>$ARCADE contract</Label>
+            <CopyAddress address={ARCADE_TOKEN.address} className="mt-2" />
+            <p className="mt-3">
+              <Link
+                href="/token"
+                className="text-[0.8125rem] text-ink-muted underline underline-offset-4 hover:text-ink"
+              >
+                Token details →
+              </Link>
+            </p>
+          </div>
         </div>
 
         <nav aria-label="Product">

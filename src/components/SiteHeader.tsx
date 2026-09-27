@@ -13,6 +13,7 @@ const NAV = [
   {href: '/machines', label: 'Machines'},
   {href: '/rewards', label: 'Rewards'},
   {href: '/nft-spins', label: 'NFT Spins'},
+  {href: '/token', label: '$ARCADE'},
   {href: '/activity', label: 'Activity'},
   {href: '/fairness', label: 'Fairness'},
   {href: '/faq', label: 'FAQ'},
