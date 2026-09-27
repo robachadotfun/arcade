@@ -55,6 +55,24 @@ const MAX_LOG_RANGE = 5_000n
  */
 const MAX_CHUNKS = 6
 
+/**
+ * A deeper budget for views whose whole purpose is showing history.
+ *
+ * Six chunks is roughly four hours of Arc blocks. On a busy deployment that is plenty; on this
+ * one, with spins arriving a few times a day, it means the activity page frequently finds
+ * nothing and reports an empty tape about a machine that has settled eleven spins. The tape on
+ * the homepage can stay shallow because it is a glance at "right now"; a page titled Activity
+ * cannot.
+ *
+ * Still a budget, not a lookback target: each chunk is a request against a shared public
+ * endpoint, the scan stops as soon as it has enough rows, and the fix for a real deployment is
+ * an indexer behind `ActivitySource` rather than a larger number here.
+ */
+const DEEP_CHUNKS = 16
+
+/** Spacing between deep-scan requests, so the shared endpoint tolerates the whole sweep. */
+const DEEP_CHUNK_PAUSE_MS = 220
+
 type State = {
   records: ActivityRecord[]
   loading: boolean
@@ -151,7 +169,8 @@ type SpinLog = {
 export function useActivity({
   limit = 25,
   player,
-}: {limit?: number; player?: Address} = {}): State {
+  deep = false,
+}: {limit?: number; player?: Address; deep?: boolean} = {}): State {
   const status = resolveMode()
   const publicClient = usePublicClient()
   const [chainState, setChainState] = useState<State>({
@@ -187,7 +206,17 @@ export function useActivity({
         // request per chunk rather than two — `events` takes an array and the results carry
         // an `eventName` discriminator, which halves the request count for free.
         let toBlock = latest
-        for (let chunk = 0; chunk < MAX_CHUNKS; chunk += 1) {
+        const chunkBudget = deep ? DEEP_CHUNKS : MAX_CHUNKS
+        for (let chunk = 0; chunk < chunkBudget; chunk += 1) {
+          /*
+           * Paced, on the deep scan only.
+           *
+           * Sixteen back-to-back getLogs calls is what tips Arc's public endpoint into
+           * rate-limiting, and a scan that fails returns nothing at all — strictly worse than
+           * a scan that takes a second longer. The shallow tape stays unpaced: six requests
+           * go through fine, and that view is the one someone is watching.
+           */
+          if (deep && chunk > 0) await new Promise((r) => setTimeout(r, DEEP_CHUNK_PAUSE_MS))
           const fromBlock = toBlock > MAX_LOG_RANGE ? toBlock - MAX_LOG_RANGE : 0n
 
           const logs = await publicClient!.getLogs({
@@ -314,7 +343,7 @@ export function useActivity({
 
     async function load() {
       try {
-        const records = await sharedActivity(`${manager}|${player ?? ''}`, limit, fetchRecords)
+        const records = await sharedActivity(`${manager}|${player ?? ''}|${deep ? 'deep' : 'shallow'}`, limit, fetchRecords)
         if (cancelled) return
         setChainState({records, loading: false, error: null})
       } catch (err) {
@@ -332,7 +361,7 @@ export function useActivity({
       cancelled = true
       window.clearInterval(interval)
     }
-  }, [status.kind, managerAddress, missingFingerprint, player, publicClient, limit])
+  }, [status.kind, managerAddress, missingFingerprint, player, publicClient, limit, deep])
 
   if (status.kind === 'misconfigured') {
     return {

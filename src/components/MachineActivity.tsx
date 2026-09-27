@@ -39,7 +39,7 @@ export function MachineActivity({
       chainId={chainId}
       compact
       emptyTitle={`No ${machineName} spins yet.`}
-      emptyBody="Nothing has been settled on this machine. Be the first."
+      emptyBody="Nothing settled on this machine in the recent blocks this reads."
       emptyAction={{href: `/play?machine=${machineSlug}`, label: 'Open the machine'}}
     />
   )

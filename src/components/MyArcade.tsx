@@ -26,7 +26,7 @@ import {formatDecimalAmount, formatUsdc} from '@/lib/format'
 export function MyArcade() {
   const status = resolveMode()
   const {address, isConnected} = useAccount()
-  const {records, loading} = useActivity({limit: 100, player: address})
+  const {records, loading} = useActivity({limit: 100, player: address, deep: true})
   const chainId = useActivityChainId()
 
   const contracts = status.kind === 'ready' ? status.contracts : null

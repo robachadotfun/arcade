@@ -44,8 +44,8 @@ export function ActivityPreview() {
         records={records}
         chainId={chainId}
         compact
-        emptyTitle="No spins yet."
-        emptyBody="This deployment has settled no spins. Be the first."
+        emptyTitle="Nothing in the last few hours."
+        emptyBody="This tape reads a bounded window of recent blocks, not all of history. Older spins are on the activity page."
         emptyAction={{href: '/play', label: 'Open the machine'}}
       />
     </div>

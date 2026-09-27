@@ -16,8 +16,8 @@ import {explorerUrl} from '@/config/network'
 export function ActivityTape({
   records,
   chainId,
-  emptyTitle = 'No spins yet.',
-  emptyBody = 'Be the first.',
+  emptyTitle = 'Nothing in the recent window.',
+  emptyBody = 'This reads recent blocks only.',
   emptyAction,
   compact = false,
 }: {

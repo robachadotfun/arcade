@@ -13,7 +13,7 @@ type Filter = 'all' | 'mine' | string
 export function ActivityFeed() {
   const [filter, setFilter] = useState<Filter>('all')
   const {address} = useAccount()
-  const {records, loading, error} = useActivity({limit: 100})
+  const {records, loading, error} = useActivity({limit: 100, deep: true})
   const chainId = useActivityChainId()
 
   const filtered = records.filter((record) => {
@@ -84,8 +84,8 @@ export function ActivityFeed() {
           <ActivityTape
             records={filtered}
             chainId={chainId}
-            emptyTitle="No spins yet."
-            emptyBody="This deployment has settled no spins. Be the first."
+            emptyTitle="Nothing in the window this reads."
+            emptyBody="Rows come from a bounded range of recent blocks, so a quiet few hours shows as empty. It does not mean no spin has ever settled."
             emptyAction={{href: '/play', label: 'Open the machine'}}
           />
         </div>
