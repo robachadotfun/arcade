@@ -31,25 +31,51 @@ type Pair = {baseToken?: {address?: string}; priceUsd?: string; liquidity?: {usd
 
 async function livePrices(addresses: string[]): Promise<Map<string, number>> {
   const out = new Map<string, number>()
-  // DexScreener takes up to 30 addresses per call; batch rather than one request per token.
-  for (let i = 0; i < addresses.length; i += 25) {
-    const batch = addresses.slice(i, i + 25)
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${batch.join(',')}`)
-    const body = (await res.json()) as {pairs?: Pair[]}
-    for (const pair of body.pairs ?? []) {
+  const liquidity = new Map<string, number>()
+
+  function absorb(pairs: Pair[]) {
+    for (const pair of pairs) {
       const addr = pair.baseToken?.address?.toLowerCase()
       const price = Number.parseFloat(pair.priceUsd ?? '')
       if (!addr || !Number.isFinite(price)) continue
       // Several pairs per token: keep the deepest, which is the one a winner would sell into.
       const liq = pair.liquidity?.usd ?? 0
-      const prev = out.get(`${addr}:liq`) ?? -1
-      if (liq > prev) {
+      if (liq > (liquidity.get(addr) ?? -1)) {
         out.set(addr, price)
-        out.set(`${addr}:liq`, liq)
+        liquidity.set(addr, liq)
       }
     }
+  }
+
+  async function fetchBatch(batch: string[]): Promise<Pair[]> {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${batch.join(',')}`)
+    const body = (await res.json()) as {pairs?: Pair[]}
+    return body.pairs ?? []
+  }
+
+  /*
+   * DexScreener caps a response at 30 PAIRS, not 30 tokens — and a token can have several
+   * pairs. Ask for 25 addresses at once and the reply silently truncates: the tokens that
+   * fall off the end come back with no price, which this script then reported as "no live
+   * price" and left out of the payout ratio entirely. That is the one failure mode a drift
+   * check must not have, because a band nobody priced is exactly a band nobody corrected.
+   * BCAT was dropped this way while its band was live.
+   *
+   * So the batch is small, and — more to the point — anything still missing is re-asked for
+   * on its own. That second pass is what makes this correct rather than merely likelier to
+   * work, since it does not depend on guessing how many pairs a token happens to have.
+   */
+  for (let i = 0; i < addresses.length; i += 10) {
+    absorb(await fetchBatch(addresses.slice(i, i + 10)))
     await new Promise((r) => setTimeout(r, 400))
   }
+
+  for (const addr of addresses) {
+    if (out.has(addr)) continue
+    absorb(await fetchBatch([addr]))
+    await new Promise((r) => setTimeout(r, 400))
+  }
+
   return out
 }
 

@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-27T22:19:37.815Z",
+  "generatedAt": "2026-09-28T11:07:13.481Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,19 +39,19 @@
     }
   ],
   "summary": {
-    "candidates": 47,
-    "eligible": 15,
-    "rejected": 32,
+    "candidates": 48,
+    "eligible": 14,
+    "rejected": 34,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
       "meetsAge": 18,
       "tickerCollision": 6,
-      "meetsHolders": 13,
-      "researchFlag": 12,
-      "meetsVolume": 11,
-      "meetsLiquidity": 17,
+      "meetsHolders": 14,
+      "researchFlag": 13,
+      "meetsVolume": 13,
+      "meetsLiquidity": 18,
       "hasNonZeroSupply": 2
     }
   },
@@ -269,53 +269,6 @@
         "liquidityUsd": 360000,
         "holders": 2100,
         "ageDays": 122,
-        "source": "https://www.arcscreener.live/",
-        "capturedAt": "2026-09-18"
-      },
-      "checks": {
-        "hasContractCode": true,
-        "exposesSymbol": true,
-        "exposesName": true,
-        "exposesDecimals": true,
-        "hasNonZeroSupply": true,
-        "isNotCanonicalUsdc": true,
-        "transferVerified": true,
-        "noTransferFee": true,
-        "standardBoolReturn": true,
-        "meetsLiquidity": true,
-        "meetsVolume": true,
-        "meetsHolders": true,
-        "meetsAge": true
-      },
-      "failureReasons": [],
-      "eligible": true,
-      "tickerCollision": false
-    },
-    {
-      "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
-      "onchain": {
-        "name": "Matrixdock Gold",
-        "symbol": "XAUM",
-        "decimals": 18,
-        "totalSupply": "160740000000000000000",
-        "hasCode": true,
-        "codeSize": 170
-      },
-      "transferBehaviour": {
-        "tested": true,
-        "holderTested": "0xcc716b2dfb36ac7d48d414ad22a42a2f545308b0",
-        "amountSent": "1808652333040341",
-        "amountReceived": "1808652333040341",
-        "feeBps": 0,
-        "callSucceeded": true,
-        "returnsBoolTrue": true,
-        "note": "transfer() moved the full amount and returned true against live mainnet state."
-      },
-      "marketSnapshot": {
-        "volume24hUsd": 726900,
-        "liquidityUsd": 264100,
-        "holders": 9500,
-        "ageDays": 9,
         "source": "https://www.arcscreener.live/",
         "capturedAt": "2026-09-18"
       },
@@ -808,6 +761,55 @@
         "transferVerified",
         "noTransferFee",
         "standardBoolReturn"
+      ],
+      "eligible": false,
+      "tickerCollision": false
+    },
+    {
+      "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
+      "onchain": {
+        "name": "Matrixdock Gold",
+        "symbol": "XAUM",
+        "decimals": 18,
+        "totalSupply": "160740000000000000000",
+        "hasCode": true,
+        "codeSize": 170
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x2506c6d15f2b847cc8dbabcbc2daf8dc1375ac8e",
+        "amountSent": "119698032116",
+        "amountReceived": "119698032116",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 63588,
+        "liquidityUsd": 301932,
+        "holders": 9500,
+        "ageDays": 13,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": false,
+        "meetsHolders": true,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsVolume"
       ],
       "eligible": false,
       "tickerCollision": false
@@ -1570,6 +1572,59 @@
       "eligible": false,
       "tickerCollision": false,
       "researchFlag": "Holder count not yet measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
+    },
+    {
+      "address": "0x28f986a61e078795639f239675582a12b4cf7f01",
+      "onchain": {
+        "name": "oBrain",
+        "symbol": "oBrain",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 4724
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xee611113da77858aba5bf9f994c0a6c07132ddba",
+        "amountSent": "1782120000000000000000000",
+        "amountReceived": "1782120000000000000000000",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 49832,
+        "liquidityUsd": 47420,
+        "holders": 0,
+        "ageDays": 11,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count pending measurement — recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
     },
     {
       "address": "0x8b903a668f39ca057a452041eea60cd7173b9e3c",

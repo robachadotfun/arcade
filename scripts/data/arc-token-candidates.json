@@ -149,10 +149,11 @@
       "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
       "label": "XAUM",
       "ticker": "XAUM",
-      "volume24hUsd": 726900,
-      "liquidityUsd": 264100,
+      "volume24hUsd": 63588,
+      "liquidityUsd": 301932,
       "holders": 9500,
-      "ageDays": 9
+      "ageDays": 13,
+      "note": "Market data refreshed from DexScreener 2026-09-28. Volume has fallen ~91% since the 2026-09-18 capture this record previously carried (726,900 -> 63,588), so it now fails the volume floor; liquidity rose over the same period. Holder count (9,500) is the arcscreener 2026-09-18 figure, not re-measured \u2014 it is an order of magnitude above the 1,000 threshold, so drift of days does not change that outcome. Tokenised gold: Uniswap v3 pool against USDC."
     },
     {
       "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
@@ -561,6 +562,16 @@
       "holders": 0,
       "ageDays": 12,
       "researchFlag": "Holder count not yet measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
+    },
+    {
+      "address": "0x28f986a61e078795639f239675582a12b4cf7f01",
+      "label": "oBrain",
+      "ticker": "oBrain",
+      "volume24hUsd": 49832,
+      "liquidityUsd": 47420,
+      "holders": 0,
+      "ageDays": 11,
+      "researchFlag": "Holder count pending measurement \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
     }
   ]
 }

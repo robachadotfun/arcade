@@ -435,6 +435,55 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite falling short on liquidity and volume — about $48k and $56k against floors of $50k and $100k — and with an unmeasured holder count. It passes every contract check, and sits near the liquidity line rather than far below it.',
   },
+  /*
+   * oBrain, admitted at the operator's direction.
+   *
+   * Passes every contract-level check: transfer probed against live mainnet state moved the
+   * full amount, zero fee, standard bool return, 18 decimals, no ticker collision.
+   *
+   * Fails liquidity and volume slightly below published floors ($47k and $50k against $50k
+   * and $100k floors), with unmeasured holder count.
+   */
+  '0x28f986a61e078795639f239675582a12b4cf7f01': {
+    reason: 'Admitted by the operator despite liquidity and volume below the published floors.',
+    disclose:
+      'Admitted despite falling short on liquidity and volume — about $47k and $50k against floors of $50k and $100k — and with an unmeasured holder count. It passes every contract check.',
+  },
+  /*
+   * XAUM (Matrixdock Gold), admitted at the operator's direction.
+   *
+   * The strongest admission in this list on market terms, and the one that needs the most
+   * said about it anyway.
+   *
+   * It passes every contract-level check — transfer probed against live mainnet state moved
+   * the full amount, zero fee, standard bool return, 18 decimals, no ticker collision — and
+   * clears liquidity by six times the floor at roughly $302k, with about 9,500 holders. It
+   * fails on volume alone.
+   *
+   * That failure is only visible because the record was refreshed. It read ELIGIBLE on a
+   * 2026-09-18 capture showing $726,900 of 24h volume; live data on 2026-09-28 shows about
+   * $63,600 — down roughly 91% in ten days, through the $100k floor — while liquidity rose
+   * over the same period. Admitting it on the stored pass would have published a threshold
+   * claim that had quietly stopped being true, which is exactly what happened with ARCBAT.
+   *
+   * Two things separate this from every other reward here, and neither is a market number.
+   *
+   * It is a claim on gold, not a token whose value is its own. What it is worth depends on
+   * Matrixdock holding the metal and honouring redemption, so a winner is exposed to that
+   * issuer in a way no amount of pool depth addresses. Same shape as the Synthra sStocks.
+   *
+   * And the address is a UUPS proxy: 170 bytes that read the EIP-1967 implementation slot
+   * and delegatecall to 0x8fac22684c16fdb25514cafc17c8643355753dd1. The clean transfer probe
+   * describes that implementation, today. Whoever holds the upgrade role can replace it, and
+   * transfer restrictions are ordinary for a gold RWA. This is disclosed rather than treated
+   * as a contract failure because the check asks what transfers do, and today they are clean
+   * — but a player should know the answer can be changed without the token address changing.
+   */
+  '0x178b01f61cbea1d2a5581fe1621be607835ec349': {
+    reason: 'Admitted by the operator despite volume below the published floor.',
+    disclose:
+      'Admitted despite failing the volume threshold — 24h volume has fallen about 91% in ten days, to roughly $64k against a $100k floor, though liquidity is the deepest in the reward set at about $302k. Two things beyond the numbers: it is a claim on gold held by Matrixdock, so redemption depends on that issuer rather than on the pool; and the token is an upgradeable proxy, so the clean transfer behaviour we verified can be changed without the address changing.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */
