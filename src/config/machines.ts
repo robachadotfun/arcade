@@ -189,11 +189,11 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: COOL, weight: 594, rarity: 'common', minAmount: '855', maxAmount: '1800'},
+      {token: COOL, weight: 594, rarity: 'common', minAmount: '740', maxAmount: '1558'},
       // Resized after ARCADE rose ~35%: the token band is fixed, so the VALUE it pays drifts
       // with price. At 40000–80000 it had reached $1.68–$3.35 against the ~$0.95–$2.00 every
       // other common pays, pulling the machine's payout ratio from 77.7% to 81.0%.
-      {token: ARCADE_TOKEN_ADDR, weight: 594, rarity: 'common', minAmount: '25703', maxAmount: '54113'},
+      {token: ARCADE_TOKEN_ADDR, weight: 594, rarity: 'common', minAmount: '21675', maxAmount: '45631'},
       {token: FAZE, weight: 500, rarity: 'common', minAmount: '278', maxAmount: '586'},
       {token: AF, weight: 500, rarity: 'common', minAmount: '725', maxAmount: '1526'},
       {token: BCAT, weight: 500, rarity: 'common', minAmount: '78642', maxAmount: '165563'},
