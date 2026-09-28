@@ -215,6 +215,21 @@ function retargetManifest(path: string, key: string, fileField: string) {
         entry[fileField] = next
         changed = true
       }
+      /*
+       * Retargeting the filename alone used to leave `bytes` and `contentType` describing the
+       * file we replaced -- oBrain's entry claimed image/png at 107,335 bytes for an 8,214-byte
+       * WebP. A manifest whose whole purpose is provenance should not be the least accurate
+       * record of what shipped, so both are re-read from what is actually on disk.
+       */
+      const onDisk = join(dirname(path), String(entry[fileField]))
+      if (!existsSync(onDisk)) continue
+      const size = statSync(onDisk).size
+      const type = String(entry[fileField]).endsWith('.webp') ? 'image/webp' : entry.contentType
+      if (entry.bytes !== size || entry.contentType !== type) {
+        entry.bytes = size
+        entry.contentType = type
+        changed = true
+      }
     }
 
     if (changed) {
