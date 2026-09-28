@@ -509,6 +509,41 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite narrowly failing the liquidity and volume thresholds — about $44k and $91k against floors of $50k and $100k — and with an unmeasured holder count. It passes every contract check, and the token is a minimal proxy of the immutable kind, so the transfer behaviour verified here cannot be changed later. It fell about 25% in the day before admission, so treat the market figures as a moving snapshot.',
   },
+  /*
+   * Argos Bot, admitted at the operator's direction, and shown as ARGOSBOT.
+   *
+   * Passes every contract-level check: transfer probed against live mainnet state moved the
+   * full amount, zero fee, standard bool return, 18 decimals. Like Arcanus it is an EIP-1167
+   * minimal proxy — 45 bytes delegating to 0x84d4704d8a62a47c3f0a19ab4642bf77ad0e9c1f, with
+   * the implementation written into the bytecode and therefore not repointable.
+   *
+   * It is the thinnest admission in this table by some way: about $23k of liquidity against a
+   * $50k floor, which is half of what oBrain or Arcanus carry and a fifth of what the floor
+   * asks. Volume misses too, at about $66k against $100k. At that depth a winner selling a
+   * whole prize is a visible fraction of the pool, and the disclosure says so plainly.
+   *
+   * ## Why this one carries a display override
+   *
+   * Its ticker is ARGOS. ARGUS — a different token, different issuer, different address — is
+   * already a reward on the same machine, at the ultra and jackpot tiers. One letter apart,
+   * in the same drawer, at wildly different values.
+   *
+   * `tickerCollision` reads false for it, and that is correct rather than a bug: the checker
+   * compares the strings the contracts report, and ARGOS is genuinely not ARGUS. But the
+   * check exists to stop a player misreading what they won, and a one-letter difference
+   * defeats a reader far more reliably than an exact duplicate does — an exact duplicate at
+   * least looks like something needing attention. So the override is applied on the same
+   * reasoning the exact collisions use, not because the machinery asked for it.
+   *
+   * Nothing about the payout changes. The machine pays an address and has never read a
+   * ticker; this only governs what the interface prints.
+   */
+  '0xe86688530c456e099732f953ed7aa7c583026680': {
+    displaySymbol: 'ARGOSBOT',
+    reason: 'Admitted by the operator despite liquidity and volume below the published floors.',
+    disclose:
+      'Shown as ARGOSBOT because its real ticker, ARGOS, is one letter from ARGUS — an unrelated token already paid out by this machine. Admitted despite failing the liquidity and volume thresholds: about $23k and $66k against floors of $50k and $100k, making it the shallowest pool in the reward set, so a large win may be hard to sell near the quoted price. It passes every contract check, and is a minimal proxy of the immutable kind.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

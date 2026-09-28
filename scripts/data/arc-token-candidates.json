@@ -582,6 +582,16 @@
       "holders": 0,
       "ageDays": 11,
       "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC, price down ~25% over 24h."
+    },
+    {
+      "address": "0xe86688530c456e099732f953ed7aa7c583026680",
+      "label": "Argos Bot",
+      "ticker": "ARGOS",
+      "volume24hUsd": 65712,
+      "liquidityUsd": 22636,
+      "holders": 0,
+      "ageDays": 16,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28. Ticker ARGOS is one letter from ARGUS, which is already a reward on the same machine."
     }
   ]
 }

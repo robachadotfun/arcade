@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-28T13:47:13.316Z",
+  "generatedAt": "2026-09-28T14:22:49.287Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,19 +39,19 @@
     }
   ],
   "summary": {
-    "candidates": 49,
+    "candidates": 50,
     "eligible": 14,
-    "rejected": 35,
+    "rejected": 36,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
-      "meetsVolume": 14,
+      "meetsVolume": 15,
       "meetsAge": 18,
       "tickerCollision": 6,
-      "meetsHolders": 15,
-      "researchFlag": 14,
-      "meetsLiquidity": 19,
+      "meetsHolders": 16,
+      "researchFlag": 15,
+      "meetsLiquidity": 20,
       "hasNonZeroSupply": 2
     }
   },
@@ -2091,6 +2091,59 @@
       ],
       "eligible": false,
       "tickerCollision": false
+    },
+    {
+      "address": "0xe86688530c456e099732f953ed7aa7c583026680",
+      "onchain": {
+        "name": "Argos Bot",
+        "symbol": "ARGOS",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xf06734d4ec921eeaeb05122db400485b1bb85dca",
+        "amountSent": "649603629801437740619540",
+        "amountReceived": "649603629801437740619540",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 65712,
+        "liquidityUsd": 22636,
+        "holders": 0,
+        "ageDays": 16,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-28. Ticker ARGOS is one letter from ARGUS, which is already a reward on the same machine."
     },
     {
       "address": "0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2",
