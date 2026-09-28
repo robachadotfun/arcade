@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-28T11:07:13.481Z",
+  "generatedAt": "2026-09-28T13:40:23.879Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,19 +39,19 @@
     }
   ],
   "summary": {
-    "candidates": 48,
+    "candidates": 49,
     "eligible": 14,
-    "rejected": 34,
+    "rejected": 35,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
+      "meetsVolume": 14,
       "meetsAge": 18,
       "tickerCollision": 6,
-      "meetsHolders": 14,
-      "researchFlag": 13,
-      "meetsVolume": 13,
-      "meetsLiquidity": 18,
+      "meetsHolders": 15,
+      "researchFlag": 14,
+      "meetsLiquidity": 19,
       "hasNonZeroSupply": 2
     }
   },
@@ -1678,6 +1678,59 @@
       ],
       "eligible": false,
       "tickerCollision": false
+    },
+    {
+      "address": "0x29316db42ff99f640fd4d1bb169635b6318cd430",
+      "onchain": {
+        "name": "Arcanus",
+        "symbol": "ARCANUS",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 45
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0xa9f87b0423d0f215651b93ada73478544d05309c",
+        "amountSent": "105208368624135713027132",
+        "amountReceived": "105208368624135713027132",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 90870,
+        "liquidityUsd": 43640,
+        "holders": 0,
+        "ageDays": 11,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC, price down ~25% over 24h."
     },
     {
       "address": "0x41c8a71f630c636294009fa4fb0cc4c3bbe674fe",

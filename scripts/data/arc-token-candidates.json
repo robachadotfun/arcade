@@ -572,6 +572,16 @@
       "holders": 0,
       "ageDays": 11,
       "researchFlag": "Holder count pending measurement \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC."
+    },
+    {
+      "address": "0x29316db42ff99f640fd4d1bb169635b6318cd430",
+      "label": "Arcanus",
+      "ticker": "ARCANUS",
+      "volume24hUsd": 90870,
+      "liquidityUsd": 43640,
+      "holders": 0,
+      "ageDays": 11,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28; Uniswap v4 pool against USDC, price down ~25% over 24h."
     }
   ]
 }

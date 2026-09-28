@@ -484,6 +484,31 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite failing the volume threshold — 24h volume has fallen about 91% in ten days, to roughly $64k against a $100k floor, though liquidity is the deepest in the reward set at about $302k. Two things beyond the numbers: it is a claim on gold held by Matrixdock, so redemption depends on that issuer rather than on the pool; and the token is an upgradeable proxy, so the clean transfer behaviour we verified can be changed without the address changing.',
   },
+  /*
+   * Arcanus, admitted at the operator's direction.
+   *
+   * Passes every contract-level check: transfer probed against live mainnet state moved the
+   * full amount, zero fee, standard bool return, 18 decimals, no ticker collision.
+   *
+   * Fails liquidity at about $44k against a $50k floor, volume at about $91k against $100k,
+   * and holders, which is unmeasured and recorded as zero rather than estimated. Both market
+   * misses are narrow — this sits near the line like WAVE rather than far below it like BCAT
+   * — but it fell roughly 25% in the twenty-four hours before admission, which is the reason
+   * to read those two numbers as a snapshot of a moving thing rather than a settled fact.
+   *
+   * On the contract shape, because XAUM in this same list is a proxy too and the difference
+   * matters: Arcanus is an EIP-1167 minimal proxy, 45 bytes delegating to
+   * 0x1b74922c01ddfd9c77b37d02c0a236611e8fe500. That implementation address is written into
+   * the bytecode rather than read from a storage slot, so unlike an upgradeable proxy it
+   * cannot be repointed. The transfer behaviour probed here is the behaviour it keeps. That
+   * is a stronger guarantee than most tokens in this table offer, and it is worth saying so
+   * rather than letting the word "proxy" do the opposite work.
+   */
+  '0x29316db42ff99f640fd4d1bb169635b6318cd430': {
+    reason: 'Admitted by the operator despite liquidity and volume below the published floors.',
+    disclose:
+      'Admitted despite narrowly failing the liquidity and volume thresholds — about $44k and $91k against floors of $50k and $100k — and with an unmeasured holder count. It passes every contract check, and the token is a minimal proxy of the immutable kind, so the transfer behaviour verified here cannot be changed later. It fell about 25% in the day before admission, so treat the market figures as a moving snapshot.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

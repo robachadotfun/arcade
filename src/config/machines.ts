@@ -91,6 +91,11 @@ const XAUM = '0x178b01f61cbea1d2a5581fe1621be607835ec349' as const
  * `buy:token --venue dag` needed `--fee`. Admitted despite thin liquidity and volume.
  */
 const OBRAIN = '0x28f986a61e078795639f239675582a12b4cf7f01' as const
+/**
+ * Arcanus. An EIP-1167 minimal proxy, which is the immutable kind — the implementation is
+ * baked into the bytecode, not read from a slot. Admitted despite thin liquidity and volume.
+ */
+const ARCANUS = '0x29316db42ff99f640fd4d1bb169635b6318cd430' as const
 const ARCAT = '0x07704b06981ea962b87296362a1281484d160000' as const
 const LONG = '0x2164bb17a2d38c1b5170e987b2c0416df1efc752' as const
 const CRCL = '0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b' as const
@@ -190,31 +195,32 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
     name: 'Discovery',
     tagline: 'Three verified Arc assets',
     description:
-      'Twenty Arc assets — COOL, $ARCADE, Faze, Arcflow, Beancat, TOLLY, ARGUS and tokenised gold among them — each transfer-probed against live Arc mainnet state. Four rarity bands, weighted toward frequent small wins.',
+      'Twenty-one Arc assets — COOL, $ARCADE, Faze, Arcflow, Beancat, TOLLY, ARGUS and tokenised gold among them — each transfer-probed against live Arc mainnet state. Four rarity bands, weighted toward frequent small wins.',
     spinPriceUsdc: '2',
     status: 'live',
     tiers: [
-      {token: COOL, weight: 559, rarity: 'common', minAmount: '740', maxAmount: '1558'},
+      {token: COOL, weight: 526, rarity: 'common', minAmount: '740', maxAmount: '1558'},
       // Resized after ARCADE rose ~35%: the token band is fixed, so the VALUE it pays drifts
       // with price. At 40000–80000 it had reached $1.68–$3.35 against the ~$0.95–$2.00 every
       // other common pays, pulling the machine's payout ratio from 77.7% to 81.0%.
-      {token: ARCADE_TOKEN_ADDR, weight: 559, rarity: 'common', minAmount: '18490', maxAmount: '38926'},
-      {token: FAZE, weight: 471, rarity: 'common', minAmount: '278', maxAmount: '586'},
-      {token: AF, weight: 471, rarity: 'common', minAmount: '725', maxAmount: '1526'},
-      {token: BCAT, weight: 469, rarity: 'common', minAmount: '95429', maxAmount: '200904'},
+      {token: ARCADE_TOKEN_ADDR, weight: 526, rarity: 'common', minAmount: '18490', maxAmount: '38926'},
+      {token: FAZE, weight: 443, rarity: 'common', minAmount: '278', maxAmount: '586'},
+      {token: AF, weight: 443, rarity: 'common', minAmount: '725', maxAmount: '1526'},
+      {token: BCAT, weight: 441, rarity: 'common', minAmount: '95429', maxAmount: '200904'},
       // Sized to the same ~$0.95–$2.00 band as every other common, at current prices.
-      {token: REGI, weight: 441, rarity: 'common', minAmount: '33557', maxAmount: '70646'},
-      {token: AKIT, weight: 440, rarity: 'common', minAmount: '9545', maxAmount: '20094'},
-      {token: BUILDERS, weight: 449, rarity: 'common', minAmount: '51913', maxAmount: '109290'},
-      {token: ARCLIGHT, weight: 502, rarity: 'common', minAmount: '871', maxAmount: '1833'},
-      {token: TIDE, weight: 488, rarity: 'common', minAmount: '3.1', maxAmount: '6.5'},
-      {token: POLL, weight: 541, rarity: 'common', minAmount: '1692', maxAmount: '3563'},
-      {token: KAIRO, weight: 599, rarity: 'common', minAmount: '1002', maxAmount: '2109'},
-      {token: ARCBAT, weight: 572, rarity: 'common', minAmount: '12726', maxAmount: '26792'},
-      {token: WAVE, weight: 546, rarity: 'common', minAmount: '8813', maxAmount: '18553'},
-      {token: UDCAT, weight: 375, rarity: 'common', minAmount: '604', maxAmount: '1272'},
-      {token: XAUM, weight: 518, rarity: 'common', minAmount: '0.000229', maxAmount: '0.000481'},
-      {token: OBRAIN, weight: 500, rarity: 'common', minAmount: '5645', maxAmount: '11884'},
+      {token: REGI, weight: 415, rarity: 'common', minAmount: '33557', maxAmount: '70646'},
+      {token: AKIT, weight: 414, rarity: 'common', minAmount: '9545', maxAmount: '20094'},
+      {token: BUILDERS, weight: 423, rarity: 'common', minAmount: '51913', maxAmount: '109290'},
+      {token: ARCLIGHT, weight: 472, rarity: 'common', minAmount: '871', maxAmount: '1833'},
+      {token: TIDE, weight: 459, rarity: 'common', minAmount: '3.1', maxAmount: '6.5'},
+      {token: POLL, weight: 509, rarity: 'common', minAmount: '1692', maxAmount: '3563'},
+      {token: KAIRO, weight: 564, rarity: 'common', minAmount: '1002', maxAmount: '2109'},
+      {token: ARCBAT, weight: 538, rarity: 'common', minAmount: '12726', maxAmount: '26792'},
+      {token: WAVE, weight: 514, rarity: 'common', minAmount: '8813', maxAmount: '18553'},
+      {token: UDCAT, weight: 354, rarity: 'common', minAmount: '604', maxAmount: '1272'},
+      {token: XAUM, weight: 488, rarity: 'common', minAmount: '0.000229', maxAmount: '0.000481'},
+      {token: OBRAIN, weight: 471, rarity: 'common', minAmount: '6723', maxAmount: '14154'},
+      {token: ARCANUS, weight: 500, rarity: 'common', minAmount: '4471', maxAmount: '9412'},
       {token: TOLLY, weight: 900, rarity: 'rare', minAmount: '160', maxAmount: '334'},
       {token: ARGUS, weight: 550, rarity: 'ultra', minAmount: '110', maxAmount: '220'},
       {token: ARGUS, weight: 50, rarity: 'jackpot', minAmount: '180', maxAmount: '300'},
