@@ -198,20 +198,20 @@ const MACHINE_TEMPLATES: MachineConfig[] = [
       // Resized after ARCADE rose ~35%: the token band is fixed, so the VALUE it pays drifts
       // with price. At 40000–80000 it had reached $1.68–$3.35 against the ~$0.95–$2.00 every
       // other common pays, pulling the machine's payout ratio from 77.7% to 81.0%.
-      {token: ARCADE_TOKEN_ADDR, weight: 559, rarity: 'common', minAmount: '21675', maxAmount: '45631'},
+      {token: ARCADE_TOKEN_ADDR, weight: 559, rarity: 'common', minAmount: '18490', maxAmount: '38926'},
       {token: FAZE, weight: 471, rarity: 'common', minAmount: '278', maxAmount: '586'},
       {token: AF, weight: 471, rarity: 'common', minAmount: '725', maxAmount: '1526'},
-      {token: BCAT, weight: 469, rarity: 'common', minAmount: '78642', maxAmount: '165563'},
+      {token: BCAT, weight: 469, rarity: 'common', minAmount: '95429', maxAmount: '200904'},
       // Sized to the same ~$0.95–$2.00 band as every other common, at current prices.
-      {token: REGI, weight: 441, rarity: 'common', minAmount: '25286', maxAmount: '53234'},
+      {token: REGI, weight: 441, rarity: 'common', minAmount: '33557', maxAmount: '70646'},
       {token: AKIT, weight: 440, rarity: 'common', minAmount: '9545', maxAmount: '20094'},
       {token: BUILDERS, weight: 449, rarity: 'common', minAmount: '51913', maxAmount: '109290'},
-      {token: ARCLIGHT, weight: 502, rarity: 'common', minAmount: '1017', maxAmount: '2142'},
+      {token: ARCLIGHT, weight: 502, rarity: 'common', minAmount: '871', maxAmount: '1833'},
       {token: TIDE, weight: 488, rarity: 'common', minAmount: '3.1', maxAmount: '6.5'},
       {token: POLL, weight: 541, rarity: 'common', minAmount: '1692', maxAmount: '3563'},
       {token: KAIRO, weight: 599, rarity: 'common', minAmount: '1002', maxAmount: '2109'},
       {token: ARCBAT, weight: 572, rarity: 'common', minAmount: '12726', maxAmount: '26792'},
-      {token: WAVE, weight: 546, rarity: 'common', minAmount: '6565', maxAmount: '13822'},
+      {token: WAVE, weight: 546, rarity: 'common', minAmount: '8813', maxAmount: '18553'},
       {token: UDCAT, weight: 375, rarity: 'common', minAmount: '604', maxAmount: '1272'},
       {token: XAUM, weight: 518, rarity: 'common', minAmount: '0.000229', maxAmount: '0.000481'},
       {token: OBRAIN, weight: 500, rarity: 'common', minAmount: '5645', maxAmount: '11884'},
