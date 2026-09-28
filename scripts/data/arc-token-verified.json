@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-28T13:40:23.879Z",
+  "generatedAt": "2026-09-28T13:47:13.316Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -1691,9 +1691,9 @@
       },
       "transferBehaviour": {
         "tested": true,
-        "holderTested": "0xa9f87b0423d0f215651b93ada73478544d05309c",
-        "amountSent": "105208368624135713027132",
-        "amountReceived": "105208368624135713027132",
+        "holderTested": "0xd01a38e39cce11eb1a66cf835a68bf935ec31171",
+        "amountSent": "621862407933327129876217",
+        "amountReceived": "621862407933327129876217",
         "feeBps": 0,
         "callSucceeded": true,
         "returnsBoolTrue": true,
