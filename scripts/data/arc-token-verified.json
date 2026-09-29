@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-29T02:49:17.037Z",
+  "generatedAt": "2026-09-29T10:55:11.310Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,19 +39,19 @@
     }
   ],
   "summary": {
-    "candidates": 51,
+    "candidates": 52,
     "eligible": 14,
-    "rejected": 37,
+    "rejected": 38,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
-      "meetsVolume": 15,
+      "meetsVolume": 16,
       "meetsAge": 19,
       "tickerCollision": 6,
-      "meetsHolders": 17,
-      "researchFlag": 16,
-      "meetsLiquidity": 20,
+      "meetsHolders": 18,
+      "researchFlag": 17,
+      "meetsLiquidity": 21,
       "hasNonZeroSupply": 2
     }
   },
@@ -2196,6 +2196,59 @@
       "eligible": false,
       "tickerCollision": false,
       "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-28. Ticker ARGOS is one letter from ARGUS, which is already a reward on the same machine."
+    },
+    {
+      "address": "0xafa78bc7c2e1142f4b2a225ae4aee17d6b7d7f01",
+      "onchain": {
+        "name": "Mosslings",
+        "symbol": "MOSS",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 4724
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x09e777a25cad1e94b6eabb98865421de17cac1c9",
+        "amountSent": "2060240364286255182329385",
+        "amountReceived": "2060240364286255182329385",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 32876,
+        "liquidityUsd": 22227,
+        "holders": 0,
+        "ageDays": 13,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-29. FDV about $34k, of which roughly two thirds sits in the pool."
     },
     {
       "address": "0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2",

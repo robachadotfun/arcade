@@ -574,6 +574,31 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite being younger than the three-day minimum — the pool opened on 2026-09-27 — and with an unmeasured holder count. Unusually for this list it clears both liquidity and volume comfortably, at about $124k and $1.07m, but that volume belongs to a launch that rose roughly 210% in its first day. Reward amounts are fixed in tokens, so at that rate of movement what this pays is likely to differ from the intended $0.95–$2.00 within hours. It passes every contract check and cannot be upgraded.',
   },
+  /*
+   * Mosslings, admitted at the operator's direction.
+   *
+   * Contract side it is clean: transfer probed against live mainnet state moved the full
+   * amount, zero fee, standard bool return, 18 decimals, no ticker collision. Not a proxy —
+   * 4,724 bytes of real implementation, the same size and behind the same v4 hook as oBrain,
+   * so the two are almost certainly the same launchpad template.
+   *
+   * On market depth it is the weakest thing admitted to this table. Liquidity is about $22k
+   * against a $50k floor and 24h volume about $33k against $100k — a third of the bar, where
+   * ARGOS, the previous thinnest, managed two thirds. Its entire fully diluted value is
+   * roughly $34k, and something close to two thirds of that sits in the pool itself.
+   *
+   * That last figure is the one worth stating plainly, because it is not the usual
+   * thin-liquidity caveat. When the pool is most of what the token is worth, the pool is not
+   * a market the prize can be sold into so much as the thing holding the price up. A win here
+   * is small in absolute terms — a couple of dollars against $22k of depth, so any single
+   * payout sells fine — but the disclosure should not imply the depth will still be there,
+   * because there is very little behind it if it goes.
+   */
+  '0xafa78bc7c2e1142f4b2a225ae4aee17d6b7d7f01': {
+    reason: 'Admitted by the operator despite the thinnest market in the reward set.',
+    disclose:
+      'Admitted despite failing the liquidity and volume thresholds by the widest margin of any reward here — about $22k and $33k against floors of $50k and $100k — and with an unmeasured holder count. Its whole fully diluted value is roughly $34k, most of it sitting in the pool itself, so the depth a win would be sold into is most of what the token is. A typical win is small enough to sell today; treat that as a statement about today. It passes every contract check.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

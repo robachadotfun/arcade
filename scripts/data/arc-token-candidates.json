@@ -602,6 +602,16 @@
       "holders": 0,
       "ageDays": 1,
       "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-29. Pool opened 2026-09-27, about 1.5 days before this record, and the price rose ~210% over the preceding 24h."
+    },
+    {
+      "address": "0xafa78bc7c2e1142f4b2a225ae4aee17d6b7d7f01",
+      "label": "Mosslings",
+      "ticker": "MOSS",
+      "volume24hUsd": 32876,
+      "liquidityUsd": 22227,
+      "holders": 0,
+      "ageDays": 13,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-29. FDV about $34k, of which roughly two thirds sits in the pool."
     }
   ]
 }
