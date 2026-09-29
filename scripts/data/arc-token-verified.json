@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-28T14:22:49.287Z",
+  "generatedAt": "2026-09-29T02:49:17.037Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,18 +39,18 @@
     }
   ],
   "summary": {
-    "candidates": 50,
+    "candidates": 51,
     "eligible": 14,
-    "rejected": 36,
+    "rejected": 37,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
       "meetsVolume": 15,
-      "meetsAge": 18,
+      "meetsAge": 19,
       "tickerCollision": 6,
-      "meetsHolders": 16,
-      "researchFlag": 15,
+      "meetsHolders": 17,
+      "researchFlag": 16,
       "meetsLiquidity": 20,
       "hasNonZeroSupply": 2
     }
@@ -961,6 +961,58 @@
       ],
       "eligible": false,
       "tickerCollision": false
+    },
+    {
+      "address": "0xfa3ffdf775cc3f6ac82cd258fb948a8a21e1749e",
+      "onchain": {
+        "name": "UBI",
+        "symbol": "UBI",
+        "decimals": 18,
+        "totalSupply": "100000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 44
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x8444a40971280990cd3a5ed3bcbaa601b39c44e8",
+        "amountSent": "100877937557407872809921",
+        "amountReceived": "100877937557407872809921",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 1069562,
+        "liquidityUsd": 124036,
+        "holders": 0,
+        "ageDays": 1,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": true,
+        "meetsVolume": true,
+        "meetsHolders": false,
+        "meetsAge": false
+      },
+      "failureReasons": [
+        "meetsHolders",
+        "meetsAge",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-29. Pool opened 2026-09-27, about 1.5 days before this record, and the price rose ~210% over the preceding 24h."
     },
     {
       "address": "0x44b453d355835ce1269fc11d3fa4161c0dcc0087",

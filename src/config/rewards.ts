@@ -544,6 +544,36 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Shown as ARGOSBOT because its real ticker, ARGOS, is one letter from ARGUS — an unrelated token already paid out by this machine. Admitted despite failing the liquidity and volume thresholds: about $23k and $66k against floors of $50k and $100k, making it the shallowest pool in the reward set, so a large win may be hard to sell near the quoted price. It passes every contract check, and is a minimal proxy of the immutable kind.',
   },
+  /*
+   * UBI, admitted at the operator's direction.
+   *
+   * The first admission in some time to clear both market thresholds outright: about $124k of
+   * liquidity against a $50k floor and roughly $1.07m of 24h volume against $100k. On depth
+   * alone it is the healthiest thing in this list.
+   *
+   * It fails on age, and that is the whole point of the entry. The pool opened on 2026-09-27,
+   * about a day and a half before admission, against a three-day floor — and the price rose
+   * roughly 210% in the twenty-four hours before it was added. Those two facts explain each
+   * other: the volume that clears the threshold so comfortably is the volume of a launch
+   * running hot, not of a settled market, and a three-day minimum exists precisely because a
+   * day-old market has not yet shown what it does when the launch attention stops.
+   *
+   * The practical consequence for a player is the reward band. Bands are fixed in tokens, so
+   * at a 210% daily move this one is wrong within hours in whichever direction the price
+   * went, and no resize cadence catches that. It is admitted with that stated rather than
+   * with the usual thin-pool wording, which would describe the opposite problem.
+   *
+   * Contract side it is clean: transfer probed against live mainnet state moved the full
+   * amount, zero fee, standard bool return, 18 decimals, no ticker collision. The address is
+   * a 44-byte Solady clone delegating to 0xd2737ccc93c511b528f50ce3745961d01512c4e8 — a
+   * gas-optimised variant of the minimal proxy, and like EIP-1167 it carries the
+   * implementation in its bytecode, so it cannot be repointed.
+   */
+  '0xfa3ffdf775cc3f6ac82cd258fb948a8a21e1749e': {
+    reason: 'Admitted by the operator despite a pool younger than the published minimum.',
+    disclose:
+      'Admitted despite being younger than the three-day minimum — the pool opened on 2026-09-27 — and with an unmeasured holder count. Unusually for this list it clears both liquidity and volume comfortably, at about $124k and $1.07m, but that volume belongs to a launch that rose roughly 210% in its first day. Reward amounts are fixed in tokens, so at that rate of movement what this pays is likely to differ from the intended $0.95–$2.00 within hours. It passes every contract check and cannot be upgraded.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

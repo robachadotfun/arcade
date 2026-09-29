@@ -592,6 +592,16 @@
       "holders": 0,
       "ageDays": 16,
       "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-28. Ticker ARGOS is one letter from ARGUS, which is already a reward on the same machine."
+    },
+    {
+      "address": "0xfa3ffdf775cc3f6ac82cd258fb948a8a21e1749e",
+      "label": "UBI",
+      "ticker": "UBI",
+      "volume24hUsd": 1069562,
+      "liquidityUsd": 124036,
+      "holders": 0,
+      "ageDays": 1,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-29. Pool opened 2026-09-27, about 1.5 days before this record, and the price rose ~210% over the preceding 24h."
     }
   ]
 }

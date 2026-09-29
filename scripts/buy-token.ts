@@ -30,7 +30,7 @@
  *   pnpm buy:token <tokenAddress> <amountOut> --max-usdc <usdc> [--fee 10000] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue arctide --spend <usdc> [--slippage 5] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue v4      --spend <usdc> [--slippage 5] [--confirm]
- *   pnpm buy:token <tokenAddress> --venue dag --hook <address> --spend <usdc> [--fee 10000] [--confirm]
+ *   pnpm buy:token <tokenAddress> --venue dag --hook <addr> --spend <usdc> [--fee 10000] [--tick-spacing 200] [--confirm]
  *
  * Four venues, because Arc has no single market. `v4` is the Uniswap v4 pool paid in NATIVE
  * USDC behind the launchpad hook (FAZE, AF); `dag` is the DEX router used by pools whose hook
@@ -220,9 +220,11 @@ async function buyWithNative(tokenArg: string, venue: 'v4' | 'dag'): Promise<voi
     data = encodeExactInSingle({key, zeroForOne: true, amountIn: value, amountOutMinimum: minOut, deadline})
   } else {
     /*
-     * The pool's fee was fixed at 10000 here, which held until oBrain: its pool charges no
-     * static fee at all, and a key carrying the wrong fee addresses a pool that was never
-     * initialised, so the router reverts with nothing to say.
+     * Three of the five PoolKey fields were fixed constants here, and two of them have since
+     * turned out to vary. The fee was 10000 until oBrain, whose pool charges none. The tick
+     * spacing was 200 until UBI, whose pool uses 60. Either wrong value hashes to a pool that
+     * was never initialised, so the router reverts with nothing to say — the failure looks
+     * identical to a hostile hook, which is how the first one cost an afternoon.
      *
      * The currency ORDER is deliberately the trade's direction — tokenIn, then tokenOut —
      * and not the sorted order a PoolKey hash would use. That looks wrong and is not: a real
@@ -231,12 +233,14 @@ async function buyWithNative(tokenArg: string, venue: 'v4' | 'dag'): Promise<voi
      */
     const feeArg = Number.parseInt(flag('fee') ?? '10000', 10)
     if (!Number.isInteger(feeArg) || feeArg < 0) throw new Error('--fee must be a non-negative integer.')
+    const tickArg = Number.parseInt(flag('tick-spacing') ?? '200', 10)
+    if (!Number.isInteger(tickArg) || tickArg <= 0) throw new Error('--tick-spacing must be a positive integer.')
 
     to = ARCADE_DEX_ROUTER
     data = encodeDagSwap({
       tokenIn: ERC20_USDC, tokenOut: token, amountIn: parseUnits(spend, USDC_DECIMALS),
       minAmountOut: minOut, receiver: account, deadline,
-      key: {currency0: ERC20_USDC, currency1: token, fee: feeArg, tickSpacing: 200, hooks: getAddress(hookArg!)},
+      key: {currency0: ERC20_USDC, currency1: token, fee: feeArg, tickSpacing: tickArg, hooks: getAddress(hookArg!)},
     })
   }
 
