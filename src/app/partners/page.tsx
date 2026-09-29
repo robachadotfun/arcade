@@ -31,6 +31,14 @@ const PER_SPIN_USDC = '0.05'
  * A share of profit would be larger and less believable, because it would require trusting
  * Arcade's accounting for costs nobody outside can see. A fixed amount per spin can be checked
  * against the chain by anyone who can count spins.
+ *
+ * ## On not printing the current total
+ *
+ * An earlier version of this page multiplied the rate by the spins settled so far and printed
+ * the result. That figure is deliberately not here now — but note it is not concealed either,
+ * because it cannot be: spins are onchain and the rate is stated, so anyone who wants the
+ * product can have it in a minute. The section below says Arcade is early in plain words
+ * instead, which is the same admission without inviting a reader to anchor on one day's number.
  */
 export default function PartnersPage() {
   return (
@@ -154,19 +162,18 @@ export default function PartnersPage() {
 
         {/* ============================================================== honesty about scale */}
         <section className="mt-14 border-t border-hairline pt-12">
-          <SectionHead eyebrow="Scale" title="What this is worth today." />
+          <SectionHead eyebrow="Scale" title="Arcade is early." />
 
           <p className="mt-6 max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-muted">
-            Twenty-eight spins have settled so far, across twelve distinct players, for 56 USDC
-            of revenue. At five cents a spin, a project that had referred every single one of
-            them would have earned $1.40.
+            The machine has been live for days, not months, and the rate above is worth what
+            that implies. This is a set of published terms fixed in advance, for a platform you
+            think will be busier later — not income today.
           </p>
 
           <p className="mt-4 max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-muted">
-            We are telling you that rather than quoting a rate against a volume nobody has hit,
-            because the first thing a serious partner does is divide one by the other. This is
-            worth taking now if you think Arcade will be busier later and you would rather have
-            published terms than negotiate them then. It is not worth taking as income today.
+            We would rather you took it on that basis than on a projection. Every spin is
+            onchain and the rate is five cents, so the arithmetic is available to you now and at
+            any point after — which is the reason to agree terms while they are simple.
           </p>
         </section>
 
