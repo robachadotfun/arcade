@@ -44,9 +44,17 @@ export const ARC_CHAIN_ID = 5042
 export type TowerQuote = {
   inputToken: Address
   outputToken: Address
+  /**
+   * These three are NOT the token's atomic units, despite what the API reference calls them.
+   * They are normalised to 18 decimals; the `*Native` fields below carry the real amounts.
+   * See {@link nativeAmounts}.
+   */
   inputAmount: string
   outputAmount: string
   minOut: string
+  inputAmountNative?: string
+  outputAmountNative?: string
+  minOutNative?: string
   priceImpact: number
   gasEstimate: string
   feeBps: number
@@ -142,6 +150,28 @@ export async function buildTx(quoteData: TowerQuote, userAddress: Address): Prom
 }
 
 /**
+ * The amounts in each token's own decimals.
+ *
+ * Tower returns every figure twice. `outputAmount` and `minOut` are rescaled to 18 decimals,
+ * and `outputAmountNative` / `minOutNative` are the token's actual atomic units. The API
+ * reference describes the first pair as "atomic units", which is what makes this worth a
+ * named function rather than a field access: asking for 1 USDC of EURC returns
+ * `minOut: 871411000000000000` and `minOutNative: 871411`, and EURC has six decimals. Treating
+ * the former as a floor asks for 871 million EURC, which no swap can meet, so the trade
+ * reverts — or worse, the same confusion in the other direction sets a floor of nearly zero.
+ *
+ * The `*Native` values are preferred wherever present, and the rescaled ones are used only as
+ * a fallback for a response shape that does not include them.
+ */
+export function nativeAmounts(q: TowerQuote): {inputAmount: bigint; outputAmount: bigint; minOut: bigint} {
+  return {
+    inputAmount: BigInt(q.inputAmountNative ?? q.inputAmount),
+    outputAmount: BigInt(q.outputAmountNative ?? q.outputAmount),
+    minOut: BigInt(q.minOutNative ?? q.minOut),
+  }
+}
+
+/**
  * Rejects a quote whose own figures do not agree, before any of it reaches a signer.
  *
  * A quote is a claim made by someone else about a trade this process is about to pay for. The
@@ -161,14 +191,13 @@ export function assertQuoteIsSane(
       `Tower quoted a different pair than asked for: ${q.inputToken} -> ${q.outputToken}`,
     )
   }
-  if (BigInt(q.inputAmount) !== expect.inputAmount) {
+  if (nativeAmounts(q).inputAmount !== expect.inputAmount) {
     throw new TowerError(
-      `Tower quoted a different input: asked ${expect.inputAmount}, quoted ${q.inputAmount}`,
+      `Tower quoted a different input: asked ${expect.inputAmount}, quoted ${nativeAmounts(q).inputAmount}`,
     )
   }
 
-  const out = BigInt(q.outputAmount)
-  const min = BigInt(q.minOut)
+  const {outputAmount: out, minOut: min} = nativeAmounts(q)
   if (out <= 0n) throw new TowerError('Tower quoted a zero output.')
   if (min <= 0n) {
     throw new TowerError('Tower quoted minOut = 0, which is no floor at all; refusing the route.')

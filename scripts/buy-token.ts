@@ -52,6 +52,7 @@ import {
   quote as towerQuote,
   buildTx as towerBuildTx,
   assertQuoteIsSane,
+  nativeAmounts,
 } from './operator/tower'
 import {
   ARCTIDE_ROUTER,
@@ -337,11 +338,12 @@ async function buyOnTower(tokenArg: string): Promise<void> {
     maxPriceImpactPct: maxImpact,
   })
 
-  const out = formatUnits(BigInt(q.outputAmount), Number(decimals))
-  const floor = formatUnits(BigInt(q.minOut), Number(decimals))
+  const amounts = nativeAmounts(q)
+  const out = formatUnits(amounts.outputAmount, Number(decimals))
+  const floor = formatUnits(amounts.minOut, Number(decimals))
   process.stdout.write(
     `\nBuying ${symbol} on Tower\n` +
-      `  route        ${q.dexName ?? q.dexId} (${q.dexId})\n` +
+      `  route        ${q.dexName ?? q.dexId ?? 'Tower'}\n` +
       `  spending     ${spend} USDC\n` +
       `  quoted       ${out} ${symbol}\n` +
       `  floor        ${floor} ${symbol}  (${slippageBps} bps slippage)\n` +
@@ -353,7 +355,17 @@ async function buyOnTower(tokenArg: string): Promise<void> {
 
   if (built.approval) {
     process.stdout.write(`  approval needed for ${built.approval.to}\n`)
-    if (confirm) {
+    if (!confirm) {
+      // Simulating the swap before the allowance exists only ever produces
+      // "transfer amount exceeds allowance", which reads as a broken route rather than a
+      // missing prerequisite. Say what is actually true and stop here.
+      process.stdout.write(
+        '\n  The swap cannot be simulated until that approval is on chain, so this dry run\n' +
+          '  stops here. Re-run with --confirm to approve, simulate and swap in order.\n',
+      )
+      return
+    }
+    {
       const hash = await sendWithRetry(() =>
         ctx.walletClient!.sendTransaction({
           to: getAddress(built.approval!.to), data: built.approval!.data,
@@ -391,7 +403,7 @@ async function buyOnTower(tokenArg: string): Promise<void> {
   })
   const received = after - before
   process.stdout.write(`  ✓ ${hash}\n  received ${formatUnits(received, Number(decimals))} ${symbol}\n`)
-  if (received < BigInt(q.minOut)) {
+  if (received < amounts.minOut) {
     process.stdout.write(
       `  ! received less than the quoted floor of ${floor} ${symbol} — the route did not honour minOut\n`,
     )
