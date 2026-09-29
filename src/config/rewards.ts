@@ -411,6 +411,21 @@ const ADMITTED_COLLISIONS: Record<
    * to say rather than the generic thin-pool wording.
    *
    * If volume keeps falling this should come out of the table, not get a longer caveat.
+   *
+   * ## Retired 2026-09-29
+   *
+   * Volume kept falling. It reads about $530 a day now against roughly $9k of liquidity —
+   * an order of magnitude below the next weakest reward — so BCAT has been removed from the
+   * Discovery table rather than given the longer caveat the note above warned against.
+   *
+   * The immediate reason to act was a hard limit rather than the market: the contract caps a
+   * version at 24 tiers, $SOLD made 25, and something had to come out. But the ranking that
+   * chose BCAT was the one written here months earlier, and the honest reading is that this
+   * should have happened on its own before a cap forced the question.
+   *
+   * The entry is kept rather than deleted. It is the record of a token admitted on figures
+   * that later stopped being true, which is the failure mode this file exists to make visible.
+   * Its vault inventory is untouched and it can be re-admitted if the market returns.
    */
   '0x258bbb25fb1bc34c87212f8dab34838854ef2d5d': {
     reason: 'Passed the thresholds when admitted, then fell below them while live.',
