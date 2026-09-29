@@ -1,9 +1,9 @@
 {
   "note": "Real, published logos for verified Arcade reward tokens, keyed by contract address. No logo here is drawn, generated or approximated — a token with no published mark keeps a typographic monogram instead. Regenerate with: pnpm fetch:logos",
-  "generatedAt": "2026-09-28T14:00:38.895Z",
+  "generatedAt": "2026-09-29T03:03:31.429Z",
   "summary": {
-    "verifiedTokens": 28,
-    "withLogo": 26,
+    "verifiedTokens": 30,
+    "withLogo": 28,
     "withMonogram": 2
   },
   "logos": [
@@ -14,8 +14,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x75d658f8101fbe6dc217fbba7e20a0312af5fa2e.png",
       "contentType": "image/webp",
-      "bytes": 3258,
-      "fetchedAt": "2026-09-28T14:00:16.935Z"
+      "bytes": 3334,
+      "fetchedAt": "2026-09-29T03:03:12.392Z"
     },
     {
       "address": "0xbc3764348131fe1962f267f442a8fe30459ededd",
@@ -24,8 +24,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbc3764348131fe1962f267f442a8fe30459ededd.png",
       "contentType": "image/webp",
-      "bytes": 4574,
-      "fetchedAt": "2026-09-28T14:00:31.893Z"
+      "bytes": 4634,
+      "fetchedAt": "2026-09-29T03:03:25.173Z"
     },
     {
       "address": "0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6",
@@ -34,8 +34,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6.png",
       "contentType": "image/webp",
-      "bytes": 15926,
-      "fetchedAt": "2026-09-28T14:00:37.665Z"
+      "bytes": 16314,
+      "fetchedAt": "2026-09-29T03:03:30.326Z"
     },
     {
       "address": "0x29316db42ff99f640fd4d1bb169635b6318cd430",
@@ -44,8 +44,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x29316db42ff99f640fd4d1bb169635b6318cd430.png",
       "contentType": "image/webp",
-      "bytes": 7618,
-      "fetchedAt": "2026-09-28T14:00:30.766Z"
+      "bytes": 7764,
+      "fetchedAt": "2026-09-29T03:03:22.819Z"
     },
     {
       "address": "0x07704b06981ea962b87296362a1281484d160000",
@@ -54,8 +54,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x07704b06981ea962b87296362a1281484d160000.png",
       "contentType": "image/webp",
-      "bytes": 4232,
-      "fetchedAt": "2026-09-28T14:00:17.997Z"
+      "bytes": 4458,
+      "fetchedAt": "2026-09-29T03:03:13.240Z"
     },
     {
       "address": "0xbe0cad585ea2d13de2f4e36376be755c0afd8b97",
@@ -64,8 +64,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbe0cad585ea2d13de2f4e36376be755c0afd8b97.png",
       "contentType": "image/webp",
-      "bytes": 10044,
-      "fetchedAt": "2026-09-28T14:00:33.993Z"
+      "bytes": 10142,
+      "fetchedAt": "2026-09-29T03:03:26.847Z"
     },
     {
       "address": "0xa3de1dda14e4b3ce2eee2f8c1e49315effc15be2",
@@ -74,8 +74,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xa3de1dda14e4b3ce2eee2f8c1e49315effc15be2.png",
       "contentType": "image/webp",
-      "bytes": 2822,
-      "fetchedAt": "2026-09-28T14:00:15.162Z"
+      "bytes": 2850,
+      "fetchedAt": "2026-09-29T03:03:10.493Z"
     },
     {
       "address": "0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52",
@@ -84,8 +84,18 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x1ea1e4f9a9975f1f6e9c0a9f6e8ada7a66e6de52.png",
       "contentType": "image/webp",
-      "bytes": 5012,
-      "fetchedAt": "2026-09-28T14:00:20.134Z"
+      "bytes": 5272,
+      "fetchedAt": "2026-09-29T03:03:14.722Z"
+    },
+    {
+      "address": "0xe86688530c456e099732f953ed7aa7c583026680",
+      "symbol": "ARGOS",
+      "file": "0xe86688530c456e099732f953ed7aa7c583026680.webp",
+      "source": "Arc token image service (api.tollylabs.com)",
+      "sourceUrl": "https://api.tollylabs.com/token-image/0xe86688530c456e099732f953ed7aa7c583026680.png",
+      "contentType": "image/webp",
+      "bytes": 5492,
+      "fetchedAt": "2026-09-29T03:03:27.711Z"
     },
     {
       "address": "0xece5ca8bf9220718e5727754026757512212cb3c",
@@ -94,8 +104,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xece5ca8bf9220718e5727754026757512212cb3c.png",
       "contentType": "image/webp",
-      "bytes": 17742,
-      "fetchedAt": "2026-09-28T14:00:07.911Z"
+      "bytes": 18218,
+      "fetchedAt": "2026-09-29T03:03:05.227Z"
     },
     {
       "address": "0x258bbb25fb1bc34c87212f8dab34838854ef2d5d",
@@ -104,8 +114,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x258bbb25fb1bc34c87212f8dab34838854ef2d5d.png",
       "contentType": "image/webp",
-      "bytes": 5748,
-      "fetchedAt": "2026-09-28T14:00:36.534Z"
+      "bytes": 5904,
+      "fetchedAt": "2026-09-29T03:03:29.507Z"
     },
     {
       "address": "0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2",
@@ -114,8 +124,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xa37c1f9b2483b3b45ced74b10e19223aa76d18f2.png",
       "contentType": "image/webp",
-      "bytes": 11642,
-      "fetchedAt": "2026-09-28T14:00:35.194Z"
+      "bytes": 11820,
+      "fetchedAt": "2026-09-29T03:03:28.632Z"
     },
     {
       "address": "0x171a4217b86a807a64eb94757db6849fb4bdbaa0",
@@ -126,7 +136,7 @@
       "contentType": null,
       "bytes": null,
       "note": "Circle Wrapped Bitcoin (cirBTC) publishes no logo through any source checked, including the Arc token image service and CoinGecko. It keeps its typographic monogram rather than being given an invented mark.",
-      "fetchedAt": "2026-09-28T14:00:05.304Z"
+      "fetchedAt": "2026-09-29T03:03:03.471Z"
     },
     {
       "address": "0xeb64987643db71c76b2a2be7e723decc995e5b37",
@@ -135,8 +145,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xeb64987643db71c76b2a2be7e723decc995e5b37.png",
       "contentType": "image/webp",
-      "bytes": 14624,
-      "fetchedAt": "2026-09-28T14:00:14.076Z"
+      "bytes": 15368,
+      "fetchedAt": "2026-09-29T03:03:09.699Z"
     },
     {
       "address": "0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b",
@@ -145,8 +155,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b.png",
       "contentType": "image/webp",
-      "bytes": 6110,
-      "fetchedAt": "2026-09-28T14:00:16.103Z"
+      "bytes": 6388,
+      "fetchedAt": "2026-09-29T03:03:11.314Z"
     },
     {
       "address": "0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1",
@@ -155,8 +165,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbef5f6d51cb62b58e6a8f77868681825c6fe21c1.png",
       "contentType": "image/webp",
-      "bytes": 2062,
-      "fetchedAt": "2026-09-28T14:00:10.904Z"
+      "bytes": 2150,
+      "fetchedAt": "2026-09-29T03:03:07.517Z"
     },
     {
       "address": "0x394d38f807ee0027a182216f5e67a15ae441fa2e",
@@ -165,8 +175,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x394d38f807ee0027a182216f5e67a15ae441fa2e.png",
       "contentType": "image/webp",
-      "bytes": 3306,
-      "fetchedAt": "2026-09-28T14:00:11.879Z"
+      "bytes": 3382,
+      "fetchedAt": "2026-09-29T03:03:08.415Z"
     },
     {
       "address": "0x3ead4e80e9e5bc0e01682d7ee74c4881b040d3ea",
@@ -175,8 +185,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x3ead4e80e9e5bc0e01682d7ee74c4881b040d3ea.png",
       "contentType": "image/webp",
-      "bytes": 1872,
-      "fetchedAt": "2026-09-28T14:00:22.516Z"
+      "bytes": 1878,
+      "fetchedAt": "2026-09-29T03:03:16.166Z"
     },
     {
       "address": "0x2164bb17a2d38c1b5170e987b2c0416df1efc752",
@@ -185,8 +195,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x2164bb17a2d38c1b5170e987b2c0416df1efc752.png",
       "contentType": "image/webp",
-      "bytes": 2804,
-      "fetchedAt": "2026-09-28T14:00:13.142Z"
+      "bytes": 3012,
+      "fetchedAt": "2026-09-29T03:03:09.017Z"
     },
     {
       "address": "0x28f986a61e078795639f239675582a12b4cf7f01",
@@ -195,8 +205,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x28f986a61e078795639f239675582a12b4cf7f01.png",
       "contentType": "image/webp",
-      "bytes": 7998,
-      "fetchedAt": "2026-09-28T14:00:29.505Z"
+      "bytes": 8214,
+      "fetchedAt": "2026-09-29T03:03:22.000Z"
     },
     {
       "address": "0xf76b1d00bd3d63a37246b5f512074e864010e33d",
@@ -205,8 +215,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xf76b1d00bd3d63a37246b5f512074e864010e33d.png",
       "contentType": "image/webp",
-      "bytes": 6588,
-      "fetchedAt": "2026-09-28T14:00:19.047Z"
+      "bytes": 6884,
+      "fetchedAt": "2026-09-29T03:03:14.044Z"
     },
     {
       "address": "0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae",
@@ -215,8 +225,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x93d5b8c53ee763c2c4522bf0d958ce51af4360ae.png",
       "contentType": "image/webp",
-      "bytes": 2402,
-      "fetchedAt": "2026-09-28T14:00:33.065Z"
+      "bytes": 2472,
+      "fetchedAt": "2026-09-29T03:03:26.022Z"
     },
     {
       "address": "0x5b7fd6e1dd3b1b47888252cad8eef3ae2b4fc6d7",
@@ -227,7 +237,7 @@
       "contentType": null,
       "bytes": null,
       "note": "No logo retrieved. Tried: Arc token image service (api.tollylabs.com): HTTP 404. Falls back to a typographic monogram rather than an invented mark.",
-      "fetchedAt": "2026-09-28T14:00:38.595Z"
+      "fetchedAt": "2026-09-29T03:03:31.127Z"
     },
     {
       "address": "0x92395d0cd51bb504a39e53105cb6862948af1b8e",
@@ -236,8 +246,8 @@
       "source": "DexScreener token info (api.dexscreener.com)",
       "sourceUrl": "https://cdn.dexscreener.com/cms/images/aewL1HOJj2r1mS45?width=800&height=800&quality=95&format=auto",
       "contentType": "image/webp",
-      "bytes": 9436,
-      "fetchedAt": "2026-09-28T14:00:26.748Z"
+      "bytes": 9764,
+      "fetchedAt": "2026-09-29T03:03:20.300Z"
     },
     {
       "address": "0xbc43ce8dec648ea298c4275559b81d6261c90b67",
@@ -246,8 +256,18 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xbc43ce8dec648ea298c4275559b81d6261c90b67.png",
       "contentType": "image/webp",
-      "bytes": 4536,
-      "fetchedAt": "2026-09-28T14:00:08.746Z"
+      "bytes": 4598,
+      "fetchedAt": "2026-09-29T03:03:05.850Z"
+    },
+    {
+      "address": "0xfa3ffdf775cc3f6ac82cd258fb948a8a21e1749e",
+      "symbol": "UBI",
+      "file": "0xfa3ffdf775cc3f6ac82cd258fb948a8a21e1749e.webp",
+      "source": "DexScreener token info (api.dexscreener.com)",
+      "sourceUrl": "https://cdn.dexscreener.com/cms/images/2B6x2CkHwuR4Lcqd?width=800&height=800&quality=95&format=auto",
+      "contentType": "image/webp",
+      "bytes": 5840,
+      "fetchedAt": "2026-09-29T03:03:17.543Z"
     },
     {
       "address": "0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9",
@@ -256,8 +276,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x8e98a62a995a50eca9979bfa016f91bf36a8f9d9.png",
       "contentType": "image/webp",
-      "bytes": 11942,
-      "fetchedAt": "2026-09-28T14:00:23.950Z"
+      "bytes": 12294,
+      "fetchedAt": "2026-09-29T03:03:18.206Z"
     },
     {
       "address": "0xf1b72b46e2364356c1d8343590e4c0deefb19c3b",
@@ -266,8 +286,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0xf1b72b46e2364356c1d8343590e4c0deefb19c3b.png",
       "contentType": "image/webp",
-      "bytes": 2282,
-      "fetchedAt": "2026-09-28T14:00:27.989Z"
+      "bytes": 2294,
+      "fetchedAt": "2026-09-29T03:03:21.119Z"
     },
     {
       "address": "0x128cc466b61f542da60c70e3aa11c10e19b84edb",
@@ -276,8 +296,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x128cc466b61f542da60c70e3aa11c10e19b84edb.png",
       "contentType": "image/webp",
-      "bytes": 8898,
-      "fetchedAt": "2026-09-28T14:00:09.696Z"
+      "bytes": 9118,
+      "fetchedAt": "2026-09-29T03:03:06.672Z"
     },
     {
       "address": "0x178b01f61cbea1d2a5581fe1621be607835ec349",
@@ -286,8 +306,8 @@
       "source": "Arc token image service (api.tollylabs.com)",
       "sourceUrl": "https://api.tollylabs.com/token-image/0x178b01f61cbea1d2a5581fe1621be607835ec349.png",
       "contentType": "image/webp",
-      "bytes": 8870,
-      "fetchedAt": "2026-09-28T14:00:21.065Z"
+      "bytes": 9112,
+      "fetchedAt": "2026-09-29T03:03:15.609Z"
     }
   ]
 }

@@ -22,7 +22,9 @@
       "modifications": "None. Used unmodified apart from display sizing and CSS cropping.",
       "usage": "Editorial accent — architectural curves, used beside the fairness mechanism.",
       "subject": "White ribbed architectural vault: thin repeating curves against pale light.",
-      "fetchedAt": "2026-09-17T22:29:08.835Z"
+      "fetchedAt": "2026-09-17T22:29:08.835Z",
+      "bytes": 119194,
+      "contentType": "image/webp"
     },
     {
       "filename": "machined-ring.webp",
@@ -38,7 +40,9 @@
       "modifications": "None. Used unmodified apart from display sizing and CSS cropping.",
       "usage": "Editorial accent — precision circular machinery, used beside machine detail.",
       "subject": "A sectioned turbofan: a precisely machined circular component, head-on.",
-      "fetchedAt": "2026-09-17T22:30:03.381Z"
+      "fetchedAt": "2026-09-17T22:30:03.381Z",
+      "bytes": 74114,
+      "contentType": "image/webp"
     }
   ]
 }

@@ -156,6 +156,21 @@ async function optimizeDir(target: Target): Promise<{before: number; after: numb
     const meta = await image.metadata()
     const width = meta.width ?? target.maxWidth
 
+    /*
+     * A WebP already within the target width is finished; re-encoding it only loses quality.
+     *
+     * The size guard below is not enough on its own, because it only rejects a result that
+     * came out LARGER — and lossy re-encoding usually comes out smaller precisely because it
+     * threw detail away. So every run of this script was quietly degrading every logo it had
+     * already converted, and reporting the loss as a saving: one run took 1.2 MB to 1.2 MB
+     * across 24 logos and called it 17 KB saved.
+     */
+    if (extname(file).toLowerCase() === '.webp' && width <= target.maxWidth) {
+      before += originalSize
+      after += originalSize
+      continue
+    }
+
     let pipeline = image.resize({
       width: Math.min(width, target.maxWidth),
       withoutEnlargement: true,
