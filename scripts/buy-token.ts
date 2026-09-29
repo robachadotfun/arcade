@@ -29,7 +29,7 @@
  * Usage:
  *   pnpm buy:token <tokenAddress> <amountOut> --max-usdc <usdc> [--fee 10000] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue arctide --spend <usdc> [--slippage 5] [--confirm]
- *   pnpm buy:token <tokenAddress> --venue v4      --spend <usdc> [--slippage 5] [--confirm]
+ *   pnpm buy:token <tokenAddress> --venue v4 --spend <usdc> [--hook <addr>] [--fee 0] [--tick-spacing 200] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue dag --hook <addr> --spend <usdc> [--fee 10000] [--tick-spacing 200] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue tower --spend <usdc> [--slippage 1] [--max-impact 5] [--confirm]
  *
@@ -219,8 +219,21 @@ async function buyWithNative(tokenArg: string, venue: 'v4' | 'dag'): Promise<voi
   let to: Address
   let data: Hex
   if (venue === 'v4') {
+    /*
+     * The launchpad hook and a tick spacing of 200 were constants here, which held for FAZE
+     * and AF. $SOLD is a native-USDC v4 pool too but behind a different hook and at a tick
+     * spacing of 1, so both are overridable — the same lesson the dag venue learned twice.
+     * Three of the five PoolKey fields have now varied in practice; only the currencies have
+     * stayed put, and those are determined by the venue rather than by the pool.
+     */
+    const tickArg = Number.parseInt(flag('tick-spacing') ?? '200', 10)
+    if (!Number.isInteger(tickArg) || tickArg <= 0) throw new Error('--tick-spacing must be a positive integer.')
     const key: PoolKey = {
-      currency0: NATIVE, currency1: token, fee: 0, tickSpacing: 200, hooks: V4_LAUNCHPAD_HOOK,
+      currency0: NATIVE,
+      currency1: token,
+      fee: Number.parseInt(flag('fee') ?? '0', 10),
+      tickSpacing: tickArg,
+      hooks: hookArg ? getAddress(hookArg) : V4_LAUNCHPAD_HOOK,
     }
     to = UNIVERSAL_ROUTER
     data = encodeExactInSingle({key, zeroForOne: true, amountIn: value, amountOutMinimum: minOut, deadline})

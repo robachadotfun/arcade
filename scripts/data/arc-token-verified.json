@@ -1,6 +1,6 @@
 {
   "note": "Produced by scripts/verify-arc-tokens.ts. Every onchain field was read from Arc Mainnet at the block below. marketSnapshot values are a point-in-time third-party snapshot and are NOT used for treasury solvency — reward quantities are explicitly configured per machine version. \"eligible\" means Arcade verified the token contract and its transfer behaviour; it is NOT an endorsement of the asset or any claim about its value.",
-  "generatedAt": "2026-09-29T10:55:11.310Z",
+  "generatedAt": "2026-09-29T17:28:22.156Z",
   "chainId": 5042,
   "verifiedAtBlock": "22430145",
   "rpcUrl": "https://rpc.mainnet.arc.io",
@@ -39,19 +39,19 @@
     }
   ],
   "summary": {
-    "candidates": 52,
+    "candidates": 53,
     "eligible": 14,
-    "rejected": 38,
+    "rejected": 39,
     "rejectedReasonTally": {
       "transferVerified": 12,
       "noTransferFee": 12,
       "standardBoolReturn": 12,
-      "meetsVolume": 16,
+      "meetsVolume": 17,
       "meetsAge": 19,
       "tickerCollision": 6,
-      "meetsHolders": 18,
-      "researchFlag": 17,
-      "meetsLiquidity": 21,
+      "meetsHolders": 19,
+      "researchFlag": 18,
+      "meetsLiquidity": 22,
       "hasNonZeroSupply": 2
     }
   },
@@ -2094,6 +2094,59 @@
       ],
       "eligible": false,
       "tickerCollision": false
+    },
+    {
+      "address": "0x2a7a8c69a7462a2737a3b41188bc7a36d5555f2f",
+      "onchain": {
+        "name": "$SOLD",
+        "symbol": "SOLD",
+        "decimals": 18,
+        "totalSupply": "1000000000000000000000000000",
+        "hasCode": true,
+        "codeSize": 14874
+      },
+      "transferBehaviour": {
+        "tested": true,
+        "holderTested": "0x37ae882075f5c9ffcdf4821c862aea2708d58876",
+        "amountSent": "1317478333142779222072697",
+        "amountReceived": "1317478333142779222072697",
+        "feeBps": 0,
+        "callSucceeded": true,
+        "returnsBoolTrue": true,
+        "note": "transfer() moved the full amount and returned true against live mainnet state."
+      },
+      "marketSnapshot": {
+        "volume24hUsd": 13056,
+        "liquidityUsd": 25967,
+        "holders": 0,
+        "ageDays": 13,
+        "source": "https://www.arcscreener.live/",
+        "capturedAt": "2026-09-18"
+      },
+      "checks": {
+        "hasContractCode": true,
+        "exposesSymbol": true,
+        "exposesName": true,
+        "exposesDecimals": true,
+        "hasNonZeroSupply": true,
+        "isNotCanonicalUsdc": true,
+        "transferVerified": true,
+        "noTransferFee": true,
+        "standardBoolReturn": true,
+        "meetsLiquidity": false,
+        "meetsVolume": false,
+        "meetsHolders": false,
+        "meetsAge": true
+      },
+      "failureReasons": [
+        "meetsLiquidity",
+        "meetsVolume",
+        "meetsHolders",
+        "researchFlag"
+      ],
+      "eligible": false,
+      "tickerCollision": false,
+      "researchFlag": "Holder count not measured — recorded as 0 rather than estimated. Market data DexScreener 2026-09-29; 24h volume is the lowest of any token admitted to the reward table."
     },
     {
       "address": "0x0bffa97f774824e9da843699aedd2835cb1b8022",

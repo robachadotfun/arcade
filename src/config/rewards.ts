@@ -599,6 +599,29 @@ const ADMITTED_COLLISIONS: Record<
     disclose:
       'Admitted despite failing the liquidity and volume thresholds by the widest margin of any reward here — about $22k and $33k against floors of $50k and $100k — and with an unmeasured holder count. Its whole fully diluted value is roughly $34k, most of it sitting in the pool itself, so the depth a win would be sold into is most of what the token is. A typical win is small enough to sell today; treat that as a statement about today. It passes every contract check.',
   },
+  /*
+   * $SOLD, admitted at the operator's direction.
+   *
+   * Contract side clean: transfer probed against live mainnet state moved the full amount,
+   * zero fee, standard bool return, 18 decimals, no ticker collision. Not a proxy, and at
+   * 14,874 bytes it is by some distance the largest implementation in the reward set — that
+   * is not a finding in itself, but it is more surface than a plain ERC-20 needs, and the
+   * probe only demonstrates what `transfer` does for the holder it was run against.
+   *
+   * It fails all three market checks. Liquidity is about $26k against a $50k floor, and 24h
+   * volume is about $13k against $100k — the lowest of anything admitted here, a third of
+   * Mosslings and a fifth of Argos Bot.
+   *
+   * What that means concretely: a maximum win is around 5,800 SOLD, roughly $2, which is a
+   * sixth of a day's entire trading volume. One prize sells. Several winners selling on the
+   * same day are a visible share of the market, and the disclosure says so, because at this
+   * volume the risk is not the depth of the pool but how few other people are trading.
+   */
+  '0x2a7a8c69a7462a2737a3b41188bc7a36d5555f2f': {
+    reason: 'Admitted by the operator despite the lowest 24h volume in the reward set.',
+    disclose:
+      'Admitted despite failing the liquidity, volume and holder-count thresholds — about $26k of liquidity and about $13k of 24h volume against floors of $50k and $100k. That volume is the lowest of any reward here, and a single maximum win is close to a sixth of a day of it, so several winners selling at once would be a visible share of the market. It passes every contract check.',
+  },
 }
 
 /** Findings an admission may waive. Anything else keeps the token out. */

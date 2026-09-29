@@ -612,6 +612,16 @@
       "holders": 0,
       "ageDays": 13,
       "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-29. FDV about $34k, of which roughly two thirds sits in the pool."
+    },
+    {
+      "address": "0x2a7a8c69a7462a2737a3b41188bc7a36d5555f2f",
+      "label": "$SOLD",
+      "ticker": "SOLD",
+      "volume24hUsd": 13056,
+      "liquidityUsd": 25967,
+      "holders": 0,
+      "ageDays": 13,
+      "researchFlag": "Holder count not measured \u2014 recorded as 0 rather than estimated. Market data DexScreener 2026-09-29; 24h volume is the lowest of any token admitted to the reward table."
     }
   ]
 }
