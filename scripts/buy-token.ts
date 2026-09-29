@@ -31,6 +31,7 @@
  *   pnpm buy:token <tokenAddress> --venue arctide --spend <usdc> [--slippage 5] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue v4      --spend <usdc> [--slippage 5] [--confirm]
  *   pnpm buy:token <tokenAddress> --venue dag --hook <addr> --spend <usdc> [--fee 10000] [--tick-spacing 200] [--confirm]
+ *   pnpm buy:token <tokenAddress> --venue tower --spend <usdc> [--slippage 1] [--max-impact 5] [--confirm]
  *
  * Four venues, because Arc has no single market. `v4` is the Uniswap v4 pool paid in NATIVE
  * USDC behind the launchpad hook (FAZE, AF); `dag` is the DEX router used by pools whose hook
@@ -47,6 +48,11 @@ import {
   UNIVERSAL_ROUTER,
   type PoolKey,
 } from './operator/uniswap-v4'
+import {
+  quote as towerQuote,
+  buildTx as towerBuildTx,
+  assertQuoteIsSane,
+} from './operator/tower'
 import {
   ARCTIDE_ROUTER,
   ARCTIDE_WETH,
@@ -275,9 +281,115 @@ async function buyWithNative(tokenArg: string, venue: 'v4' | 'dag'): Promise<voi
   )
 }
 
+
+/**
+ * Buys through Tower's aggregator.
+ *
+ * Unlike every other venue here this one is exact-input with a real floor: Tower quotes a
+ * `minOut` from the slippage tolerance, so a fill worse than that reverts instead of settling.
+ * `--venue dag` sends a floor of 1 and cannot refuse anything.
+ *
+ * The calldata is built by a third party, so it is simulated against live state before it can
+ * be broadcast, and the token balance is measured either side of the swap rather than trusted
+ * from the quote. A quote is a claim; the balance change is the fact.
+ */
+async function buyOnTower(tokenArg: string): Promise<void> {
+  const spend = flag('spend')
+  if (!spend) throw new Error('Tower buys are exact-input: pass --spend <usdc>.')
+  const slippageBps = Math.round(Number.parseFloat(flag('slippage') ?? '1') * 100)
+  const maxImpact = Number.parseFloat(flag('max-impact') ?? '5')
+  const confirm = process.argv.includes('--confirm')
+
+  const token = getAddress(tokenArg)
+  const ctx = await loadContext()
+  const {publicClient, account} = ctx
+  const amountIn = parseUnits(spend, USDC_DECIMALS)
+
+  const [symbol, decimals, before] = await Promise.all([
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'symbol'}),
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'decimals'}),
+    publicClient.readContract({address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [account!]}),
+  ])
+
+  const q = await towerQuote({
+    inputToken: ERC20_USDC,
+    outputToken: token,
+    inputAmount: amountIn,
+    slippageBps,
+  })
+  assertQuoteIsSane(q, {
+    inputToken: ERC20_USDC,
+    outputToken: token,
+    inputAmount: amountIn,
+    maxPriceImpactPct: maxImpact,
+  })
+
+  const out = formatUnits(BigInt(q.outputAmount), Number(decimals))
+  const floor = formatUnits(BigInt(q.minOut), Number(decimals))
+  process.stdout.write(
+    `\nBuying ${symbol} on Tower\n` +
+      `  route        ${q.dexName ?? q.dexId} (${q.dexId})\n` +
+      `  spending     ${spend} USDC\n` +
+      `  quoted       ${out} ${symbol}\n` +
+      `  floor        ${floor} ${symbol}  (${slippageBps} bps slippage)\n` +
+      `  price impact ${q.priceImpact}%   fee ${q.feeBps} bps\n` +
+      `  held now     ${formatUnits(before, Number(decimals))} ${symbol}\n`,
+  )
+
+  const built = await towerBuildTx(q, account!)
+
+  if (built.approval) {
+    process.stdout.write(`  approval needed for ${built.approval.to}\n`)
+    if (confirm) {
+      const hash = await sendWithRetry(() =>
+        ctx.walletClient!.sendTransaction({
+          to: getAddress(built.approval!.to), data: built.approval!.data,
+          value: 0n, chain: ctx.chain, account: ctx.walletClient!.account!,
+        }),
+      )
+      await publicClient.waitForTransactionReceipt({hash})
+      process.stdout.write(`  ✓ approved ${hash}\n`)
+    }
+  }
+
+  const swap = built.swap
+  const value = BigInt(swap.value ?? '0')
+
+  // Third-party calldata is never broadcast unseen: run it against live state first.
+  await publicClient.call({account: account!, to: getAddress(swap.to), data: swap.data, value})
+  process.stdout.write('  simulates cleanly\n')
+
+  if (!confirm) {
+    process.stdout.write('\n  --confirm not passed; nothing was broadcast.\n')
+    return
+  }
+
+  const hash = await sendWithRetry(() =>
+    ctx.walletClient!.sendTransaction({
+      to: getAddress(swap.to), data: swap.data, value,
+      chain: ctx.chain, account: ctx.walletClient!.account!,
+    }),
+  )
+  const receipt = await publicClient.waitForTransactionReceipt({hash})
+  if (receipt.status !== 'success') throw new Error(`Swap reverted: ${hash}`)
+
+  const after = await publicClient.readContract({
+    address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [account!],
+  })
+  const received = after - before
+  process.stdout.write(`  ✓ ${hash}\n  received ${formatUnits(received, Number(decimals))} ${symbol}\n`)
+  if (received < BigInt(q.minOut)) {
+    process.stdout.write(
+      `  ! received less than the quoted floor of ${floor} ${symbol} — the route did not honour minOut\n`,
+    )
+  }
+}
+
 async function main(): Promise<void> {
   const [tokenArg, amountArg] = process.argv.slice(2).filter((a) => !a.startsWith('--'))
   const venue = flag('venue')
+
+  if (venue === 'tower' && tokenArg) return buyOnTower(tokenArg)
 
   if ((venue === 'v4' || venue === 'dag') && tokenArg) return buyWithNative(tokenArg, venue)
 
