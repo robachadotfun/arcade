@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest'
-import {ARCADE_POOL_ID, ARCADE_TOKEN} from './token'
+import {ARCADE_POOL_ID, ARCADE_TOKEN, PREVIOUS_ARCADE_TOKEN} from './token'
 import {ARCADE_POOL_KEY, poolId} from '../../scripts/operator/uniswap-v4'
 
 /**
@@ -22,7 +22,11 @@ describe('ARCADE Uniswap v4 pool key', () => {
     // v4 orders a pool's currencies by address, and every swap direction in the buyback is
     // written against ARCADE being currency0. If that ever flips, `zeroForOne` inverts and a
     // buy becomes a sell.
-    expect(ARCADE_POOL_KEY.currency0.toLowerCase()).toBe(ARCADE_TOKEN.address.toLowerCase())
+    //
+    // The recorded pool is still PREVIOUS_ARCADE_TOKEN's. The buyback refuses to run until it
+    // matches ARCADE_TOKEN; when the new pool is recorded, compare against ARCADE_TOKEN here.
+    expect(ARCADE_POOL_KEY.currency0.toLowerCase()).toBe(PREVIOUS_ARCADE_TOKEN.toLowerCase())
+    expect(ARCADE_TOKEN.address.toLowerCase()).not.toBe(PREVIOUS_ARCADE_TOKEN.toLowerCase())
   })
 
   it('quotes against the 6-decimal USDC ERC-20, not the 18-decimal native asset', () => {

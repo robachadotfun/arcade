@@ -1199,6 +1199,14 @@ async function buyback(): Promise<void> {
   if (!(share > 0 && share <= 100)) fail('--share must be between 0 and 100')
 
   heading('ARCADE buyback and burn')
+  // Every balance below is read from ARCADE_TOKEN, so a pool for any other token would spend
+  // USDC on one token and then find nothing of the other to burn.
+  if (ARCADE_POOL_KEY.currency0.toLowerCase() !== ARCADE_TOKEN.address.toLowerCase()) {
+    fail(
+      `ARCADE_POOL_KEY trades ${ARCADE_POOL_KEY.currency0}, not ARCADE ${ARCADE_TOKEN.address}. ` +
+        'Record the current token\'s pool in scripts/operator/uniswap-v4.ts and ARCADE_POOL_ID first.',
+    )
+  }
   log(`  token              ${ARCADE_TOKEN.address}`)
   log(`  burn address       ${BURN_ADDRESS}`)
   log(`  pool (Uniswap v4)  ${ARCADE_POOL_ID}`)

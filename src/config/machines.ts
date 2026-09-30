@@ -72,8 +72,11 @@ const BCAT = '0x258bbb25fb1bc34c87212f8dab34838854ef2d5d' as const
  * $ARCADE, the project's own token. Admitted as a reward by operator decision despite
  * failing the market thresholds — see ADMITTED_DISCLOSURES in rewards.ts, which publishes
  * that admission and its reasons on /rewards.
+ *
+ * This is PREVIOUS_ARCADE_TOKEN in token.ts, not the current ARCADE_TOKEN: it must match what
+ * machine 1 pays onchain. Change it only alongside an onchain update of the machine.
  */
-const ARCADE_TOKEN_ADDR = '0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6' as const
+const ARCADE_TOKEN_ADDR ='0x1ec721ce66eb56c1db87962e7e4fc8d0e3ef24b6' as const
 /** Faze. Verified clean: zero fee, standard bool return, clears every market threshold. */
 const FAZE = '0x394d38f807ee0027a182216f5e67a15ae441fa2e' as const
 /** Arcflow. Same — verified with nothing failing. */

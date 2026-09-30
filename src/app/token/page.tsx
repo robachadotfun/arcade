@@ -47,6 +47,11 @@ export default function TokenPage() {
   const arcadeOdds =
     discovery && arcadeWeight ? (arcadeWeight / totalWeight(discovery)) * 100 : null
 
+  // The recorded pool belongs to PREVIOUS_ARCADE_TOKEN until the new token's pool is added;
+  // publishing it beside the new address would point people at the wrong market.
+  const poolMatchesToken =
+    ARCADE_POOL_KEY.currency0.toLowerCase() === ARCADE_TOKEN.address.toLowerCase()
+
   return (
     <div className="relative iso-grid">
       <div className="shell relative py-14 md:py-20">
@@ -102,42 +107,44 @@ export default function TokenPage() {
         </section>
 
         {/* ============================================================== where it trades */}
-        <section className="mt-14 border-t border-hairline pt-12">
-          <SectionHead eyebrow="Where it trades" title="One pool, on Uniswap v4." />
+        {poolMatchesToken && (
+          <section className="mt-14 border-t border-hairline pt-12">
+            <SectionHead eyebrow="Where it trades" title="One pool, on Uniswap v4." />
 
-          <p className="mt-6 max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-muted">
-            A v4 pool has no address of its own — it is identified by the hash of its key. So
-            the key is published here in full: anyone can hash these values and confirm they
-            produce the pool id below, which is the only way to be sure you are looking at the
-            same market the buyback buys from.
-          </p>
+            <p className="mt-6 max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+              A v4 pool has no address of its own — it is identified by the hash of its key. So
+              the key is published here in full: anyone can hash these values and confirm they
+              produce the pool id below, which is the only way to be sure you are looking at the
+              same market the buyback buys from.
+            </p>
 
-          <dl className="mt-8 max-w-[46rem] divide-y divide-hairline-faint border-y border-hairline-faint">
-            <DataRow
-              label="Pool id"
-              value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_ID}</span>}
-            />
-            <DataRow
-              label="currency0"
-              value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_KEY.currency0}</span>}
-            />
-            <DataRow
-              label="currency1"
-              value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_KEY.currency1}</span>}
-            />
-            <DataRow label="Fee" value={`${ARCADE_POOL_KEY.fee / 10_000}%`} mono />
-            <DataRow label="Tick spacing" value={String(ARCADE_POOL_KEY.tickSpacing)} mono />
-            <DataRow
-              label="Hook"
-              value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_KEY.hooks}</span>}
-            />
-          </dl>
+            <dl className="mt-8 max-w-[46rem] divide-y divide-hairline-faint border-y border-hairline-faint">
+              <DataRow
+                label="Pool id"
+                value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_ID}</span>}
+              />
+              <DataRow
+                label="currency0"
+                value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_KEY.currency0}</span>}
+              />
+              <DataRow
+                label="currency1"
+                value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_KEY.currency1}</span>}
+              />
+              <DataRow label="Fee" value={`${ARCADE_POOL_KEY.fee / 10_000}%`} mono />
+              <DataRow label="Tick spacing" value={String(ARCADE_POOL_KEY.tickSpacing)} mono />
+              <DataRow
+                label="Hook"
+                value={<span className="font-mono text-[0.75rem] break-all">{ARCADE_POOL_KEY.hooks}</span>}
+              />
+            </dl>
 
-          <p className="mt-5 max-w-[64ch] text-[0.8125rem] leading-relaxed text-ink-faint">
-            currency1 is the USDC ERC-20 at 0x3600…0000, which uses 6 decimals — not the
-            18-decimal native asset Arc charges gas in. Same money, two precisions.
-          </p>
-        </section>
+            <p className="mt-5 max-w-[64ch] text-[0.8125rem] leading-relaxed text-ink-faint">
+              currency1 is the USDC ERC-20 at 0x3600…0000, which uses 6 decimals — not the
+              18-decimal native asset Arc charges gas in. Same money, two precisions.
+            </p>
+          </section>
+        )}
 
         {/* ============================================================== what it does */}
         <section className="mt-14 border-t border-hairline pt-12">
@@ -149,11 +156,17 @@ export default function TokenPage() {
               <h3 className="mt-4 font-display text-[1.125rem] leading-tight text-ink">
                 A reward you can win
               </h3>
-              <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
-                $ARCADE is in the Discovery reward table
-                {arcadeOdds ? ` and pays on ${arcadeOdds.toFixed(2)}% of spins` : ''}, funded in
-                the prize vault like every other reward.
-              </p>
+              {arcadeOdds ? (
+                <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
+                  $ARCADE is in the Discovery reward table and pays on {arcadeOdds.toFixed(2)}% of
+                  spins, funded in the prize vault like every other reward.
+                </p>
+              ) : (
+                <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
+                  Discovery still pays its $ARCADE prize in the previous ARCADE contract. Prizes
+                  move to the address above once the machine is updated onchain.
+                </p>
+              )}
               <p className="mt-3">
                 <Link
                   href="/rewards"

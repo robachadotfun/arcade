@@ -50,7 +50,7 @@ export function ArcadePaymentNotice({className = ''}: {className?: string}) {
           href="/rewards"
           className="text-[0.8125rem] text-ink-muted underline underline-offset-4 hover:text-ink"
         >
-          $ARCADE is already a reward →
+          See the reward table →
         </Link>
         <span className="font-mono text-[0.6875rem] break-all text-ink-faint">
           {ARCADE_TOKEN.address}
